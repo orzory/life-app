@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v21';
+const APP_VERSION = 'v22';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -67,25 +67,29 @@ function parseWorkoutText(text) {
   const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/)
         || t.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(\d{1,2})[:：](\d{2})/);
   if (dm) d.date = `${dm[1]}-${String(dm[2]).padStart(2,'0')}-${String(dm[3]).padStart(2,'0')}`;
-  // 距离：8.01 公里 / 8.01km / 8.01 km / 8.01千米
-  const dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)/i);
+  // 距离：必须带单位（公里/km/千米），避免抓到无关数字
+  const dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)\b/i);
   if (dist) d.distance = dist[1];
   // 运动时间：01:23:11 / 1:23:11 / 运动时长 01:23:11
   const dur = t.match(/(?:运动时间|运动时长|用时)\s*[:：]?\s*(\d{1,2}:\d{2}:\d{2})/)
         || t.match(/(\d{1,2}:\d{2}:\d{2})/);
   if (dur) d.duration = String(parseDurationToMin(dur[1]));
-  // 热量：716 千卡 / 716kcal / 消耗 716 / 总消耗 716
-  const cal = t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+)\s*(?:千卡|kcal|大卡)?/i);
-  if (cal) d.calories = cal[1];
+  // 热量：优先匹配「数字+千卡/kcal/大卡」，避免 OCR 排版错乱时抓到前面的无关数字
+  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)\b/i);
+  const cal = calWithUnit
+        || t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+(?:\.\d+)?)/i);
+  if (cal) d.calories = String(parseInt(cal[1], 10));
   // 配速：7'30" / 7'30 / 7:30 / 7.30 /km
   const pace = t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d+['′:]\d{1,2}["″]?)/)
         || t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d{1,2})[\.'′](\d{1,2})/);
   if (pace) d.pace = pace[0].replace(/[:：]/g, "'").replace(/["″]/g, '');
-  // 心率：147 次/分钟 / 147 bpm / 平均心率 147
-  const hr = t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d+)\s*(?:次?[/／]分钟|bpm|次\/分)?/i);
+  // 心率：必须带单位（次/分钟/bpm/次/分），避免抓到无关数字
+  const hr = t.match(/(?:平均心率|心率)?\s*(\d+)\s*(?:次?[/／]分钟|bpm|次\/分)\b/i)
+        || t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d+)\b/i);
   if (hr) d.avgHr = hr[1];
-  // 步频：175 步/分钟 / 175 / 平均步频 175
-  const cad = t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)\s*(?:步[/／]分钟)?/i);
+  // 步频：必须带单位（步/分钟），避免抓到无关数字
+  const cad = t.match(/(?:平均步频|步频)?\s*(\d+)\s*步[/／]分钟\b/i)
+        || t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)\b/i);
   if (cad) d.cadence = cad[1];
   // 步数 14,582 步
   const steps = t.match(/步数\s*[:：]?\s*([\d,]+)\s*步/);
@@ -869,9 +873,9 @@ function bindModule(key) {
         if (shotEl) shotEl.value = dataURL;
         const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
         if (ocrStatus) {
-          const rawPreview = ret.data.text.replace(/\n/g, ' | ').slice(0, 120);
+          const rawPreview = ret.data.text.replace(/\n/g, ' | ').slice(0, 250);
           ocrStatus.innerHTML = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写') +
-            '<br><small style="opacity:.7">原始：' + rawPreview + (ret.data.text.length > 120 ? '…' : '') + '</small>';
+            '<br><small style="opacity:.7">原始：' + rawPreview + (ret.data.text.length > 250 ? '…' : '') + '</small>';
         }
       } catch (err) {
         console.error('OCR error:', err);
