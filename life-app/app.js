@@ -206,7 +206,7 @@ const MODULES = {
     ]
   },
   daily: {
-    title:'每日计划', icon:'✅', daily:true, storageKey:'lifeapp_daily',
+    title:'每日计划', icon:'✅', daily:true, storageKey:'lifeapp_daily', notepad:true,
     fields:[
       { key:'text', label:'计划内容', type:'text',     ph:'今天要做的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
@@ -723,6 +723,37 @@ function renderModule(key) {
       </div>`;
   }
 
+  // 每日计划便签纸视图
+  if (m.notepad) {
+    const todayStr = today();
+    const todayList = list.filter(r => r.date === todayStr)
+      .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
+    const npItems = todayList.map(it => `
+      <div class="np-item ${it.done ? 'done' : ''}" data-id="${it.id}">
+        <span class="np-check">${it.done ? '✓' : ''}</span>
+        <span class="np-text">${escapeHtml(it.text || '')}</span>
+        <button class="np-del" data-id="${it.id}">×</button>
+      </div>
+    `).join('') || '<div class="np-empty">今天还没有计划，添加一条吧～</div>';
+    return `
+      <h2 class="sec-title">${m.icon} ${m.title}</h2>
+      ${extra}
+      <div class="notepad">
+        <div class="np-date">${todayStr}</div>
+        <div class="np-meta">
+          <div class="np-line"><span>FROM:</span><em>me</em></div>
+          <div class="np-line"><span>TO:</span><em>myself</em></div>
+        </div>
+        <div class="np-list" id="np-list">${npItems}</div>
+        <form id="np-add" class="np-add">
+          <input type="text" name="text" placeholder="+ 添加今日计划" autocomplete="off">
+          <button type="submit">添加</button>
+        </form>
+        <div class="np-tags">#我的一天 #工作日</div>
+        ${resetBtn}
+      </div>`;
+  }
+
   return `
     <h2 class="sec-title">${m.icon} ${m.title}</h2>
     ${extra}
@@ -851,6 +882,38 @@ function bindModule(key) {
     save(m.storageKey, arr);
     render();
   });
+
+  // 每日计划便签纸：点击行/复选框切换完成，点击 × 删除
+  if (m.notepad) {
+    const npList = $('#np-list');
+    if (npList) npList.addEventListener('click', e => {
+      const delBtn = e.target.closest('.np-del');
+      if (delBtn) {
+        const id = delBtn.dataset.id;
+        const arr = load(m.storageKey).filter(x => x.id !== id);
+        save(m.storageKey, arr);
+        render();
+        return;
+      }
+      const item = e.target.closest('.np-item');
+      if (item) {
+        const id = item.dataset.id;
+        const arr = load(m.storageKey).map(x => x.id === id ? { ...x, done: !x.done } : x);
+        save(m.storageKey, arr);
+        render();
+      }
+    });
+    const npAdd = $('#np-add');
+    if (npAdd) npAdd.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = e.target.text.value.trim();
+      if (!text) return;
+      const arr = load(m.storageKey);
+      arr.unshift({ id: uid(), text, done: false, date: today() });
+      save(m.storageKey, arr);
+      render();
+    });
+  }
 
   // 周计划保存（覆盖式）
   if (m.weeklyPlan) {
