@@ -367,7 +367,9 @@ function analyzeWeather(wx, city, forTomorrow) {
   if (runStart !== null) runs.push([runStart, runEnd]);
 
   if (!rows.length) {
-    return { city, temp, humidity, condition, dayLabel, bestWindow:'明早 🌅', note:'今天已较晚，建议明早再跑' };
+    // 今天已没有可跑时段 → 直接改为分析明天（标题/时间/说明保持一致，不再出现「今日…明早」的矛盾）
+    if (!forTomorrow) return analyzeWeather(wx, city, true);
+    return { city, temp, humidity, condition, dayLabel, bestWindow:'—', note:'明日预报数据暂不可用，稍后再看' };
   }
   if (runs.length) {
     runs.sort((a,b) => (b[1]-b[0]) - (a[1]-a[0]));   // 最长舒适窗口优先
