@@ -20,6 +20,13 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
   background:var(--bg); color:var(--text); line-height:1.5;
 }
+/* iOS PWA 状态栏背景统一：透明状态栏下透显出这条色带 */
+.status-bar-fill{
+  position:fixed; top:0; left:0; right:0; z-index:9999;
+  height:env(safe-area-inset-top);
+  background:var(--sidebar);
+  pointer-events:none;
+}
 
 /* ---- 手机端菜单按钮 + 遮罩 ---- */
 .menu-btn{
