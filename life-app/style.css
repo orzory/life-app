@@ -319,9 +319,9 @@ body{
 }
 .np-line span{font-style:normal;}
 .np-line em{
-  flex:1; font-style:italic;
+  flex:1; font-style:normal; text-transform:uppercase;
   border-bottom:1px solid #c9c0ae;
-  padding-bottom:2px; color:#2d2d2d;
+  padding-bottom:2px; color:#5b5346; letter-spacing:.5px;
 }
 .np-list{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
 .np-empty{color:#938b7a; text-align:center; padding:24px 0; font-size:14px;}

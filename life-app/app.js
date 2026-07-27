@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v27';
+const APP_VERSION = 'v28';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -777,8 +777,8 @@ function renderModule(key) {
       <div class="notepad">
         <div class="np-date">${todayStr}</div>
         <div class="np-meta">
-          <div class="np-line"><span>FROM:</span><em>me</em></div>
-          <div class="np-line"><span>TO:</span><em>myself</em></div>
+          <div class="np-line"><span>FROM:</span><em>ME</em></div>
+          <div class="np-line"><span>TO:</span><em>MYSELF</em></div>
         </div>
         <div class="np-list" id="np-list">${npItems}</div>
         <form id="np-add" class="np-add">
