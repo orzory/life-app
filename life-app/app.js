@@ -865,11 +865,16 @@ function bindModule(key) {
         if (ocrStatus) ocrStatus.textContent = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写');
       } catch (err) {
         console.error('OCR error:', err);
-        let detail = '';
+        let detail = '未知错误';
         try {
-          detail = err && (err.message || err.stack || err.toString && err.toString() || JSON.stringify(err));
+          if (err === undefined) detail = 'undefined';
+          else if (err === null) detail = 'null';
+          else if (typeof err === 'string') detail = err;
+          else detail = err.message || err.stack || (err.toString && err.toString()) || JSON.stringify(err) || '未知错误';
         } catch (e) {}
-        if (ocrStatus) ocrStatus.textContent = '❌ 识别失败：' + (detail || '未知错误');
+        const msg = '❌ 识别失败：' + detail;
+        if (ocrStatus) ocrStatus.textContent = msg;
+        alert(msg);
       }
     });
   }
