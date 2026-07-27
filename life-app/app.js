@@ -63,34 +63,37 @@ function formatPace(sec) {
 function parseWorkoutText(text) {
   const d = {};
   const t = text.replace(/\s+/g, ' ');
-  // 日期时间：2026年7月25日 06:58
-  const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/);
+  // 日期时间：2026年7月25日 06:58 / 2026-07-25
+  const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/)
+        || t.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(\d{1,2})[:：](\d{2})/);
   if (dm) d.date = `${dm[1]}-${String(dm[2]).padStart(2,'0')}-${String(dm[3]).padStart(2,'0')}`;
-  // 距离 11.10 公里
-  const dist = t.match(/(\d+\.\d+)\s*公里/);
+  // 距离：8.01 公里 / 8.01km / 8.01 km / 8.01千米
+  const dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)/i);
   if (dist) d.distance = dist[1];
-  // 运动时间 01:23:11
-  const dur = t.match(/运动时间\s*[:：]?\s*(\d{1,2}:\d{2}:\d{2})/);
+  // 运动时间：01:23:11 / 1:23:11 / 运动时长 01:23:11
+  const dur = t.match(/(?:运动时间|运动时长|用时)\s*[:：]?\s*(\d{1,2}:\d{2}:\d{2})/)
+        || t.match(/(\d{1,2}:\d{2}:\d{2})/);
   if (dur) d.duration = String(parseDurationToMin(dur[1]));
-  // 总消耗热量 716 千卡
-  const cal = t.match(/总消耗热量\s*[:：]?\s*(\d+)\s*千卡/);
+  // 热量：716 千卡 / 716kcal / 消耗 716 / 总消耗 716
+  const cal = t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+)\s*(?:千卡|kcal|大卡)?/i);
   if (cal) d.calories = cal[1];
-  // 平均配速 7'30"/公里
-  const pace = t.match(/平均配速\s*[:：]?\s*(\d+['′]\d+["″]?)/);
-  if (pace) d.pace = pace[1];
-  // 平均心率 147 次/分钟
-  const hr = t.match(/平均心率\s*[:：]?\s*(\d+)\s*次?[/／]分钟/);
+  // 配速：7'30" / 7'30 / 7:30 / 7.30 /km
+  const pace = t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d+['′:]\d{1,2}["″]?)/)
+        || t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d{1,2})[\.'′](\d{1,2})/);
+  if (pace) d.pace = pace[0].replace(/[:：]/g, "'").replace(/["″]/g, '');
+  // 心率：147 次/分钟 / 147 bpm / 平均心率 147
+  const hr = t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d+)\s*(?:次?[/／]分钟|bpm|次\/分)?/i);
   if (hr) d.avgHr = hr[1];
-  // 平均步频 175 步/分钟
-  const cad = t.match(/平均步频\s*[:：]?\s*(\d+)\s*步[/／]分钟/);
+  // 步频：175 步/分钟 / 175 / 平均步频 175
+  const cad = t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)\s*(?:步[/／]分钟)?/i);
   if (cad) d.cadence = cad[1];
   // 步数 14,582 步
   const steps = t.match(/步数\s*[:：]?\s*([\d,]+)\s*步/);
   if (steps) d.steps = steps[1].replace(/,/g, '');
-  // 类型：看到「户外跑步」就写跑步
-  if (/户外跑步/.test(t)) d.type = '跑步';
-  else if (/户外步行/.test(t)) d.type = '步行';
-  else if (/骑行/.test(t)) d.type = '骑行';
+  // 类型
+  if (/户外跑步|跑步|跑走结合/.test(t)) d.type = '跑步';
+  else if (/户外步行|步行|走路/.test(t)) d.type = '步行';
+  else if (/骑行|骑车|自行车/.test(t)) d.type = '骑行';
   return d;
 }
 
@@ -865,7 +868,11 @@ function bindModule(key) {
         const shotEl = document.querySelector('[name="screenshot"]');
         if (shotEl) shotEl.value = dataURL;
         const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
-        if (ocrStatus) ocrStatus.textContent = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写');
+        if (ocrStatus) {
+          const rawPreview = ret.data.text.replace(/\n/g, ' | ').slice(0, 120);
+          ocrStatus.innerHTML = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写') +
+            '<br><small style="opacity:.7">原始：' + rawPreview + (ret.data.text.length > 120 ? '…' : '') + '</small>';
+        }
       } catch (err) {
         console.error('OCR error:', err);
         let detail = '未知错误';
