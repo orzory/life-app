@@ -832,10 +832,23 @@ function bindModule(key) {
       const file = ocrInput && ocrInput.files && ocrInput.files[0];
       if (!file) { if (ocrStatus) ocrStatus.textContent = '请先选择一张截图'; return; }
       if (typeof Tesseract === 'undefined') { if (ocrStatus) ocrStatus.textContent = 'OCR 脚本未加载，请检查网络后刷新'; return; }
-      if (ocrStatus) ocrStatus.textContent = '⏳ OCR 识别中，首次约需几秒下载中文包…';
       try {
+        if (ocrStatus) ocrStatus.textContent = '⏳ 正在压缩图片…';
         const dataURL = await fileToDataURL(file);   // 压缩后的 base64
-        const worker = await Tesseract.createWorker('chi_sim');
+
+        if (ocrStatus) ocrStatus.textContent = '⏳ 正在初始化 OCR，首次需下载中文包（约 10MB）…';
+        const worker = await Tesseract.createWorker('chi_sim', 1, {
+          logger: m => {
+            console.log('[tesseract]', m);
+            if (!ocrStatus) return;
+            const pct = m.progress ? `${(m.progress * 100).toFixed(0)}%` : '';
+            if (m.status === 'loading language traineddata') ocrStatus.textContent = `⏳ 下载中文语言包 ${pct}`;
+            else if (m.status === 'initializing api') ocrStatus.textContent = `⏳ 初始化识别引擎 ${pct}`;
+            else if (m.status === 'recognizing text') ocrStatus.textContent = `⏳ 识别文字中 ${pct}`;
+          }
+        });
+
+        if (ocrStatus) ocrStatus.textContent = '⏳ 正在识别文字…';
         const ret = await worker.recognize(dataURL);
         await worker.terminate();
         const parsed = parseWorkoutText(ret.data.text);
@@ -850,8 +863,12 @@ function bindModule(key) {
         const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
         if (ocrStatus) ocrStatus.textContent = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写');
       } catch (err) {
-        console.error(err);
-        if (ocrStatus) ocrStatus.textContent = '❌ 识别失败：' + (err.message || '未知错误');
+        console.error('OCR error:', err);
+        let detail = '';
+        try {
+          detail = err && (err.message || err.stack || err.toString && err.toString() || JSON.stringify(err));
+        } catch (e) {}
+        if (ocrStatus) ocrStatus.textContent = '❌ 识别失败：' + (detail || '未知错误');
       }
     });
   }
