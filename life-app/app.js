@@ -386,15 +386,17 @@ function renderWeatherInner(d) {
   const t = (d.temp === null || d.temp === undefined) ? '—' : Math.round(d.temp) + '°';
   const h = (d.humidity === null || d.humidity === undefined) ? '—' : Math.round(d.humidity) + '%';
   return `
-    <div class="wx-main">
-      <div class="wx-city">📍 ${escapeHtml(d.city || '当地')}</div>
-      <div class="wx-cond">${d.condition}</div>
-      <div class="wx-temp">${t}</div>
-      <div class="wx-hum">💧 湿度 ${h}</div>
+    <div class="wx-topline">
+      <span class="wx-city">📍 ${escapeHtml(d.city || '当地')}</span>
+      <span class="wx-temp">${t}</span>
+      <span class="wx-cond">${d.condition}</span>
+      <span class="wx-hum">💧 湿度 ${h}</span>
     </div>
     <div class="wx-run">
-      <div class="wx-run-title">🏃 今日最佳户外跑步时段</div>
-      <div class="wx-run-time">${d.bestWindow}</div>
+      <div class="wx-run-line">
+        <span class="wx-run-title">🏃 今日最佳户外跑步时段</span>
+        <span class="wx-run-time">${d.bestWindow}</span>
+      </div>
       <div class="wx-run-note">${d.note}</div>
     </div>`;
 }

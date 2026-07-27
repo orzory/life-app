@@ -66,22 +66,26 @@ body{
 
 /* ---- 天气卡片（置于时钟下方） ---- */
 .weather-card{
-  display:flex; gap:18px; align-items:stretch;
+  display:flex; flex-direction:column; gap:10px;
   background:linear-gradient(135deg,#eaf4ff,#dcefff);
   border:1px solid #cfe6fb; border-radius:18px;
-  padding:16px 18px; margin:14px 0 0; color:#23425c;
+  padding:14px 18px; margin:14px 0 0; color:#23425c;
 }
-.wx-main{flex:0 0 auto; min-width:118px;}
-.wx-city{font-size:13px; color:#5a7d96; margin-bottom:2px;}
-.wx-cond{font-size:14px; color:#3f6385; margin-bottom:2px;}
-.wx-temp{font-size:38px; font-weight:800; line-height:1.1; color:#1f3a52;}
-.wx-hum{font-size:13px; color:#5a7d96; margin-top:2px;}
+.wx-topline{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+}
+.wx-city{font-size:14px; color:#5a7d96;}
+.wx-temp{font-size:26px; font-weight:800; line-height:1.1; color:#1f3a52;}
+.wx-cond{font-size:14px; color:#3f6385;}
+.wx-hum{font-size:14px; color:#5a7d96;}
 .wx-run{
-  flex:1 1 auto; border-left:1px solid #cfe6fb; padding-left:18px;
-  display:flex; flex-direction:column; justify-content:center;
+  border-top:1px solid #cfe6fb; padding-top:10px;
 }
-.wx-run-title{font-size:13px; color:#5a7d96; margin-bottom:4px;}
-.wx-run-time{font-size:20px; font-weight:700; color:#1f3a52;}
+.wx-run-line{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+}
+.wx-run-title{font-size:13px; color:#5a7d96;}
+.wx-run-time{font-size:19px; font-weight:700; color:#1f3a52;}
 .wx-run-note{font-size:12px; color:#5a7d96; margin-top:4px; line-height:1.4;}
 .wx-loading,.wx-error{font-size:14px; color:#5a7d96; padding:8px 0; width:100%;}
 
@@ -293,7 +297,7 @@ body{
   .ring{width:92px; height:92px;}
   .ring-label{font-size:23px;}
   .checkin-list{gap:10px 12px;}
-  /* 天气卡片在手机端也竖向堆叠 */
-  .weather-card{flex-direction:column; gap:12px; margin-top:12px;}
-  .wx-run{border-left:none; border-top:1px solid #cfe6fb; padding-left:0; padding-top:12px;}
+  /* 天气卡片手机端：保持横排行布局，仅收紧间距 */
+  .weather-card{gap:8px; margin-top:12px;}
+  .wx-topline{gap:10px;}
 }
