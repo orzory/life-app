@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v29';
+const APP_VERSION = 'v30';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -800,9 +800,9 @@ function renderModule(key) {
       ${resetBtn}
     </form>
     <div class="list" id="list">${itemsHtml}</div>
-    ${monthHtml}
     ${planHtml}
-    ${bodyHtml}`;
+    ${bodyHtml}
+    ${monthHtml}`;
 }
 
 function fieldHTML(f) {
@@ -821,20 +821,23 @@ function fieldHTML(f) {
 }
 
 function itemHTML(m, item) {
-  const dateTag = item.date ? `<div class="item-date">📅 ${item.date}</div>` : '';
+  const dateTag = item.date || '记录';
   const vals = m.fields.map(f => {
     const v = item[f.key];
-    if (f.key === 'date') return '';   // 日期已在顶部 📅 行显示，避免重复
+    if (f.key === 'date') return '';   // 日期已在 summary 显示，避免重复
     if (f.type === 'checkbox')
       return `<span class="tag ${v?'on':''}">${f.label}${v?' ✓':''}</span>`;
     if (f.type === 'image')
       return (v && v.startsWith('data:image')) ? `<div><b>${f.label}:</b><br><img class="item-img" src="${v}" alt=""></div>` : '';
     return (v !== undefined && v !== '') ? `<div><b>${f.label}:</b> ${escapeHtml(v)}</div>` : '';
   }).join('');
-  return `<div class="item">
-    <div class="item-body">${dateTag}${vals}</div>
-    <button class="btn-del" data-id="${item.id}">删除</button>
-  </div>`;
+  // 折叠显示：默认收起，只显示日期；点开看详情，避免长列表撑太长
+  return `<details class="item">
+    <summary class="item-summary">📅 ${escapeHtml(dateTag)}</summary>
+    <div class="item-body">${vals}
+      <button class="btn-del" data-id="${item.id}">删除</button>
+    </div>
+  </details>`;
 }
 
 // 绑定某容器内记录的「删除」按钮（按 storageKey 过滤）
