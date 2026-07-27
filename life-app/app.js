@@ -792,11 +792,12 @@ function bindDeletes(scope, storageKey) {
   });
 }
 
-// 绑定「添加 / 删除 / 清空今日」事件
+  // 绑定「添加 / 删除 / 清空今日」事件
 function bindModule(key) {
   const m = MODULES[key];
 
-  $('#add-form').addEventListener('submit', async e => {
+  const addForm = $('#add-form');
+  if (addForm) addForm.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {};
     let userDate = null;                    // 用户手动选的日期（用于补记过去）
