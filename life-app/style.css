@@ -215,25 +215,6 @@ body{
 .mod-summary{margin:0 0 14px; padding:10px 14px; background:#fffaf0; border:1px solid var(--line); border-radius:12px; font-size:14px; color:var(--text);}
 .mod-summary b{color:var(--primary-d); font-size:17px; margin:0 2px;}
 
-/* ---- 食物营养搜索 ---- */
-.food-search{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:16px;}
-.fs-head{font-size:13px; color:var(--muted); margin-bottom:10px;}
-.fs-bar{display:flex; gap:8px;}
-.fs-input{flex:1; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font-size:15px; background:#fffdf6; color:var(--text);}
-.fs-input:focus{outline:none; border-color:var(--primary);}
-.fs-btn{flex:0 0 auto; border:none; background:var(--primary); color:#fff; font-weight:600; padding:0 18px; border-radius:10px; font-size:15px;}
-.fs-btn:active{background:var(--primary-d);}
-.fs-results{margin-top:12px; display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto;}
-.fs-loading,.fs-empty{font-size:13px; color:var(--muted); padding:6px 0;}
-.fs-item{display:flex; align-items:center; gap:10px; background:#fffef9; border:1px solid var(--line); border-radius:12px; padding:8px 10px;}
-.fs-img{width:46px; height:46px; object-fit:cover; border-radius:8px; flex:0 0 auto;}
-.fs-info{flex:1; min-width:0;}
-.fs-name{font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.fs-brand{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.fs-nutri{font-size:11px; color:var(--muted); margin-top:2px;}
-.fs-fill{flex:0 0 auto; border:1px solid var(--primary); background:#fff; color:var(--primary-d); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; white-space:nowrap;}
-.fs-fill:active{background:#fff7da;}
-
 /* ---- 周计划（锻炼身体模块内） ---- */
 .wp-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:14px; margin:6px 0 16px;}
 .wp-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:10px;}

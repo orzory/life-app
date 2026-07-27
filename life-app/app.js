@@ -183,18 +183,11 @@ const MODULES = {
   },
   meal: {
     title:'好好吃饭', icon:'🍚', daily:true, storageKey:'lifeapp_meal',
-    // 食物营养搜索（Open Food Facts 公开库，免费、无需密钥、支持浏览器跨域）
-    search:{ placeholder:'输入食物名，如 鸡蛋 / 苹果 / 牛奶' },
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
       { key:'meal',     label:'餐次',   type:'text',     ph:'早餐 / 午餐 / 晚餐' },
       { key:'food',     label:'吃了什么', type:'textarea', ph:'菜品…' },
-      { key:'image',    label:'配图',     type:'image' },
-      // 热量/三大营养素由顶部搜索自动回填，不在表单里显示手动输入框
-      { key:'calories', label:'热量(kcal)', type:'number', hidden:true },
-      { key:'protein',  label:'蛋白质(g)', type:'number', hidden:true },
-      { key:'fat',      label:'脂肪(g)',   type:'number', hidden:true },
-      { key:'carbs',    label:'碳水(g)',   type:'number', hidden:true }
+      { key:'image',    label:'配图',     type:'image' }
     ]
   },
   account: {
@@ -614,18 +607,6 @@ function renderModule(key) {
     }).join(' · ');
     extra += `<div class="mod-summary">📊 今日：${parts || '还没有记录'}</div>`;
   }
-  // 食物营养搜索（仅配置了 search 的模块，如好好吃饭）
-  if (m.search) {
-    extra += `
-      <div class="food-search">
-        <div class="fs-head">🔍 搜食物营养（公开营养库 Open Food Facts）</div>
-        <div class="fs-bar">
-          <input id="foodQuery" class="fs-input" placeholder="${escapeHtml(m.search.placeholder)}">
-          <button id="foodSearchBtn" class="fs-btn" type="button">搜索</button>
-        </div>
-        <div id="foodResults" class="fs-results"></div>
-      </div>`;
-  }
   // 运动截图 OCR（仅配置了 ocr 的模块，如锻炼身体）
   let ocrHtml = '';
   if (m.ocr) {
@@ -987,134 +968,6 @@ function bindModule(key) {
     bindDeletes('#bd-list', bd.storageKey);
   }
 
-  // 食物营养搜索（仅好好吃饭等配置了 search 的模块）
-  if (m.search) {
-    const sb = $('#foodSearchBtn');
-    if (sb) sb.addEventListener('click', doFoodSearch);
-    const q = $('#foodQuery');
-    if (q) q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doFoodSearch(); } });
-  }
-}
-
-// ---------- 食物营养搜索（Open Food Facts，免费公开库） ----------
-// 常见中文食物 → 英文关键词（Open Food Facts 对英文搜索更准）
-const FOOD_EN = {
-  '鸡蛋':'egg', '蛋白':'egg white', '蛋黄':'egg yolk',
-  '牛奶':'milk', '酸奶':'yogurt', '奶粉':'milk powder',
-  '米饭':'rice', '白米饭':'white rice', '糙米饭':'brown rice', '糙米':'brown rice',
-  '面条':'noodles', '方便面':'instant noodles', '馒头':'steamed bun', '花卷':'steamed roll',
-  '面包':'bread', '吐司':'toast', '全麦面包':'whole wheat bread', '贝果':'bagel',
-  '燕麦':'oats', '燕麦片':'oatmeal', '麦片':'cereal',
-  '红薯':'sweet potato', '紫薯':'purple sweet potato', '土豆':'potato', '玉米':'corn',
-  '西红柿':'tomato', '番茄':'tomato', '黄瓜':'cucumber', '胡萝卜':'carrot',
-  '菠菜':'spinach', '生菜':'lettuce', '西兰花':'broccoli', '花菜':'cauliflower',
-  '白菜':'chinese cabbage', '卷心菜':'cabbage', '青椒':'green pepper', '辣椒':'chili',
-  '洋葱':'onion', '大蒜':'garlic', '葱':'scallion', '姜':'ginger',
-  '猪肉':'pork', '牛肉':'beef', '羊肉':'lamb', '鸡肉':'chicken',
-  '鸡胸肉':'chicken breast', '鸡腿':'chicken leg', '鸡翅':'chicken wing', '鸡爪':'chicken feet',
-  '鱼':'fish', '三文鱼':'salmon', '金枪鱼':'tuna', '虾':'shrimp', '虾仁':'shrimp',
-  '蟹':'crab', '鱿鱼':'squid', '豆腐':'tofu', '豆干':'dried tofu', '腐竹':'tofu skin',
-  '豆浆':'soy milk', '毛豆':'edamame',
-  '苹果':'apple', '香蕉':'banana', '橙子':'orange', '橘子':'mandarin', '葡萄':'grape',
-  '西瓜':'watermelon', '草莓':'strawberry', '蓝莓':'blueberry', '梨':'pear', '桃':'peach',
-  '芒果':'mango', '菠萝':'pineapple', '猕猴桃':'kiwi',
-  '坚果':'nuts', '花生':'peanut', '核桃':'walnut', '杏仁':'almond', '腰果':'cashew',
-  '可乐':'cola', '雪碧':'sprite', '水':'water', '矿泉水':'mineral water',
-  '咖啡':'coffee', '美式':'americano', '拿铁':'latte', '奶茶':'milk tea',
-  '茶':'tea', '绿茶':'green tea', '红茶':'black tea', '乌龙茶':'oolong tea',
-  '啤酒':'beer', '红酒':'red wine', '白酒':'liquor',
-  '巧克力':'chocolate', '饼干':'biscuit', '薯片':'potato chips', '蛋糕':'cake',
-  '蛋挞':'egg tart', '冰淇淋':'ice cream', '糖果':'candy',
-  '蜂蜜':'honey', '酱油':'soy sauce', '醋':'vinegar',
-  '盐':'salt', '糖':'sugar', '白糖':'white sugar', '红糖':'brown sugar',
-  '油':'oil', '橄榄油':'olive oil', '花生油':'peanut oil', '菜籽油':'rapeseed oil',
-  '黄油':'butter', '芝士':'cheese', '奶酪':'cheese', '奶油':'cream',
-  '芝麻酱':'sesame paste', '花生酱':'peanut butter', '番茄酱':'ketchup', '沙拉酱':'salad dressing'
-};
-
-async function searchFood(query) {
-  const fields = 'product_name,brands,nutriments,serving_quantity,image_front_url';
-  const suffix = `&fields=${fields}&json=1&page_size=12`;
-  const raw = query.trim();
-  const en = FOOD_EN[raw] || '';
-  const terms = [...new Set([en, raw].filter(Boolean))];
-  const hosts = ['world', 'cn'];
-  let lastErr = null;
-
-  for (const term of terms) {
-    const q = encodeURIComponent(term);
-    for (const host of hosts) {
-      const url = `https://${host}.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`;
-      try {
-        const r = await fetch(url);
-        if (!r.ok) { lastErr = new Error(`${host} HTTP ${r.status}`); continue; }
-        const d = await r.json();
-        const products = (d.products || []).filter(p => p.product_name);
-        if (products.length) {
-          return products.map(p => {
-            const n = p.nutriments || {};
-            let kcal = Number(n['energy-kcal_100g']);
-            if (!kcal) { const kj = Number(n['energy_100g']); if (kj) kcal = kj / 4.184; }
-            return {
-              name: p.product_name || '未命名',
-              brand: p.brands || '',
-              kcal: Math.round(kcal || 0),
-              protein: Math.round(Number(n['proteins_100g']) || 0),
-              fat: Math.round(Number(n['fat_100g']) || 0),
-              carbs: Math.round(Number(n['carbohydrates_100g']) || 0),
-              img: p.image_front_url || ''
-            };
-          });
-        }
-      } catch (e) { lastErr = e; }
-    }
-  }
-  throw lastErr || new Error('未找到相关食物');
-}
-
-function renderFoodResults(items) {
-  const box = $('#foodResults');
-  if (!box) return;
-  if (!items.length) { box.innerHTML = '<div class="fs-empty">没找到相关食物，换个词试试～</div>'; return; }
-  box.innerHTML = items.map((it, i) => `
-    <div class="fs-item">
-      ${it.img ? `<img class="fs-img" src="${it.img}" alt="">` : ''}
-      <div class="fs-info">
-        <div class="fs-name">${escapeHtml(it.name)}</div>
-        <div class="fs-brand">${it.brand ? escapeHtml(it.brand) : '公开营养库'}</div>
-        <div class="fs-nutri">🔥${it.kcal}kcal/100g · 蛋白${it.protein}g · 脂肪${it.fat}g · 碳水${it.carbs}g</div>
-      </div>
-      <button class="fs-fill" data-i="${i}" type="button">填到记录</button>
-    </div>`).join('');
-  $$('.fs-fill', box).forEach(btn => {
-    btn.addEventListener('click', () => {
-      const it = items[Number(btn.dataset.i)];
-      const f = $('#add-form');
-      if (f) {
-        if (f.food)     f.food.value     = it.name + (it.brand ? `（${it.brand}）` : '');
-        if (f.calories) f.calories.value = it.kcal || '';
-        if (f.protein)  f.protein.value  = it.protein || '';
-        if (f.fat)      f.fat.value      = it.fat || '';
-        if (f.carbs)    f.carbs.value    = it.carbs || '';
-      }
-      box.innerHTML = '';
-    });
-  });
-}
-
-async function doFoodSearch() {
-  const q = $('#foodQuery');
-  const box = $('#foodResults');
-  if (!q || !box) return;
-  const term = q.value.trim();
-  if (!term) { box.innerHTML = '<div class="fs-empty">先输入食物名～</div>'; return; }
-  box.innerHTML = '<div class="fs-loading">🔍 搜索中…</div>';
-  try {
-    const items = await searchFood(term);
-    renderFoodResults(items);
-  } catch (e) {
-    box.innerHTML = `<div class="fs-empty">⚠️ 搜索失败：${escapeHtml((e && e.message) || '网络异常').slice(0, 80)}</div>`;
-  }
 }
 
 // ---------- 抽屉（手机端） ----------
