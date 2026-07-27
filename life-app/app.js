@@ -835,7 +835,7 @@ function bindModule(key) {
       if (ocrStatus) ocrStatus.textContent = '⏳ OCR 识别中，首次约需几秒下载中文包…';
       try {
         const dataURL = await fileToDataURL(file);   // 压缩后的 base64
-        const worker = Tesseract.createWorker('chi_sim');
+        const worker = await Tesseract.createWorker('chi_sim');
         const ret = await worker.recognize(dataURL);
         await worker.terminate();
         const parsed = parseWorkoutText(ret.data.text);
