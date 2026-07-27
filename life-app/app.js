@@ -99,7 +99,7 @@ function parseWorkoutText(text) {
    ========================================================================= */
 const MODULES = {
   english: {
-    title:'英语学习', icon:'🔤', daily:true, storageKey:'lifeapp_english',
+    title:'英语学习', icon:'🗣️', daily:true, storageKey:'lifeapp_english',
     // 一键跳转到「不背单词」：装了 App 会直接唤起，没装则打开官网（如需改跳转，把 url 换成 bubei:// 之类 scheme）
     launch:{ label:'🔗 打开不背单词背词', url:'https://www.bbdc.cn/' },
     // 今日学习概览：把今天各条记录的这些数字字段求和展示
@@ -114,7 +114,7 @@ const MODULES = {
     ]
   },
   reading: {
-    title:'每日阅读', icon:'📖', daily:true, storageKey:'lifeapp_reading',
+    title:'每日阅读', icon:'📚', daily:true, storageKey:'lifeapp_reading',
     // 一键跳转到「微信读书」：手机装了 App 会直接唤起，没装则打开网页版（如需改 scheme 直接唤起，把 url 换成 weread:// 之类）
     launch:{ label:'🔗 打开微信读书', url:'https://weread.qq.com/' },
     // 今日阅读概览：把今天各条记录的时长字段求和
@@ -126,7 +126,7 @@ const MODULES = {
     ]
   },
   sport: {
-    title:'锻炼身体', icon:'🏃', daily:true, storageKey:'lifeapp_sport',
+    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport',
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
     launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
@@ -182,7 +182,7 @@ const MODULES = {
     ]
   },
   meal: {
-    title:'好好吃饭', icon:'🍚', daily:true, storageKey:'lifeapp_meal',
+    title:'好好吃饭', icon:'🍱', daily:true, storageKey:'lifeapp_meal',
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
       { key:'meal',     label:'餐次',   type:'text',     ph:'早餐 / 午餐 / 晚餐' },
@@ -191,7 +191,7 @@ const MODULES = {
     ]
   },
   account: {
-    title:'每日记账', icon:'💰', daily:true, storageKey:'lifeapp_account',
+    title:'每日记账', icon:'🐷', daily:true, storageKey:'lifeapp_account',
     fields:[
       { key:'category', label:'类别', type:'text',     ph:'餐饮 / 交通 / 购物' },
       { key:'amount',   label:'金额', type:'number',   ph:'金额' },
@@ -199,28 +199,28 @@ const MODULES = {
     ]
   },
   daily: {
-    title:'每日计划', icon:'✅', daily:true, storageKey:'lifeapp_daily', notepad:true,
+    title:'每日计划', icon:'🌈', daily:true, storageKey:'lifeapp_daily', notepad:true,
     fields:[
       { key:'text', label:'计划内容', type:'text',     ph:'今天要做的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
     ]
   },
   year: {
-    title:'年度计划', icon:'🎯', daily:false, storageKey:'lifeapp_year',
+    title:'年度计划', icon:'🌟', daily:false, storageKey:'lifeapp_year',
     fields:[
       { key:'text', label:'年度目标', type:'text',     ph:'今年想完成的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
     ]
   },
   idea: {
-    title:'今日灵感', icon:'💡', daily:true, storageKey:'lifeapp_idea',
+    title:'今日灵感', icon:'✨', daily:true, storageKey:'lifeapp_idea',
     fields:[
       { key:'text',  label:'灵感文字', type:'textarea', ph:'突然想到的点子…' },
       { key:'image', label:'配图',     type:'image' }
     ]
   },
   review: {
-    title:'每日复盘', icon:'🌙', daily:true, storageKey:'lifeapp_review',
+    title:'每日复盘', icon:'🌜', daily:true, storageKey:'lifeapp_review',
     fields:[
       { key:'mood',     label:'今日心情', type:'text',     ph:'开心 / 一般 / 累' },
       { key:'summary',  label:'今日总结', type:'textarea', ph:'今天怎么样' },
@@ -230,7 +230,7 @@ const MODULES = {
 };
 
 // 左侧导航项：今日概览 + 所有模块
-const NAV = [{ key:'home', icon:'🏠', title:'今日概览' }].concat(
+const NAV = [{ key:'home', icon:'🏡', title:'今日概览' }].concat(
   Object.entries(MODULES).map(([key, m]) => ({ key, icon:m.icon, title:m.title }))
 );
 
@@ -492,7 +492,7 @@ function renderIdeaCard() {
   }
   return `
     <div class="idea-card" id="ideaCard" role="button" tabindex="0">
-      <div class="idea-head"><span>💡 每日灵感</span><span class="idea-count">今日 ${n} 条</span></div>
+      <div class="idea-head"><span>✨ 每日灵感</span><span class="idea-count">今日 ${n} 条</span></div>
       <div class="idea-body">${body}</div>
       <button class="idea-write" id="ideaWriteBtn" type="button">✏️ 写灵感</button>
     </div>`;
