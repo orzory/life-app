@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v26';
+const APP_VERSION = 'v27';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -76,23 +76,25 @@ function parseWorkoutText(text) {
         || t.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(\d{1,2})[:：](\d{2})/);
   if (dm) d.date = `${dm[1]}-${String(dm[2]).padStart(2,'0')}-${String(dm[3]).padStart(2,'0')}`;
 
-  // 距离：优先匹配「数字+公里/km/千米」且排除"小时/公里小时"
-  let dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)(?!\s*小时|\/小时)/i);
+  // 距离：华为详情页主距离在「运动时间」之前，且常为 x.xx 公里（单位常被 OCR 漏掉）。
+  // 后面的 8.01 公里/小时 是平均速度，不是距离，所以优先在 beforeDur 里找。
+  const beforeDur = (t.split(/运动时间|运动时长|用时|总消耗热量|总消耗/)[0] || t);
+  let dist = null;
+  const decimals = beforeDur.match(/(\d+\.\d+)/g) || [];
+  const bigDec = decimals.find(n => { const f = parseFloat(n); return f >= 1 && f < 100; });
+  if (bigDec) dist = { 1: bigDec };
+  else {
+    const nums = beforeDur.match(/(\d+)/g) || [];
+    const big = nums.find(n => {
+      const f = parseFloat(n);
+      return f >= 1 && f < 100 && n.length < 4;
+    });
+    if (big) dist = { 1: big };
+  }
+  // 如果 beforeDur 里实在没有，再全文匹配带单位的距离，但严格排除"小时/km/h"
   if (!dist) {
-    // 退而求其次：在运动时间/总消耗之前找主距离（华为详情页距离在最上面，单位常被 OCR 漏掉）
-    const beforeDur = (t.split(/运动时间|运动时长|用时|总消耗热量|总消耗/)[0] || t);
-    // 优先取小数（华为距离都是 x.xx 公里），避免抓到状态栏时间 22:54
-    const decimals = beforeDur.match(/(\d+\.\d+)/g) || [];
-    const bigDec = decimals.find(n => { const f = parseFloat(n); return f >= 1 && f < 100; });
-    if (bigDec) dist = { 1: bigDec };
-    else {
-      const nums = beforeDur.match(/(\d+)/g) || [];
-      const big = nums.find(n => {
-        const f = parseFloat(n);
-        return f >= 1 && f < 100 && n.length < 4;
-      });
-      if (big) dist = { 1: big };
-    }
+    const full = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)(?!\s*小时|\/小时|h)/i);
+    if (full) dist = full;
   }
   if (dist) d.distance = dist[1];
 
@@ -126,9 +128,16 @@ function parseWorkoutText(text) {
         || t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)(?:\s|$)/i);
   if (cad) d.cadence = cad[1].replace(/\s/g, '');
 
-  // 步数 14,582 步 / 14,582 上（"上"是"步"的 OCR 误识别）
-  const steps = t.match(/步数\s*[:：]?\s*([\d,]+)\s*(?:步|上)/);
-  if (steps) d.steps = steps[1].replace(/,/g, '');
+  // 步数：OCR 常把"步数""步"识别成别的字，这里匹配"四位/五位带逗号数字 + 步/上/止"
+  // 华为截图步数在底部，取最后一个符合条件的匹配更稳
+  const stepsMatches = [...t.matchAll(/([\d,]{4,6})\s*(?:步|上|止)/g)];
+  if (stepsMatches.length) {
+    d.steps = stepsMatches[stepsMatches.length - 1][1].replace(/,/g, '');
+  } else {
+    // 备选：至少看到"步数"或"步"字样
+    const steps = t.match(/步数?\s*[:：]?\s*([\d,]+)\s*(?:步|上|止)?/);
+    if (steps) d.steps = steps[1].replace(/,/g, '');
+  }
 
   // 类型：支持 OCR 空格拆分，如 "户外 跑步"
   if (/户外跑步|跑步|跑走结合/.test(t)) d.type = '跑步';
