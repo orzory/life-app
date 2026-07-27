@@ -920,7 +920,8 @@ function bindModule(key) {
 
 // ---------- 食物营养搜索（Open Food Facts，免费公开库） ----------
 async function searchFood(query) {
-  const url = `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}`
+  // 用中国节点，world 节点在国内经常维护/不可用
+  const url = `https://cn.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}`
     + `&fields=product_name,brands,nutriments,serving_quantity,image_front_url`
     + `&json=1&page_size=12`;
   const r = await fetch(url);
