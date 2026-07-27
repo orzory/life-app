@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v28';
+const APP_VERSION = 'v29';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -815,6 +815,8 @@ function fieldHTML(f) {
     return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*"></label>`;
   if (f.type === 'date')
     return `<label>${f.label}<input name="${f.key}" type="date" value="${f.defaultToday ? today() : ''}"></label>`;
+  if (f.type === 'number')
+    return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}"></label>`;
   return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}"></label>`;
 }
 
