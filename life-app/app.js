@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v22';
+const APP_VERSION = 'v23';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -1019,7 +1019,8 @@ window.addEventListener('load', () => {
   $('#overlay').addEventListener('click', closeDrawer);
   // 侧边栏底部显示当前版本号，方便确认是否加载到最新版
   const foot = document.querySelector('.sidebar-foot');
-  if (foot) foot.innerHTML = '数据仅存于本机 🔒 · ' + APP_VERSION;
+  if (foot) foot.innerHTML = '数据仅存于本机 🔒 · ' + APP_VERSION +
+    ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>';
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
   $('#ideaModal').addEventListener('click', e => { if (e.target.id === 'ideaModal') closeIdeaModal(); });
   $('#noteCancel').addEventListener('click', closeIdeaModal);
@@ -1028,6 +1029,27 @@ window.addEventListener('load', () => {
   render();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
+      const doUpdate = () => { try { reg.update(); } catch (e) {} };
+      // 页面可见时（从后台切回/重新打开）检查更新
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) doUpdate(); });
+      // 每隔 60 秒也检查一次，确保新版本能及时生效
+      setInterval(doUpdate, 60000);
+      // 「检查更新」按钮：手动强制检查并刷新
+      const btn = document.getElementById('checkUpdate');
+      if (btn) btn.addEventListener('click', () => {
+        btn.textContent = '更新中…';
+        doUpdate();
+        setTimeout(() => location.reload(), 1500);
+      });
+    }).catch(() => {});
+    // 当新 Service Worker 接管控制时，自动刷新页面加载最新版
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    });
   }
 });
