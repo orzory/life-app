@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v31';
+const APP_VERSION = 'v32';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -183,7 +183,7 @@ const MODULES = {
   sport: {
     title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport',
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
-    launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/' },
+    launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
     dailySummary:[ { key:'duration', label:'运动时长', unit:'分' }, { key:'distance', label:'距离', unit:'km' } ],
     // 上传运动截图做 OCR，自动识别华为健康等 App 的详情页数据
@@ -652,7 +652,12 @@ function renderModule(key) {
   // 模块附加上方：跳转到外部 App 的按钮 + 今日汇总
   let extra = '';
   if (m.launch) {
-    extra += `<a class="btn-launch" href="${m.launch.url}" target="_blank" rel="noopener">${m.launch.label}</a>`;
+    if (m.launch.scheme) {
+      // 优先用 scheme 唤起 App，失败（未安装）则在 1.8s 后回退到网页
+      extra += `<button class="btn-launch" type="button" data-scheme="${m.launch.scheme}" data-fallback="${m.launch.url}">${m.launch.label}</button>`;
+    } else {
+      extra += `<a class="btn-launch" href="${m.launch.url}" target="_blank" rel="noopener">${m.launch.label}</a>`;
+    }
   }
   if (m.dailySummary) {
     const todayList = list.filter(r => r.date === today());
@@ -1071,6 +1076,24 @@ function openDrawer()  { $('.sidebar').classList.add('open');  $('#overlay').cla
 function closeDrawer() { $('.sidebar').classList.remove('open'); $('#overlay').classList.remove('show'); }
 
 // ---------- 启动 ----------
+// 一键唤起外部 App（如华为运动健康）：点击带 data-scheme 的按钮时，
+// 先尝试用 scheme 唤起；若手机没装 App（页面未离开），1.8s 后回退到网页
+document.addEventListener('click', e => {
+  const btn = e.target.closest && e.target.closest('.btn-launch[data-scheme]');
+  if (!btn) return;
+  e.preventDefault();
+  const scheme = btn.getAttribute('data-scheme');
+  const fallback = btn.getAttribute('data-fallback') || '';
+  let left = false;
+  const onHide = () => { left = true; clearTimeout(timer); };
+  document.addEventListener('visibilitychange', onHide, { once: true });
+  const timer = setTimeout(() => {
+    if (!left && fallback) window.location.href = fallback;
+  }, 1800);
+  // 尝试唤起 App（iOS 会弹「是否打开？」确认框；安卓直接唤起）
+  window.location.href = scheme;
+});
+
 window.addEventListener('hashchange', render);
 window.addEventListener('load', () => {
   $('#menuBtn').addEventListener('click', openDrawer);
