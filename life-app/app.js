@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v24';
+const APP_VERSION = 'v25';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -63,8 +63,8 @@ function formatPace(sec) {
 function parseWorkoutText(text) {
   const d = {};
   let t = text.replace(/\s+/g, ' ');
-  // OCR 常见纠错：二卡→千卡，/里→/公里（OCR 常把"公里"漏成"里"）
-  t = t.replace(/二卡/g, '千卡');
+  // OCR 常见纠错：二卡/二 卡→千卡；/里→/公里（OCR 常把"公里"漏成"里"）
+  t = t.replace(/二\s*卡/g, '千卡');
 
   // 日期时间：2026年7月25日 06:58 / 2026-07-25
   const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/)
@@ -75,13 +75,20 @@ function parseWorkoutText(text) {
   let dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)\b(?!\s*小时|\/小时)/i);
   if (!dist) {
     // 退而求其次：在运动时间/总消耗之前找主距离（华为详情页距离在最上面，单位常被 OCR 漏掉）
-    const beforeDur = (t.split(/运动时间|运动时长|用时|总消耗热量|总消耗/)[0] || t);
-    const nums = beforeDur.match(/(\d+(?:\.\d+)?)/g) || [];
-    const big = nums.find(n => {
-      const f = parseFloat(n);
-      return f >= 1 && f < 100 && (n.includes('.') || n.length < 4);
-    });
-    if (big) dist = { 1: big };
+    // 注意 OCR 会把"运动时间"拆成"运动 时 间"，所以 split 模式要允许空格
+    const beforeDur = (t.split(/运\s*动\s*时\s*间|运\s*动\s*时\s*长|用\s*时|总\s*消\s*耗\s*热\s*量|总\s*消\s*耗/)[0] || t);
+    // 优先取小数（华为距离都是 x.xx 公里），避免抓到状态栏时间 22:54
+    const decimals = beforeDur.match(/(\d+\.\d+)/g) || [];
+    const bigDec = decimals.find(n => { const f = parseFloat(n); return f >= 1 && f < 100; });
+    if (bigDec) dist = { 1: bigDec };
+    else {
+      const nums = beforeDur.match(/(\d+)/g) || [];
+      const big = nums.find(n => {
+        const f = parseFloat(n);
+        return f >= 1 && f < 100 && n.length < 4;
+      });
+      if (big) dist = { 1: big };
+    }
   }
   if (dist) d.distance = dist[1];
 
@@ -90,39 +97,39 @@ function parseWorkoutText(text) {
         || t.match(/(\d{1,2}:\d{2}:\d{2})/);
   if (dur) d.duration = String(parseDurationToMin(dur[1]));
 
-  // 热量：优先匹配「数字+千卡/kcal/大卡/二卡」
-  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡|二卡)\b/i);
+  // 热量：优先匹配「数字+千卡/kcal/大卡」
+  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)\b/i);
   const cal = calWithUnit
         || t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+(?:\.\d+)?)/i);
   if (cal) d.calories = String(parseInt(cal[1], 10));
 
-  // 配速：7'30" / 7 30 / 7:30 / 7.30 /km / 7 30 /里
-  const pace = t.match(/(?:平均配速|配速)?\s*[:：]?\s*(\d{1,2})\s*['′:\s]\s*(\d{1,2})\s*["″]?\s*(?:\/(?:公里|里|km))?/)
-        || t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d{1,2})[\.'′](\d{1,2})/);
+  // 配速：必须以 /公里 /里 /km 或 " 结尾，避免抓到状态栏时间 22:54
+  const pace = t.match(/(?:平均配速|配速)?\s*[:：]?\s*(\d{1,2})\s*['′:\s]\s*(\d{1,2})\s*["″]?\s*\/\s*(?:公里|里|km)\b/i)
+        || t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d{1,2})\s*['′]\s*(\d{1,2})\s*["″]?/);
   if (pace) {
     const min = pace[1];
     const sec = pace[2];
     d.pace = `${min}'${sec.padStart(2, '0')}`;
   }
 
-  // 心率：优先匹配「数字 + 次/分钟/bpm」，其次「心率 数字」
-  const hr = t.match(/(?:平均心率|心率)?\s*(\d{2,3})\s*(?:次?[/／]分钟|bpm|次\/分)\b/i)
+  // 心率：支持「次 /分 钟」「次/分钟」「bpm」及空格拆分
+  const hr = t.match(/(?:平均心率|心率)?\s*(\d{2,3})\s*次?\s*[/／]\s*分\s*钟\b/i)
         || t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d{2,3})\b/i);
   if (hr) d.avgHr = hr[1];
 
-  // 步频：匹配「数字（可带空格）+ 步/分钟」，去空格
-  const cad = t.match(/(\d[\d\s]*\d)\s*步[/／]分钟\b/i)
+  // 步频：支持「步 /分 钟」「步/分钟」及空格拆分
+  const cad = t.match(/(\d[\d\s]*\d)\s*步\s*[/／]\s*分\s*钟\b/i)
         || t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)\b/i);
   if (cad) d.cadence = cad[1].replace(/\s/g, '');
 
-  // 步数 14,582 步
-  const steps = t.match(/步数\s*[:：]?\s*([\d,]+)\s*步/);
+  // 步数 14,582 步 / 14,582 上（"上"是"步"的 OCR 误识别）
+  const steps = t.match(/步\s*数\s*[:：]?\s*([\d,]+)\s*(?:步|上)/);
   if (steps) d.steps = steps[1].replace(/,/g, '');
 
-  // 类型
-  if (/户外跑步|跑步|跑走结合/.test(t)) d.type = '跑步';
-  else if (/户外步行|步行|走路/.test(t)) d.type = '步行';
-  else if (/骑行|骑车|自行车/.test(t)) d.type = '骑行';
+  // 类型：支持 OCR 空格拆分，如 "户外 跑步"
+  if (/户\s*外\s*跑\s*步|跑\s*步|跑走结合/.test(t)) d.type = '跑步';
+  else if (/户\s*外\s*步\s*行|步\s*行|走路/.test(t)) d.type = '步行';
+  else if (/骑\s*行|骑车|自行车/.test(t)) d.type = '骑行';
   return d;
 }
 
