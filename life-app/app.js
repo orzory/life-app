@@ -305,12 +305,15 @@ async function getCoords() {
   });
 }
 
+// 20:00 后自动切到「分析明天」模式
+const isEveningMode = () => new Date().getHours() >= 20;
+
 async function fetchWeather() {
   const c = await getCoords();
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}`
     + `&current=temperature_2m,relative_humidity_2m,weather_code`
     + `&hourly=temperature_2m,relative_humidity_2m,precipitation_probability`
-    + `&timezone=auto&forecast_days=1`;
+    + `&timezone=auto&forecast_days=2`;
   const [wx, geo] = await Promise.all([
     fetch(url).then(r => r.json()),
     c.fromGeo
@@ -319,31 +322,39 @@ async function fetchWeather() {
   ]);
   const city = (c.fromGeo && geo && (geo.city || geo.locality))
     ? (geo.city || geo.locality) : (c.city || '广州');
-  return analyzeWeather(wx, city);
+  return analyzeWeather(wx, city, isEveningMode());
 }
 
-// 根据今日逐小时温/湿/降水，挑最适合户外跑的时段
-function analyzeWeather(wx, city) {
+// 根据逐小时温/湿/降水，挑最适合户外跑的时段
+// forTomorrow=true（每天 20:00 后）→ 分析明天 5–21 点；否则分析今天剩余时段
+function analyzeWeather(wx, city, forTomorrow) {
   const cur = wx.current || {};
   const temp = cur.temperature_2m;
   const humidity = cur.relative_humidity_2m;
   const code = cur.weather_code ?? 0;
   const condition = WMO[code] || '未知';
+  const dayLabel = forTomorrow ? '明日' : '今日';
 
   const times = (wx.hourly && wx.hourly.time) || [];
   const temps = (wx.hourly && wx.hourly.temperature_2m) || [];
   const hums  = (wx.hourly && wx.hourly.relative_humidity_2m) || [];
   const pops  = (wx.hourly && wx.hourly.precipitation_probability) || [];
   if (temp === undefined || temp === null) {
-    return { city, temp:null, humidity:null, condition, bestWindow:'—', note:'天气数据暂不可用' };
+    return { city, temp:null, humidity:null, condition, dayLabel, bestWindow:'—', note:'天气数据暂不可用' };
   }
 
+  // 目标日期：今天 or 明天（本地时区 YYYY-MM-DD）
+  const target = new Date();
+  if (forTomorrow) target.setDate(target.getDate() + 1);
+  const targetDate = `${target.getFullYear()}-${pad2(target.getMonth()+1)}-${pad2(target.getDate())}`;
+
   const nowH = new Date().getHours();
+  const minH = forTomorrow ? 5 : Math.max(5, nowH);  // 明天从早5点起；今天从当前小时起
   const rows = [];
   for (let i = 0; i < times.length; i++) {
+    if (times[i].slice(0,10) !== targetDate) continue;
     const hh = parseInt(times[i].slice(11,13), 10);
-    if (hh < Math.max(5, nowH)) continue;  // 从当前或早 5 点起
-    if (hh > 21) break;                     // 不超过 21 点
+    if (hh < minH || hh > 21) continue;               // 只看 5–21 点
     rows.push({ hh, temp:temps[i], hum:hums[i], pop:pops[i] ?? 0 });
   }
 
@@ -356,7 +367,7 @@ function analyzeWeather(wx, city) {
   if (runStart !== null) runs.push([runStart, runEnd]);
 
   if (!rows.length) {
-    return { city, temp, humidity, condition, bestWindow:'明早 🌅', note:'今天已较晚，建议明早再跑' };
+    return { city, temp, humidity, condition, dayLabel, bestWindow:'明早 🌅', note:'今天已较晚，建议明早再跑' };
   }
   if (runs.length) {
     runs.sort((a,b) => (b[1]-b[0]) - (a[1]-a[0]));   // 最长舒适窗口优先
@@ -364,7 +375,7 @@ function analyzeWeather(wx, city) {
     const win = rows.filter(r => r.hh >= s && r.hh <= e);
     const avgT = win.reduce((a,r)=>a+r.temp,0) / win.length;
     const avgH = win.reduce((a,r)=>a+r.hum,0) / win.length;
-    return { city, temp, humidity, condition,
+    return { city, temp, humidity, condition, dayLabel,
       bestWindow: `${fmtH(s)}–${fmtH(e)}`,
       note: `气温约 ${Math.round(avgT)}℃、湿度 ${Math.round(avgH)}%，体感舒适，适合户外跑` };
   }
@@ -375,9 +386,9 @@ function analyzeWeather(wx, city) {
     const bs = Math.abs(best.temp-20) + best.hum/20 + best.pop/10;
     if (sc < bs) best = r;
   }
-  return { city, temp, humidity, condition,
+  return { city, temp, humidity, condition, dayLabel,
     bestWindow: fmtH(best.hh),
-    note: `今日条件一般（${Math.round(best.temp)}℃ / 湿度${Math.round(best.hum)}%），这是相对最适宜的时段` };
+    note: `${dayLabel}条件一般（${Math.round(best.temp)}℃ / 湿度${Math.round(best.hum)}%），这是相对最适宜的时段` };
 }
 
 function renderWeatherInner(d) {
@@ -394,7 +405,7 @@ function renderWeatherInner(d) {
     </div>
     <div class="wx-run">
       <div class="wx-run-line">
-        <span class="wx-run-title">🏃 今日最佳户外跑步时段</span>
+        <span class="wx-run-title">🏃 ${d.dayLabel || '今日'}最佳户外跑步时段</span>
         <span class="wx-run-time">${d.bestWindow}</span>
       </div>
       <div class="wx-run-note">${d.note}</div>
@@ -404,7 +415,8 @@ function renderWeatherInner(d) {
 async function refreshWeather() {
   const card = $('#weatherCard');
   if (!card) return;
-  if (weatherCache && weatherCache.date === today()) {
+  // 缓存按「天 + 早晚模式」双重判断：20:00 一过自动失效，重新分析明天
+  if (weatherCache && weatherCache.date === today() && weatherCache.evening === isEveningMode()) {
     card.innerHTML = renderWeatherInner(weatherCache);
     return;
   }
@@ -412,6 +424,7 @@ async function refreshWeather() {
   try {
     const data = await fetchWeather();
     data.date = today();
+    data.evening = isEveningMode();
     weatherCache = data;
     const c2 = $('#weatherCard');
     if (c2) c2.innerHTML = renderWeatherInner(data);
