@@ -63,7 +63,7 @@ body{
 
 /* ---- 概览：时钟 ---- */
 .hero{
-  background:linear-gradient(135deg,#fff3c4,#ffe9a8);
+  background:#fffbe9;
   border-radius:18px; padding:20px; text-align:center;
   box-shadow:0 2px 10px rgba(245,179,1,.18);
 }
