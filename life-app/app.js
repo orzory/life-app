@@ -934,38 +934,79 @@ function bindModule(key) {
 }
 
 // ---------- 食物营养搜索（Open Food Facts，免费公开库） ----------
+// 常见中文食物 → 英文关键词（Open Food Facts 对英文搜索更准）
+const FOOD_EN = {
+  '鸡蛋':'egg', '蛋白':'egg white', '蛋黄':'egg yolk',
+  '牛奶':'milk', '酸奶':'yogurt', '奶粉':'milk powder',
+  '米饭':'rice', '白米饭':'white rice', '糙米饭':'brown rice', '糙米':'brown rice',
+  '面条':'noodles', '方便面':'instant noodles', '馒头':'steamed bun', '花卷':'steamed roll',
+  '面包':'bread', '吐司':'toast', '全麦面包':'whole wheat bread', '贝果':'bagel',
+  '燕麦':'oats', '燕麦片':'oatmeal', '麦片':'cereal',
+  '红薯':'sweet potato', '紫薯':'purple sweet potato', '土豆':'potato', '玉米':'corn',
+  '西红柿':'tomato', '番茄':'tomato', '黄瓜':'cucumber', '胡萝卜':'carrot',
+  '菠菜':'spinach', '生菜':'lettuce', '西兰花':'broccoli', '花菜':'cauliflower',
+  '白菜':'chinese cabbage', '卷心菜':'cabbage', '青椒':'green pepper', '辣椒':'chili',
+  '洋葱':'onion', '大蒜':'garlic', '葱':'scallion', '姜':'ginger',
+  '猪肉':'pork', '牛肉':'beef', '羊肉':'lamb', '鸡肉':'chicken',
+  '鸡胸肉':'chicken breast', '鸡腿':'chicken leg', '鸡翅':'chicken wing', '鸡爪':'chicken feet',
+  '鱼':'fish', '三文鱼':'salmon', '金枪鱼':'tuna', '虾':'shrimp', '虾仁':'shrimp',
+  '蟹':'crab', '鱿鱼':'squid', '豆腐':'tofu', '豆干':'dried tofu', '腐竹':'tofu skin',
+  '豆浆':'soy milk', '毛豆':'edamame',
+  '苹果':'apple', '香蕉':'banana', '橙子':'orange', '橘子':'mandarin', '葡萄':'grape',
+  '西瓜':'watermelon', '草莓':'strawberry', '蓝莓':'blueberry', '梨':'pear', '桃':'peach',
+  '芒果':'mango', '菠萝':'pineapple', '猕猴桃':'kiwi',
+  '坚果':'nuts', '花生':'peanut', '核桃':'walnut', '杏仁':'almond', '腰果':'cashew',
+  '可乐':'cola', '雪碧':'sprite', '水':'water', '矿泉水':'mineral water',
+  '咖啡':'coffee', '美式':'americano', '拿铁':'latte', '奶茶':'milk tea',
+  '茶':'tea', '绿茶':'green tea', '红茶':'black tea', '乌龙茶':'oolong tea',
+  '啤酒':'beer', '红酒':'red wine', '白酒':'liquor',
+  '巧克力':'chocolate', '饼干':'biscuit', '薯片':'potato chips', '蛋糕':'cake',
+  '蛋挞':'egg tart', '冰淇淋':'ice cream', '糖果':'candy',
+  '蜂蜜':'honey', '酱油':'soy sauce', '醋':'vinegar',
+  '盐':'salt', '糖':'sugar', '白糖':'white sugar', '红糖':'brown sugar',
+  '油':'oil', '橄榄油':'olive oil', '花生油':'peanut oil', '菜籽油':'rapeseed oil',
+  '黄油':'butter', '芝士':'cheese', '奶酪':'cheese', '奶油':'cream',
+  '芝麻酱':'sesame paste', '花生酱':'peanut butter', '番茄酱':'ketchup', '沙拉酱':'salad dressing'
+};
+
 async function searchFood(query) {
   const fields = 'product_name,brands,nutriments,serving_quantity,image_front_url';
   const suffix = `&fields=${fields}&json=1&page_size=12`;
-  const q = encodeURIComponent(query);
-  // 多节点 fallback：world 和 cn 节点经常互为主备，哪个通就用哪个
-  const endpoints = [
-    `https://world.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`,
-    `https://cn.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`
-  ];
+  const raw = query.trim();
+  const en = FOOD_EN[raw] || '';
+  const terms = [...new Set([en, raw].filter(Boolean))];
+  const hosts = ['world', 'cn'];
   let lastErr = null;
-  for (const url of endpoints) {
-    try {
-      const r = await fetch(url);
-      if (!r.ok) { lastErr = new Error(`${url} HTTP ${r.status}`); continue; }
-      const d = await r.json();
-      return (d.products || []).map(p => {
-        const n = p.nutriments || {};
-        let kcal = Number(n['energy-kcal_100g']);
-        if (!kcal) { const kj = Number(n['energy_100g']); if (kj) kcal = kj / 4.184; }
-        return {
-          name: p.product_name || '未命名',
-          brand: p.brands || '',
-          kcal: Math.round(kcal || 0),
-          protein: Math.round(Number(n['proteins_100g']) || 0),
-          fat: Math.round(Number(n['fat_100g']) || 0),
-          carbs: Math.round(Number(n['carbohydrates_100g']) || 0),
-          img: p.image_front_url || ''
-        };
-      });
-    } catch (e) { lastErr = e; }
+
+  for (const term of terms) {
+    const q = encodeURIComponent(term);
+    for (const host of hosts) {
+      const url = `https://${host}.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`;
+      try {
+        const r = await fetch(url);
+        if (!r.ok) { lastErr = new Error(`${host} HTTP ${r.status}`); continue; }
+        const d = await r.json();
+        const products = (d.products || []).filter(p => p.product_name);
+        if (products.length) {
+          return products.map(p => {
+            const n = p.nutriments || {};
+            let kcal = Number(n['energy-kcal_100g']);
+            if (!kcal) { const kj = Number(n['energy_100g']); if (kj) kcal = kj / 4.184; }
+            return {
+              name: p.product_name || '未命名',
+              brand: p.brands || '',
+              kcal: Math.round(kcal || 0),
+              protein: Math.round(Number(n['proteins_100g']) || 0),
+              fat: Math.round(Number(n['fat_100g']) || 0),
+              carbs: Math.round(Number(n['carbohydrates_100g']) || 0),
+              img: p.image_front_url || ''
+            };
+          });
+        }
+      } catch (e) { lastErr = e; }
+    }
   }
-  throw lastErr || new Error('all endpoints failed');
+  throw lastErr || new Error('未找到相关食物');
 }
 
 function renderFoodResults(items) {
