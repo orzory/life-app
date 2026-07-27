@@ -1,6 +1,6 @@
 /* Service Worker：app 文件缓存到手机，断网也能开。
    策略：在线时 network-first（拉最新，改完刷新即生效）；离线时回退缓存。 */
-const CACHE = 'lifeapp-v30';
+const CACHE = 'lifeapp-v31';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
