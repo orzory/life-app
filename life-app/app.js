@@ -438,7 +438,6 @@ function renderHome() {
     const ok = isCheckedToday(m);
     return `<a href="#/${key}" class="check-row ${ok ? 'done' : ''}">
       <span class="box ${ok ? 'checked' : ''}">${ok ? '✓' : ''}</span>
-      <span class="row-icon">${m.icon}</span>
       <span class="row-title">${m.title}</span>
     </a>`;
   }).join('');
