@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v23';
+const APP_VERSION = 'v24';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -62,38 +62,63 @@ function formatPace(sec) {
 // 从 OCR 文本中解析华为健康/Keep 等运动详情页数据
 function parseWorkoutText(text) {
   const d = {};
-  const t = text.replace(/\s+/g, ' ');
+  let t = text.replace(/\s+/g, ' ');
+  // OCR 常见纠错：二卡→千卡，/里→/公里（OCR 常把"公里"漏成"里"）
+  t = t.replace(/二卡/g, '千卡');
+
   // 日期时间：2026年7月25日 06:58 / 2026-07-25
   const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/)
         || t.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(\d{1,2})[:：](\d{2})/);
   if (dm) d.date = `${dm[1]}-${String(dm[2]).padStart(2,'0')}-${String(dm[3]).padStart(2,'0')}`;
-  // 距离：必须带单位（公里/km/千米），避免抓到无关数字
-  const dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)\b/i);
+
+  // 距离：优先匹配「数字+公里/km/千米」且排除"小时/公里小时"
+  let dist = t.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)\b(?!\s*小时|\/小时)/i);
+  if (!dist) {
+    // 退而求其次：在运动时间/总消耗之前找主距离（华为详情页距离在最上面，单位常被 OCR 漏掉）
+    const beforeDur = (t.split(/运动时间|运动时长|用时|总消耗热量|总消耗/)[0] || t);
+    const nums = beforeDur.match(/(\d+(?:\.\d+)?)/g) || [];
+    const big = nums.find(n => {
+      const f = parseFloat(n);
+      return f >= 1 && f < 100 && (n.includes('.') || n.length < 4);
+    });
+    if (big) dist = { 1: big };
+  }
   if (dist) d.distance = dist[1];
+
   // 运动时间：01:23:11 / 1:23:11 / 运动时长 01:23:11
   const dur = t.match(/(?:运动时间|运动时长|用时)\s*[:：]?\s*(\d{1,2}:\d{2}:\d{2})/)
         || t.match(/(\d{1,2}:\d{2}:\d{2})/);
   if (dur) d.duration = String(parseDurationToMin(dur[1]));
-  // 热量：优先匹配「数字+千卡/kcal/大卡」，避免 OCR 排版错乱时抓到前面的无关数字
-  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)\b/i);
+
+  // 热量：优先匹配「数字+千卡/kcal/大卡/二卡」
+  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡|二卡)\b/i);
   const cal = calWithUnit
         || t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+(?:\.\d+)?)/i);
   if (cal) d.calories = String(parseInt(cal[1], 10));
-  // 配速：7'30" / 7'30 / 7:30 / 7.30 /km
-  const pace = t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d+['′:]\d{1,2}["″]?)/)
+
+  // 配速：7'30" / 7 30 / 7:30 / 7.30 /km / 7 30 /里
+  const pace = t.match(/(?:平均配速|配速)?\s*[:：]?\s*(\d{1,2})\s*['′:\s]\s*(\d{1,2})\s*["″]?\s*(?:\/(?:公里|里|km))?/)
         || t.match(/(?:平均配速|配速)\s*[:：]?\s*(\d{1,2})[\.'′](\d{1,2})/);
-  if (pace) d.pace = pace[0].replace(/[:：]/g, "'").replace(/["″]/g, '');
-  // 心率：必须带单位（次/分钟/bpm/次/分），避免抓到无关数字
-  const hr = t.match(/(?:平均心率|心率)?\s*(\d+)\s*(?:次?[/／]分钟|bpm|次\/分)\b/i)
-        || t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d+)\b/i);
+  if (pace) {
+    const min = pace[1];
+    const sec = pace[2];
+    d.pace = `${min}'${sec.padStart(2, '0')}`;
+  }
+
+  // 心率：优先匹配「数字 + 次/分钟/bpm」，其次「心率 数字」
+  const hr = t.match(/(?:平均心率|心率)?\s*(\d{2,3})\s*(?:次?[/／]分钟|bpm|次\/分)\b/i)
+        || t.match(/(?:平均心率|心率)\s*[:：]?\s*(\d{2,3})\b/i);
   if (hr) d.avgHr = hr[1];
-  // 步频：必须带单位（步/分钟），避免抓到无关数字
-  const cad = t.match(/(?:平均步频|步频)?\s*(\d+)\s*步[/／]分钟\b/i)
+
+  // 步频：匹配「数字（可带空格）+ 步/分钟」，去空格
+  const cad = t.match(/(\d[\d\s]*\d)\s*步[/／]分钟\b/i)
         || t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)\b/i);
-  if (cad) d.cadence = cad[1];
+  if (cad) d.cadence = cad[1].replace(/\s/g, '');
+
   // 步数 14,582 步
   const steps = t.match(/步数\s*[:：]?\s*([\d,]+)\s*步/);
   if (steps) d.steps = steps[1].replace(/,/g, '');
+
   // 类型
   if (/户外跑步|跑步|跑走结合/.test(t)) d.type = '跑步';
   else if (/户外步行|步行|走路/.test(t)) d.type = '步行';
@@ -873,9 +898,17 @@ function bindModule(key) {
         if (shotEl) shotEl.value = dataURL;
         const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
         if (ocrStatus) {
-          const rawPreview = ret.data.text.replace(/\n/g, ' | ').slice(0, 250);
+          const rawOneLine = ret.data.text.replace(/\n/g, ' | ');
+          const rawPreview = rawOneLine.slice(0, 800);
           ocrStatus.innerHTML = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写') +
-            '<br><small style="opacity:.7">原始：' + rawPreview + (ret.data.text.length > 250 ? '…' : '') + '</small>';
+            '<br><small style="opacity:.7;display:block;word-break:break-all;">原始：' + rawPreview + (rawOneLine.length > 800 ? '…' : '') + '</small>' +
+            '<br><small><a href="javascript:void(0)" id="copyRawOcr" style="color:inherit;text-decoration:underline">复制完整原始文本</a></small>';
+          const copyBtn = document.getElementById('copyRawOcr');
+          if (copyBtn && navigator.clipboard) {
+            copyBtn.addEventListener('click', () => {
+              navigator.clipboard.writeText(ret.data.text).then(() => { copyBtn.textContent = '已复制'; });
+            });
+          }
         }
       } catch (err) {
         console.error('OCR error:', err);
