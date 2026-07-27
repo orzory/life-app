@@ -935,26 +935,37 @@ function bindModule(key) {
 
 // ---------- 食物营养搜索（Open Food Facts，免费公开库） ----------
 async function searchFood(query) {
-  // 用中国节点，world 节点在国内经常维护/不可用
-  const url = `https://cn.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}`
-    + `&fields=product_name,brands,nutriments,serving_quantity,image_front_url`
-    + `&json=1&page_size=12`;
-  const r = await fetch(url);
-  const d = await r.json();
-  return (d.products || []).map(p => {
-    const n = p.nutriments || {};
-    let kcal = Number(n['energy-kcal_100g']);
-    if (!kcal) { const kj = Number(n['energy_100g']); if (kj) kcal = kj / 4.184; }
-    return {
-      name: p.product_name || '未命名',
-      brand: p.brands || '',
-      kcal: Math.round(kcal || 0),
-      protein: Math.round(Number(n['proteins_100g']) || 0),
-      fat: Math.round(Number(n['fat_100g']) || 0),
-      carbs: Math.round(Number(n['carbohydrates_100g']) || 0),
-      img: p.image_front_url || ''
-    };
-  });
+  const fields = 'product_name,brands,nutriments,serving_quantity,image_front_url';
+  const suffix = `&fields=${fields}&json=1&page_size=12`;
+  const q = encodeURIComponent(query);
+  // 多节点 fallback：world 和 cn 节点经常互为主备，哪个通就用哪个
+  const endpoints = [
+    `https://world.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`,
+    `https://cn.openfoodfacts.org/api/v2/search?search_terms=${q}${suffix}`
+  ];
+  let lastErr = null;
+  for (const url of endpoints) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) { lastErr = new Error(`${url} HTTP ${r.status}`); continue; }
+      const d = await r.json();
+      return (d.products || []).map(p => {
+        const n = p.nutriments || {};
+        let kcal = Number(n['energy-kcal_100g']);
+        if (!kcal) { const kj = Number(n['energy_100g']); if (kj) kcal = kj / 4.184; }
+        return {
+          name: p.product_name || '未命名',
+          brand: p.brands || '',
+          kcal: Math.round(kcal || 0),
+          protein: Math.round(Number(n['proteins_100g']) || 0),
+          fat: Math.round(Number(n['fat_100g']) || 0),
+          carbs: Math.round(Number(n['carbohydrates_100g']) || 0),
+          img: p.image_front_url || ''
+        };
+      });
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('all endpoints failed');
 }
 
 function renderFoodResults(items) {
@@ -998,7 +1009,7 @@ async function doFoodSearch() {
     const items = await searchFood(term);
     renderFoodResults(items);
   } catch (e) {
-    box.innerHTML = '<div class="fs-empty">⚠️ 搜索失败，请检查网络</div>';
+    box.innerHTML = `<div class="fs-empty">⚠️ 搜索失败：${escapeHtml((e && e.message) || '网络异常').slice(0, 80)}</div>`;
   }
 }
 
