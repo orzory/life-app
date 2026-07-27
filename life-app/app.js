@@ -1,5 +1,8 @@
 'use strict';
 
+// 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
+const APP_VERSION = 'v20';
+
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
    数据全部存在手机本地 localStorage，不上传任何服务器。
@@ -910,7 +913,8 @@ function bindModule(key) {
     const npAdd = $('#np-add');
     if (npAdd) npAdd.addEventListener('submit', e => {
       e.preventDefault();
-      const text = e.target.text.value.trim();
+      const input = npAdd.querySelector('input[name="text"]');
+      const text = (input ? input.value : '').trim();
       if (!text) return;
       const arr = load(m.storageKey);
       arr.unshift({ id: uid(), text, done: false, date: today() });
@@ -1002,6 +1006,9 @@ window.addEventListener('hashchange', render);
 window.addEventListener('load', () => {
   $('#menuBtn').addEventListener('click', openDrawer);
   $('#overlay').addEventListener('click', closeDrawer);
+  // 侧边栏底部显示当前版本号，方便确认是否加载到最新版
+  const foot = document.querySelector('.sidebar-foot');
+  if (foot) foot.innerHTML = '数据仅存于本机 🔒 · ' + APP_VERSION;
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
   $('#ideaModal').addEventListener('click', e => { if (e.target.id === 'ideaModal') closeIdeaModal(); });
   $('#noteCancel').addEventListener('click', closeIdeaModal);
