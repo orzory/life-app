@@ -2,12 +2,12 @@
    策略（v104）：stale-while-revalidate
    - 有缓存时「先秒开返回缓存」，同时后台静默拉最新更新缓存（下次打开即新版本）；
    - 无缓存时才等网络；离线时回退缓存。
-   - 字体请求直连网络，避开 iOS 把 SW 缓存的 206 字体拒绝应用的坑（见 v103）。
+   - 中文字体已 base64 内联进 style.css（v109），不再有独立字体请求，从根上避开 iOS 字体缓存坑。
    健壮性：
    - install 逐个缓存，单个失败不影响整体；
    - 只缓存「同源 + 200」响应，绝不把错误页 / HTML 当 JS/CSS 存。 */
-const CACHE = 'lifeapp-v108';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './SentyDonut.woff2'];
+const CACHE = 'lifeapp-v109';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
@@ -34,12 +34,6 @@ function stripSearch(url) {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const req = e.request;
-
-  // 字体直连网络：避开 iOS SW 缓存 206 导致甜甜圈体不生效的坑
-  if (req.destination === 'font') {
-    e.respondWith(fetch(req));
-    return;
-  }
 
   e.respondWith((async () => {
     const sameOrigin = new URL(req.url).origin === self.location.origin;
