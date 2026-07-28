@@ -232,6 +232,17 @@ body{
 .day-rec .btn-del{margin-top:8px;}
 .day-actions{display:flex; gap:10px; margin-top:14px;}
 
+/* ---- 运动记录录入弹窗 ---- */
+.sport-form-modal{background:#fffef9; max-width:460px; max-height:85vh; display:flex; flex-direction:column;}
+.sport-form-modal .day-head{flex-shrink:0;}
+.sport-form-modal .modal-form{flex:1; overflow-y:auto; margin:0 0 10px; padding:16px; border-radius:16px;}
+.sport-form-modal .day-actions{flex-shrink:0; margin-top:0;}
+.form-trigger-box{margin-bottom:16px;}
+.form-trigger-box .ocr-box{margin-bottom:10px;}
+.btn-add-record{margin-bottom:10px;}
+.btn-reset-inline{margin-top:0; font-size:13px; padding:9px; background:transparent; border-color:transparent; color:var(--muted); text-decoration:underline;}
+.btn-reset-inline:active{background:#fff3cf;}
+
 /* ---- 表单 ---- */
 .add-form{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .add-form label{display:block; font-size:13px; color:var(--muted); margin:10px 0 4px;}
