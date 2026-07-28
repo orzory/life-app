@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v36';
+const APP_VERSION = 'v37';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -196,7 +196,7 @@ const MODULES = {
     ]
   },
   sport: {
-    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport', calendar:true,
+    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport', calendar:true, modalForm:true,
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
     launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
@@ -819,15 +819,24 @@ function renderModule(key) {
   // 进入带月历的模块时，默认回到当前月份（主动翻月后离开再回来则重置）
   if (m.calendar) sportCalView = currentMonthView();
 
+  // 弹窗表单：截图识别或点按钮后弹出，提交后隐藏（目前仅运动模块）
+  const formSection = m.modalForm
+    ? `<div class="form-trigger-box">
+        ${ocrHtml}
+        <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
+        ${resetBtn ? `<button type="button" id="reset-today" class="btn-reset btn-reset-inline">🧹 清空今日</button>` : ''}
+      </div>`
+    : `${ocrHtml}
+      <form id="add-form" class="add-form">
+        ${formHtml}
+        <button type="submit" class="btn-primary">+ 添加</button>
+        ${resetBtn}
+      </form>`;
+
   return `
     <h2 class="sec-title">${m.icon} ${m.title}</h2>
     ${extra}
-    ${ocrHtml}
-    <form id="add-form" class="add-form">
-      ${formHtml}
-      <button type="submit" class="btn-primary">+ 添加</button>
-      ${resetBtn}
-    </form>
+    ${formSection}
     ${m.calendar
       ? `<div id="calendarWrap">${renderCalendar(m, list)}</div>`
       : `<div class="list" id="list">${itemsHtml}</div>`}
@@ -836,19 +845,21 @@ function renderModule(key) {
     ${monthHtml}`;
 }
 
-function fieldHTML(f) {
-  if (f.hidden) return `<input type="hidden" name="${f.key}" value="">`;
+function fieldHTML(f, val = '') {
+  if (f.hidden) return `<input type="hidden" name="${f.key}" value="${escapeHtml(String(val))}">`;
   if (f.type === 'textarea')
-    return `<label>${f.label}<textarea name="${f.key}" placeholder="${f.ph||''}"></textarea></label>`;
+    return `<label>${f.label}<textarea name="${f.key}" placeholder="${f.ph||''}">${escapeHtml(String(val))}</textarea></label>`;
   if (f.type === 'checkbox')
-    return `<label class="cb"><input type="checkbox" name="${f.key}"> ${f.label}</label>`;
+    return `<label class="cb"><input type="checkbox" name="${f.key}" ${val ? 'checked' : ''}> ${f.label}</label>`;
   if (f.type === 'image')
     return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*"></label>`;
-  if (f.type === 'date')
-    return `<label>${f.label}<input name="${f.key}" type="date" value="${f.defaultToday ? today() : ''}"></label>`;
+  if (f.type === 'date') {
+    const v = val || (f.defaultToday ? today() : '');
+    return `<label>${f.label}<input name="${f.key}" type="date" value="${escapeHtml(String(v))}"></label>`;
+  }
   if (f.type === 'number')
-    return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}"></label>`;
-  return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}"></label>`;
+    return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
+  return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
 }
 
 function itemHTML(m, item) {
@@ -983,6 +994,19 @@ function openSportDayModal(dateStr) {
 }
 function closeSportDayModal() { $('#sportDayModal').classList.remove('show'); }
 
+function openSportFormModal(prefill = {}) {
+  const m = MODULES.sport;
+  const formHtml = m.fields.map(f => fieldHTML(f, prefill[f.key] !== undefined ? prefill[f.key] : '')).join('');
+  const form = $('#sport-form');
+  if (!form) return;
+  form.innerHTML = formHtml;
+  $('#sportFormModal').classList.add('show');
+  // 聚焦第一个可见输入框
+  const firstInput = form.querySelector('input:not([type=hidden]), textarea, select');
+  if (firstInput) setTimeout(() => firstInput.focus(), 50);
+}
+function closeSportFormModal() { $('#sportFormModal').classList.remove('show'); }
+
 // 绑定某容器内记录的「删除」按钮（按 storageKey 过滤）
 function bindDeletes(scope, storageKey) {
   $$(scope + ' .btn-del').forEach(btn => {
@@ -1029,6 +1053,43 @@ function bindModule(key) {
     render();
   });
 
+  // 运动模块：弹窗表单提交
+  if (m.modalForm) {
+    const sportForm = $('#sport-form');
+    if (sportForm) sportForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {};
+      let userDate = null;
+      for (const f of m.fields) {
+        const el = e.target[f.key];
+        if (!el) continue;
+        if (f.type === 'image') {
+          if (f.hidden) {
+            data[f.key] = el.value || '';
+          } else {
+            const file = el.files && el.files[0];
+            data[f.key] = file ? await fileToDataURL(file) : '';
+          }
+        } else if (f.type === 'checkbox') {
+          data[f.key] = el.checked;
+        } else {
+          data[f.key] = el.value.trim();
+          if (f.key === 'date') userDate = data[f.key];
+        }
+      }
+      data.id = uid();
+      data.date = userDate || today();
+      const arr = load(m.storageKey);
+      arr.unshift(data);
+      save(m.storageKey, arr);
+      closeSportFormModal();
+      render();
+    });
+
+    const openBtn = $('#openSportForm');
+    if (openBtn) openBtn.addEventListener('click', () => openSportFormModal());
+  }
+
   bindDeletes('#list', m.storageKey);
 
   // 运动月历：翻月 + 点星标日看详情（事件委托在容器上，翻月重渲染后仍有效）
@@ -1071,14 +1132,10 @@ function bindModule(key) {
         const ret = await worker.recognize(dataURL);
         await worker.terminate();
         const parsed = parseWorkoutText(ret.data.text);
-        // 回填表单
-        Object.keys(parsed).forEach(k => {
-          const el = document.querySelector(`[name="${k}"]`);
-          if (el) el.value = parsed[k];
-        });
         // 把截图本身也存到隐藏字段，和运动记录一起保存
-        const shotEl = document.querySelector('[name="screenshot"]');
-        if (shotEl) shotEl.value = dataURL;
+        parsed.screenshot = dataURL;
+        // 打开弹窗表单并回填识别结果
+        openSportFormModal(parsed);
         const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
         if (ocrStatus) {
           const rawOneLine = ret.data.text.replace(/\n/g, ' | ');
@@ -1270,6 +1327,13 @@ window.addEventListener('load', () => {
     sdm.addEventListener('click', e => { if (e.target.id === 'sportDayModal') closeSportDayModal(); });
     const sdc = document.getElementById('sportDayCancel');
     if (sdc) sdc.addEventListener('click', closeSportDayModal);
+  }
+  // 运动记录录入弹窗（静态常驻）
+  const sfm = document.getElementById('sportFormModal');
+  if (sfm) {
+    sfm.addEventListener('click', e => { if (e.target.id === 'sportFormModal') closeSportFormModal(); });
+    const sfc = document.getElementById('sportFormCancel');
+    if (sfc) sfc.addEventListener('click', closeSportFormModal);
   }
   render();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
