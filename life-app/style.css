@@ -357,6 +357,14 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .btn-primary{width:100%; margin-top:14px; padding:13px; border:none; border-radius:var(--r-sm); background:var(--ink); color:#fff; font-size:calc(16px * var(--fs)); font-weight:700; box-shadow:2px 3px 0 rgba(0,0,0,.12);}
 .btn-primary:active{background:var(--primary-d); transform:translate(1px,2px); box-shadow:none;}
 .btn-reset{width:100%; margin-top:10px; padding:10px; border:none; background:#fff; color:var(--muted); font-size:calc(14px * var(--fs));}
+/* 极简打卡模块（如背背单词）：点一下=今天完成 */
+.checkin-box{margin:24px 0; text-align:center;}
+.checkin-btn{width:100%; margin-top:8px; padding:26px 16px; border:none; border-radius:var(--r); background:var(--bg); color:var(--ink); font-size:calc(20px * var(--fs)); font-weight:700; box-shadow:3px 4px 0 rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; gap:10px;}
+.checkin-btn .ic{width:24px; height:24px;}
+.checkin-btn:active{transform:translate(1px,2px); box-shadow:none; background:#fff;}
+.checkin-btn.done{background:var(--ink); color:#fff;}
+.checkin-btn.done:active{background:var(--primary-d);}
+.checkin-tip{margin-top:12px; font-size:calc(13px * var(--fs)); color:var(--muted);}
 /* 模块顶部：跳转到外部 App 的按钮 + 今日汇总 */
 .btn-launch{display:inline-block; text-decoration:none; background:#fff; color:var(--ink); font-weight:700; padding:9px 16px; border:none; border-radius:var(--r-sm); font-size:calc(14px * var(--fs)); box-shadow:2px 3px 0 rgba(0,0,0,.08); margin:2px 0 12px;}
 .btn-launch:active{transform:translate(1px,2px); box-shadow:none; background:var(--bg);}
