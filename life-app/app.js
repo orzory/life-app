@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v100';
+const APP_VERSION = 'v101';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1020,6 +1020,21 @@ function fieldHTML(f, val = '') {
   return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
 }
 
+// 运动截图 OCR 用的 Tesseract.js 改为按需动态加载，避免外部脚本阻塞首屏
+let tesseractLoading = null;
+function loadTesseract() {
+  if (typeof Tesseract !== 'undefined') return Promise.resolve(true);
+  if (tesseractLoading) return tesseractLoading;
+  tesseractLoading = new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = () => resolve(true);
+    s.onerror = () => { tesseractLoading = null; resolve(false); };
+    document.head.appendChild(s);
+  });
+  return tesseractLoading;
+}
+
 function itemHTML(m, item) {
   const dateTag = item.date || '记录';
   const vals = m.fields.map(f => {
@@ -1283,7 +1298,12 @@ function bindModule(key) {
     if (ocrBtn) ocrBtn.addEventListener('click', async () => {
       const file = ocrInput && ocrInput.files && ocrInput.files[0];
       if (!file) { if (ocrStatus) ocrStatus.textContent = '请先选择一张截图'; return; }
-      if (typeof Tesseract === 'undefined') { if (ocrStatus) ocrStatus.textContent = 'OCR 脚本未加载，请检查网络后刷新'; return; }
+      // Tesseract 改为按需动态加载（首屏不再阻塞）
+      if (typeof Tesseract === 'undefined') {
+        if (ocrStatus) ocrStatus.textContent = '正在加载 OCR 组件…';
+        const ok = await loadTesseract();
+        if (!ok) { if (ocrStatus) ocrStatus.textContent = 'OCR 组件加载失败，请检查网络后重试'; return; }
+      }
       try {
         if (ocrStatus) ocrStatus.textContent = '正在压缩图片…';
         const dataURL = await fileToDataURL(file);   // 压缩后的 base64
