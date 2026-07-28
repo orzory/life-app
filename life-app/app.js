@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v105';
+const APP_VERSION = 'v106';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -947,9 +947,9 @@ function renderModule(key) {
     const items = (isDaily ? list.filter(r => r.date === today()) : list.slice())
       .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     const npItems = items.map(it => `
-      <div class="np-item ${it.done ? 'done' : ''}" data-id="${it.id}">
+      <div class="np-item ${it.done ? 'done' : ''} ${it.fromWeekPlan ? 'np-wp' : ''}" data-id="${it.id}">
         <span class="np-check">${it.done ? '✓' : ''}</span>
-        <span class="np-text">${escapeHtml(it.text || '')}</span>
+        <span class="np-text">${it.fromWeekPlan ? '<span class="np-wp-tag">周</span>' : ''}${escapeHtml(it.text || '')}</span>
         <button class="np-del" data-id="${it.id}">×</button>
       </div>
     `).join('') || `<div class="np-empty">还没有${isDaily ? '今天' : '今年'}的计划，添加一条吧～</div>`;
@@ -1423,6 +1423,7 @@ function bindModule(key) {
         if (v) plan[d] = v;
       });
       save(m.weeklyPlan.storageKey, plan);
+      syncTodayWeekPlanToDaily();
       sp.textContent = '已保存';
       setTimeout(() => { sp.textContent = '保存周计划'; }, 1200);
     });
@@ -1452,6 +1453,34 @@ function bindModule(key) {
     });
   }
 
+}
+
+// 把周计划里「今天」的内容同步进「每日计划」便签纸（标记 fromWeekPlan，便于去重/更新）
+function syncTodayWeekPlanToDaily() {
+  const wpMod = Object.values(MODULES).find(x => x.weeklyPlan);
+  if (!wpMod) return;
+  const plan = load(wpMod.weeklyPlan.storageKey) || {};
+  if (!plan || Object.keys(plan).length === 0) return;   // 没设周计划就不动
+  const map = { 0:'周日', 1:'周一', 2:'周二', 3:'周三', 4:'周四', 5:'周五', 6:'周六' };
+  const dayKey = map[new Date().getDay()];
+  const content = (plan[dayKey] || '').trim();
+  const dailyMod = Object.values(MODULES).find(x => x.notepad);
+  if (!dailyMod) return;
+  const arr = load(dailyMod.storageKey);
+  const idx = arr.findIndex(x => x.fromWeekPlan);
+  if (!content) {                                   // 今天没安排则移除旧的同步条目
+    if (idx >= 0) { arr.splice(idx, 1); save(dailyMod.storageKey, arr); }
+    return;
+  }
+  if (idx >= 0) {                                   // 已有同步条目：内容/日期变了才更新（保留勾选状态）
+    if (arr[idx].text !== content || arr[idx].date !== today()) {
+      arr[idx] = { ...arr[idx], text: content, date: today(), done: false };
+      save(dailyMod.storageKey, arr);
+    }
+  } else {                                          // 首次同步：新增一条
+    arr.unshift({ id: uid(), text: content, done: false, date: today(), fromWeekPlan: true });
+    save(dailyMod.storageKey, arr);
+  }
 }
 
 // ---------- 抽屉（手机端） ----------
@@ -1505,6 +1534,7 @@ window.addEventListener('load', () => {
     if (sfc) sfc.addEventListener('click', closeSportFormModal);
   }
   fillStaticIcons();
+  syncTodayWeekPlanToDaily();
   render();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
