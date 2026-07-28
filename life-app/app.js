@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v32';
+const APP_VERSION = 'v33';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -68,8 +68,8 @@ function parseWorkoutText(text) {
   t = t.replace(/([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])/g, '$1$2');
   // 3. 合并中文与斜杠之间的空格："次 /分 钟" → "次/分钟"
   t = t.replace(/([\u4e00-\u9fa5])\s*\/\s*([\u4e00-\u9fa5])/g, '$1/$2');
-  // 4. OCR 纠错："二卡" → "千卡"（OCR 常把"千"认成"二"）
-  t = t.replace(/二卡/g, '千卡');
+  // 4. OCR 纠错："二卡/二上/干卡" → "千卡"（OCR 常把"千"认成"二"或"干"，把"卡"认成"上"）
+  t = t.replace(/二卡/g, '千卡').replace(/二上/g, '千卡').replace(/干卡/g, '千卡');
 
   // 日期时间：2026年7月25日 06:58 / 2026-07-25
   const dm = t.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(\d{1,2})[:：](\d{2})/)
@@ -103,11 +103,26 @@ function parseWorkoutText(text) {
         || t.match(/(\d{1,2}:\d{2}:\d{2})/);
   if (dur) d.duration = String(parseDurationToMin(dur[1]));
 
-  // 热量：优先匹配「数字+千卡/kcal/大卡」（不用 \b，中文词边界无效）
-  const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)/i);
-  const cal = calWithUnit
-        || t.match(/(?:总消耗热量|总消耗|消耗热量|消耗|热量)\s*[:：]?\s*(\d+(?:\.\d+)?)/i);
-  if (cal) d.calories = String(parseInt(cal[1], 10));
+  // 热量：分别识别「活动热量」和「总消耗热量」
+  function findCalAfterKeyword(keyword) {
+    const idx = t.indexOf(keyword);
+    if (idx >= 0) {
+      const after = t.slice(idx + keyword.length);
+      const m = after.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)/i);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  const activeCal = findCalAfterKeyword('活动热量');
+  const totalCal  = findCalAfterKeyword('总消耗热量') || findCalAfterKeyword('总消耗') || findCalAfterKeyword('消耗热量');
+  if (activeCal) d.activeCalories = String(parseInt(activeCal, 10));
+  if (totalCal)  d.totalCalories  = String(parseInt(totalCal, 10));
+  // 兜底：旧截图或关键字没识别到时，按老规则填到总消耗里
+  if (!activeCal && !totalCal) {
+    const calWithUnit = t.match(/(\d+(?:\.\d+)?)\s*(?:千卡|kcal|大卡)/i);
+    const cal = calWithUnit || t.match(/(?:热量)\s*[:：]?\s*(\d+(?:\.\d+)?)/i);
+    if (cal) d.totalCalories = String(parseInt(cal[1], 10));
+  }
 
   // 配速：必须以 /公里 /里 /km 结尾，避免抓到状态栏时间 22:54
   const pace = t.match(/(?:平均配速|配速)?\s*[:：]?\s*(\d{1,2})\s*['′:\s]\s*(\d{1,2})\s*["″]?\s*\/\s*(?!小时)(?:公里|里|km)/i)
@@ -128,14 +143,14 @@ function parseWorkoutText(text) {
         || t.match(/(?:平均步频|步频)\s*[:：]?\s*(\d+)(?:\s|$)/i);
   if (cad) d.cadence = cad[1].replace(/\s/g, '');
 
-  // 步数：OCR 常把"步数""步"识别成别的字，这里匹配"四位/五位带逗号数字 + 步/上/止"
+  // 步数：OCR 常把"步数""步"识别成"频""上""止"等，这里匹配"四位/五位带逗号数字 + 步/上/止/频"
   // 华为截图步数在底部，取最后一个符合条件的匹配更稳
-  const stepsMatches = [...t.matchAll(/([\d,]{4,6})\s*(?:步|上|止)/g)];
+  const stepsMatches = [...t.matchAll(/([\d,]{3,6})\s*(?:步|上|止|频)/g)];
   if (stepsMatches.length) {
     d.steps = stepsMatches[stepsMatches.length - 1][1].replace(/,/g, '');
   } else {
     // 备选：至少看到"步数"或"步"字样
-    const steps = t.match(/步数?\s*[:：]?\s*([\d,]+)\s*(?:步|上|止)?/);
+    const steps = t.match(/步数?\s*[:：]?\s*([\d,]+)\s*(?:步|上|止|频)?/);
     if (steps) d.steps = steps[1].replace(/,/g, '');
   }
 
@@ -223,15 +238,16 @@ const MODULES = {
       ]
     },
     fields:[
-      { key:'date',       label:'日期',       type:'date', defaultToday:true },
-      { key:'type',       label:'类型',       type:'text',    ph:'跑步 / 力量 / 瑜伽 / 户外跑' },
-      { key:'distance',   label:'距离(km)',   type:'number',  ph:'如 5' },
-      { key:'duration',   label:'时长(分)',   type:'number',  ph:'如 40' },
-      { key:'calories',   label:'热量(kcal)', type:'number',  ph:'总消耗' },
-      { key:'pace',       label:'配速',       type:'text',    ph:"如 7'30\"" },
-      { key:'avgHr',      label:'平均心率',   type:'number',  ph:'如 147' },
-      { key:'cadence',    label:'步频(步/分)', type:'number',  ph:'如 175' },
-      { key:'steps',      label:'步数',       type:'number',  ph:'如 14582' },
+      { key:'date',           label:'日期',         type:'date', defaultToday:true },
+      { key:'type',           label:'类型',         type:'text',    ph:'跑步 / 力量 / 瑜伽 / 户外跑' },
+      { key:'distance',       label:'距离(km)',     type:'number',  ph:'如 5' },
+      { key:'duration',       label:'时长(分)',     type:'number',  ph:'如 40' },
+      { key:'activeCalories', label:'活动热量(kcal)', type:'number',  ph:'如 362' },
+      { key:'totalCalories',  label:'总消耗热量(kcal)', type:'number', ph:'如 417' },
+      { key:'pace',           label:'配速',         type:'text',    ph:"如 7'30\"" },
+      { key:'avgHr',          label:'平均心率',     type:'number',  ph:'如 147' },
+      { key:'cadence',        label:'步频(步/分)',  type:'number',  ph:'如 175' },
+      { key:'steps',          label:'步数',         type:'number',  ph:'如 14582' },
       { key:'screenshot', label:'运动截图',   type:'image', hidden:true },   // 由上方 OCR 区上传并回填
       { key:'note',       label:'备注',       type:'textarea' }
     ]
@@ -737,7 +753,8 @@ function renderModule(key) {
     const count = monthList.length;
     const totalDist = monthList.reduce((a, r) => a + (Number(r.distance) || 0), 0);
     const totalMin = monthList.reduce((a, r) => a + parseDurationToMin(r.duration), 0);
-    const totalCal = monthList.reduce((a, r) => a + (Number(r.calories) || 0), 0);
+    const totalCal = monthList.reduce((a, r) => a + (Number(r.totalCalories) || Number(r.calories) || 0), 0);
+    const activeCal = monthList.reduce((a, r) => a + (Number(r.activeCalories) || 0), 0);
     const avgHr = monthList.filter(r => r.avgHr).length
       ? Math.round(monthList.reduce((a, r) => a + (Number(r.avgHr) || 0), 0) / monthList.filter(r => r.avgHr).length)
       : 0;
@@ -756,6 +773,7 @@ function renderModule(key) {
           <div class="month-cell"><b>${count}</b><span>运动次数</span></div>
           <div class="month-cell"><b>${totalDist.toFixed(1)}</b><span>总距离(km)</span></div>
           <div class="month-cell"><b>${h}h${mn}m</b><span>总时长</span></div>
+          <div class="month-cell"><b>${Math.round(activeCal)}</b><span>活动热量(kcal)</span></div>
           <div class="month-cell"><b>${Math.round(totalCal)}</b><span>总消耗(kcal)</span></div>
           <div class="month-cell"><b>${avgPace}</b><span>平均配速</span></div>
           <div class="month-cell"><b>${avgHr || '—'}</b><span>平均心率</span></div>
@@ -828,7 +846,9 @@ function fieldHTML(f) {
 function itemHTML(m, item) {
   const dateTag = item.date || '记录';
   const vals = m.fields.map(f => {
-    const v = item[f.key];
+    let v = item[f.key];
+    // 兼容旧字段：旧记录只有 calories，没有 activeCalories/totalCalories
+    if (f.key === 'totalCalories' && !v && item.calories) v = item.calories;
     if (f.key === 'date') return '';   // 日期已在 summary 显示，避免重复
     if (f.type === 'checkbox')
       return `<span class="tag ${v?'on':''}">${f.label}${v?' ✓':''}</span>`;
