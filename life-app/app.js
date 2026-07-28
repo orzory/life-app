@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v111';
+const APP_VERSION = 'v112';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1166,7 +1166,7 @@ function renderCalendar(byDateIcon) {
     const isToday = ds === today();
     let iconsHtml = '';
     if (mods.length) {
-      const max = 3, shown = mods.slice(0, max), more = mods.length - shown.length;
+      const max = 2, shown = mods.slice(0, max), more = mods.length - shown.length;
       iconsHtml = '<span class="cal-icons">' +
         shown.map(mo2 => `<span class="cal-ic" title="${escapeHtml(mo2.title)}">${ic(mo2.icon)}</span>`).join('') +
         (more > 0 ? `<span class="cal-more">+${more}</span>` : '') + '</span>';
