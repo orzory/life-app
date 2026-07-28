@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v42';
+const APP_VERSION = 'v43';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -222,19 +222,6 @@ const MODULES = {
             '周日':'长距离LSR | 第1月13km→第4月20km→第5月21.1km；黄体期放慢15-30s'
           }
         }
-      ]
-    },
-    // 身体数据：体重/体脂/腰围等按日期记录成小日志（不计入每日打卡）
-    bodyData:{
-      storageKey:'lifeapp_sport_body',
-      head:'📊 身体数据',
-      addLabel:'+ 记录身体数据',
-      fields:[
-        { key:'date',   label:'日期', type:'date', defaultToday:true },
-        { key:'weight', label:'体重(kg)', type:'number', ph:'如 58.5' },
-        { key:'fat',    label:'体脂率(%)', type:'number', ph:'可选' },
-        { key:'waist',  label:'腰围(cm)', type:'number', ph:'可选' },
-        { key:'note',   label:'备注', type:'textarea' }
       ]
     },
     fields:[
@@ -728,24 +715,6 @@ function renderModule(key) {
         </div>
       </div>`;
   }
-  // 身体数据（仅配置了 bodyData 的模块，如锻炼身体）—— 独立小日志
-  let bodyHtml = '';
-  if (m.bodyData) {
-    const bd = m.bodyData;
-    const blist = load(bd.storageKey);
-    const bForm = bd.fields.map(fieldHTML).join('');
-    const bItems = blist.map(it => itemHTML({ fields: bd.fields }, it)).join('')
-                  || '<p class="empty">还没有身体数据记录</p>';
-    bodyHtml = `
-      <div class="bd-box">
-        <div class="bd-head">${bd.head}</div>
-        <form id="bd-form" class="add-form">
-          ${bForm}
-          <button type="submit" class="btn-primary">${bd.addLabel}</button>
-        </form>
-        <div class="list" id="bd-list">${bItems}</div>
-      </div>`;
-  }
   // 月度运动总结（仅配置了 monthlySummary 的模块，如锻炼身体）
   let monthHtml = '';
   if (m.monthlySummary) {
@@ -840,7 +809,6 @@ function renderModule(key) {
       ? `<div id="calendarWrap">${renderCalendar(m, list)}</div>`
       : `<div class="list" id="list">${itemsHtml}</div>`}
     ${planHtml}
-    ${bodyHtml}
     ${monthHtml}`;
 }
 
@@ -1244,41 +1212,6 @@ function bindModule(key) {
       cp.textContent = '✅ 已清空';
       setTimeout(() => { cp.textContent = '🗑 清空'; }, 1200);
     });
-  }
-
-  // 身体数据子日志（独立表单 + 独立删除）
-  if (m.bodyData) {
-    const bd = m.bodyData;
-    const form = $('#bd-form');
-    if (form) form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const data = {};
-      let userDate = null;
-      for (const f of bd.fields) {
-        const el = e.target[f.key];
-        if (!el) continue;
-        if (f.type === 'image') {
-          if (f.hidden) {
-            data[f.key] = el.value || '';
-          } else {
-            const file = el.files && el.files[0];
-            data[f.key] = file ? await fileToDataURL(file) : '';
-          }
-        } else if (f.type === 'checkbox') {
-          data[f.key] = el.checked;
-        } else {
-          data[f.key] = el.value.trim();
-          if (f.key === 'date') userDate = data[f.key];
-        }
-      }
-      data.id = uid();
-      data.date = userDate || today();
-      const arr = load(bd.storageKey);
-      arr.unshift(data);
-      save(bd.storageKey, arr);
-      render();
-    });
-    bindDeletes('#bd-list', bd.storageKey);
   }
 
 }
