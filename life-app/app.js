@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v98';
+const APP_VERSION = 'v99';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1011,10 +1011,11 @@ function fieldHTML(f, val = '') {
   if (f.type === 'number')
     return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
   if (f.type === 'select') {
+    const emptyOpt = `<option value=""${String(val) === '' ? ' selected' : ''}></option>`;
     const opts = (f.options || []).map(o =>
       `<option value="${escapeHtml(o)}"${String(val) === String(o) ? ' selected' : ''}>${escapeHtml(o)}</option>`
     ).join('');
-    return `<label>${f.label}<select name="${f.key}">${opts}</select></label>`;
+    return `<label>${f.label}<select name="${f.key}">${emptyOpt}${opts}</select></label>`;
   }
   return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
 }
