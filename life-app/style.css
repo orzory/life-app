@@ -287,11 +287,7 @@ body{
 .month-cell{background:#fffaf0; border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center;}
 .month-cell b{display:block; font-size:18px; color:var(--primary-d); margin-bottom:2px;}
 .month-cell span{font-size:12px; color:var(--muted);}
-.month-list{display:flex; flex-direction:column; gap:6px;}
-.ms-row{display:flex; justify-content:space-between; font-size:13px; color:var(--text); padding:6px 8px; background:#fffdf6; border-radius:8px;}
-.ms-row span{flex:1; text-align:center;}
-.ms-row span:first-child{text-align:left;}
-.ms-row span:last-child{text-align:right;}
+.month-grid{margin-bottom:0;}
 
 /* ---- 记录列表 ---- */
 .list{display:flex; flex-direction:column; gap:10px;}
