@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 优先加载中文字体，减少 iOS PWA fallback 到系统字体的概率 -->
   <link rel="preload" href="SentyDonut.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v84" />
+  <link rel="stylesheet" href="style.css?v85" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -28,7 +28,7 @@
     <aside class="sidebar">
       <div class="brand"><span class="ic" data-ic="flower"></span> Oh My Day!</div>
       <nav id="nav" class="nav"></nav>
-      <div class="sidebar-foot">数据仅存于本机 <span class="ic" data-ic="lock"></span></div>
+      <div class="sidebar-foot"><span class="ic" data-ic="lock"></span></div>
     </aside>
 
     <!-- 主内容区（仪表盘 / 各模块）由 app.js 渲染 -->
@@ -80,6 +80,6 @@
 
   <!-- Tesseract.js：上传运动截图后做 OCR 识别中文（首次需在线下载约 10MB 语言包） -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="app.js?v84"></script>
+  <script src="app.js?v85"></script>
 </body>
 </html>
