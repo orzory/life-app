@@ -307,7 +307,8 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   border-radius:12px; font-size:calc(14px * var(--fs)); font-weight:500; color:var(--text); cursor:default;
   display:flex; align-items:center; justify-content:center; padding:0; min-width:0;
 }
-.cal-cell.empty{background:transparent; border-color:transparent;}
+.cal-cell.prev-month,.cal-cell.next-month{color:var(--muted); background:transparent; border-color:transparent; opacity:.55; cursor:pointer;}
+.cal-cell.prev-month:active,.cal-cell.next-month:active{opacity:.8;}
 .cal-cell.has-data{cursor:pointer; background:#fff8e1;}
 .cal-cell.has-data:active{background:#ffeeb8;}
 .cal-cell.today{border-color:var(--muted); box-shadow:0 0 0 2px var(--muted) inset;}
