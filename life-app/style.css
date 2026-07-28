@@ -283,8 +283,7 @@ body{
 
 /* ---- 运动截图 OCR（锻炼身体模块） ---- */
 .ocr-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px; margin:0 0 16px; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
-.ocr-head{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:6px;}
-.ocr-hint{font-size:12px; color:var(--muted); margin:0 0 10px;}
+.ocr-head{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:10px;}
 .ocr-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:6px;}
 .ocr-input{flex:1 1 180px; font-size:14px; color:var(--text);}
 .ocr-actions{display:flex; gap:10px; align-items:center;}
