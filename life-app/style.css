@@ -126,14 +126,15 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .wx-city,.wx-cond,.wx-hum,.wx-run-title,.wx-run-note,.wx-loading,.wx-error{color:var(--muted);}
 .wx-temp{font-size:calc(28px * var(--fs)); font-weight:700; line-height:1.1; color:var(--ink);}
 .wx-run{border-top:none; padding-top:12px;}
-.wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink);}
+.wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); flex:0 0 auto;}
 /* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用 muted/ink 配色） */
 .wx-topline{
   display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; white-space:nowrap;
 }
 .wx-run-line{
-  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  display:flex; align-items:baseline; gap:10px; flex-wrap:nowrap; overflow:hidden;
 }
+.wx-run-title{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:0 1 auto; min-width:0;}
 
 /* ---- 今日打卡卡片：左侧圆环 + 右侧清单 ---- */
 .checkin-card{
