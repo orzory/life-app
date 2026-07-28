@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v106';
+const APP_VERSION = 'v107';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1463,7 +1463,7 @@ function syncTodayWeekPlanToDaily() {
   if (!plan || Object.keys(plan).length === 0) return;   // 没设周计划就不动
   const map = { 0:'周日', 1:'周一', 2:'周二', 3:'周三', 4:'周四', 5:'周五', 6:'周六' };
   const dayKey = map[new Date().getDay()];
-  const content = (plan[dayKey] || '').trim();
+  const content = ((plan[dayKey] || '').split('|')[0] || '').trim();   // 每日计划只显示「|」前的内容
   const dailyMod = Object.values(MODULES).find(x => x.notepad);
   if (!dailyMod) return;
   const arr = load(dailyMod.storageKey);
