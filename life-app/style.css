@@ -412,7 +412,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
     padding-bottom:calc(16px + env(safe-area-inset-bottom));
   }
   .sidebar.open{transform:translateX(0);}
-  .view{padding:64px 16px 22px; width:100%; max-width:100%;}
+  .view{padding:64px 10px 22px; width:100%; max-width:100%;}
 
   /* 小屏：圆环在左、打卡项在右（横排，上一版样式） */
   .checkin-card{flex-direction:row; flex-wrap:nowrap; justify-content:flex-start; gap:14px; padding:16px;}
