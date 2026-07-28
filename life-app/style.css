@@ -164,7 +164,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .check-row.done .box{background:var(--muted); border-color:var(--muted);}
 .check-row .row-title{
-  white-space:normal; line-height:1.25; word-break:break-all;
+  white-space:nowrap; line-height:1.25; word-break:normal; overflow:hidden; text-overflow:ellipsis;
 }
 .check-row.done .row-title{color:var(--muted); text-decoration:line-through;}
 
