@@ -89,23 +89,13 @@ body{
 .wx-temp{font-size:28px; font-weight:700; line-height:1.1; color:var(--ink);}
 .wx-run{border-top:2px dashed var(--line); padding-top:12px;}
 .wx-run-time{font-size:20px; font-weight:700; color:var(--ink);}
+/* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用上方 muted/ink 配色） */
 .wx-topline{
   display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-}
-.wx-city{font-size:14px; color:#5a7d96;}
-.wx-temp{font-size:26px; font-weight:800; line-height:1.1; color:#1f3a52;}
-.wx-cond{font-size:14px; color:#3f6385;}
-.wx-hum{font-size:14px; color:#5a7d96;}
-.wx-run{
-  border-top:1px solid #cfe6fb; padding-top:10px;
 }
 .wx-run-line{
   display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
 }
-.wx-run-title{font-size:13px; color:#5a7d96;}
-.wx-run-time{font-size:19px; font-weight:700; color:#1f3a52;}
-.wx-run-note{font-size:12px; color:#5a7d96; margin-top:4px; line-height:1.4;}
-.wx-loading,.wx-error{font-size:14px; color:#5a7d96; padding:8px 0; width:100%;}
 
 /* ---- 今日打卡卡片：左侧圆环 + 右侧清单 ---- */
 .checkin-card{
@@ -177,7 +167,7 @@ body{
 .modal-mask.show{display:flex;}
 .modal{
   width:100%; max-width:440px; background:#fff;
-  border:2px solid var(--ink); border-radius:24px;
+  border:2px solid var(--ink); border-radius:255px 24px 255px 24px / 24px 255px 24px 255px;
   padding:20px; box-shadow:5px 7px 0 rgba(0,0,0,.12);
   animation:notePop .18s ease;
 }
