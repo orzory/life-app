@@ -29,8 +29,8 @@
   /* 灰色虚线边框（统一） */
   --bd:2px dashed var(--line);
   /* 甜甜圈体只有单一字重，无法用 font-weight 变细；
-     用极轻微的水平压缩让竖笔变细、整体更秀气（0.90≈细 10%；想更细调小、更粗调大） */
-  --sx:0.90;
+     用极轻微的水平压缩让竖笔变细、整体更秀气（0.88≈细 12%；想更细调小、更粗调大） */
+  --sx:0.88;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
