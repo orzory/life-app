@@ -128,6 +128,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .wx-run{border-top:none; padding-top:10px; display:flex; flex-direction:column; gap:6px;}
 .wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); flex:0 0 auto;}
 .wx-run-meta{font-size:calc(15px * var(--fs)); color:var(--muted);}
+.wx-run-note{font-size:calc(13px * var(--fs)); color:var(--muted); display:flex; align-items:center; gap:4px;}
 /* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用 muted/ink 配色） */
 .wx-topline{
   display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; white-space:nowrap;
