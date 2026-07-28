@@ -80,15 +80,15 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 /* ---- 左侧导航栏 ---- */
 .sidebar{
   width:230px; flex-shrink:0; background:var(--sidebar);
-  padding:22px 14px; display:flex; flex-direction:column;
+  padding:16px 14px; display:flex; flex-direction:column;
   border-right:var(--bd);
 }
-.brand{font-size:calc(20px * var(--fs)); font-weight:700; padding:6px 10px 20px; color:var(--text); letter-spacing:.5px; transform:scaleX(var(--sx)); transform-origin:left center;}
-.nav{display:flex; flex-direction:column; gap:8px; flex:1; overflow-y:auto; transform:scaleX(var(--sx)); transform-origin:left center;}
-.sidebar-foot{font-size:calc(12px * var(--fs)); color:var(--muted); text-align:center; padding-top:14px; transform:scaleX(var(--sx)); transform-origin:center;}
+.brand{font-size:calc(20px * var(--fs)); font-weight:700; padding:6px 10px 12px; color:var(--text); letter-spacing:.5px; transform:scaleX(var(--sx)); transform-origin:left center;}
+.nav{display:flex; flex-direction:column; gap:4px; flex:1; overflow-y:auto; transform:scaleX(var(--sx)); transform-origin:left center;}
+.sidebar-foot{font-size:calc(12px * var(--fs)); color:var(--muted); text-align:center; padding-top:10px; transform:scaleX(var(--sx)); transform-origin:center;}
 .nav-item{
   display:flex; align-items:center; gap:12px;
-  padding:11px 12px; border-radius:var(--r-sm);
+  padding:7px 12px; border-radius:var(--r-sm);
   text-decoration:none; color:var(--text); font-size:calc(15px * var(--fs));
   border:2px solid transparent;
 }
