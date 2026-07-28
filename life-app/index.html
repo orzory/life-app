@@ -11,7 +11,7 @@
   <link rel="icon" href="icon-192.png?v83" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 中文字体已 base64 内联进 style.css，无需单独 preload -->
-  <link rel="stylesheet" href="style.css?v110" />
+  <link rel="stylesheet" href="style.css?v111" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -57,13 +57,13 @@
     </div>
   </div>
 
-  <!-- 运动月历：点带星标的日期，弹出当天运动数据 -->
-  <div class="modal-mask" id="sportDayModal">
+  <!-- 月历：点带记录的日期，弹出当天各模块记录 -->
+  <div class="modal-mask" id="dayModal">
     <div class="modal day">
-      <div class="day-head"><span class="ic" data-ic="run"></span> 运动详情 <span id="sportDayModalDate" class="day-date"></span></div>
-      <div class="day-body" id="sportDayModalBody"></div>
+      <div class="day-head"><span class="ic" data-ic="cal"></span> 当日记录 <span id="dayModalDate" class="day-date"></span></div>
+      <div class="day-body" id="dayModalBody"></div>
       <div class="day-actions">
-        <button id="sportDayCancel" class="btn-cancel" type="button">关闭</button>
+        <button id="dayModalCancel" class="btn-cancel" type="button">关闭</button>
       </div>
     </div>
   </div>
@@ -91,6 +91,6 @@
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v110" onerror="onAppError()"></script>
+  <script src="app.js?v111" onerror="onAppError()"></script>
 </body>
 </html>
