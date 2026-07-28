@@ -497,6 +497,12 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   text-decoration:line-through;
   color:var(--muted);
 }
+.np-wp-tag{
+  display:inline-block; font-size:calc(11px * var(--fs)); line-height:1;
+  color:#fff; background:var(--primary); border-radius:6px;
+  padding:2px 5px; margin-right:6px; vertical-align:2px;
+}
+.np-wp .np-text{font-weight:600; color:var(--ink);}
 .np-del{
   flex:0 0 auto; width:28px; height:28px;
   border:none; background:transparent; color:var(--muted);
