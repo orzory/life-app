@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v37';
+const APP_VERSION = 'v38';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -823,8 +823,10 @@ function renderModule(key) {
   const formSection = m.modalForm
     ? `<div class="form-trigger-box">
         ${ocrHtml}
-        <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
-        ${resetBtn ? `<button type="button" id="reset-today" class="btn-reset btn-reset-inline">🧹 清空今日</button>` : ''}
+        <div class="form-trigger-actions">
+          <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
+          ${resetBtn ? `<button type="button" id="reset-today" class="btn-reset btn-reset-inline">🧹 清空</button>` : ''}
+        </div>
       </div>`
     : `${ocrHtml}
       <form id="add-form" class="add-form">
