@@ -1008,8 +1008,12 @@ function bindModule(key) {
       const el = e.target[f.key];
       if (!el) continue;
       if (f.type === 'image') {
-        const file = el.files && el.files[0];
-        data[f.key] = file ? await fileToDataURL(file) : '';
+        if (f.hidden) {
+          data[f.key] = el.value || '';       // 隐藏图片（如 OCR 回填的截图）直接取值，避免被清空
+        } else {
+          const file = el.files && el.files[0];
+          data[f.key] = file ? await fileToDataURL(file) : '';
+        }
       } else if (f.type === 'checkbox') {
         data[f.key] = el.checked;
       } else {
@@ -1199,8 +1203,12 @@ function bindModule(key) {
         const el = e.target[f.key];
         if (!el) continue;
         if (f.type === 'image') {
-          const file = el.files && el.files[0];
-          data[f.key] = file ? await fileToDataURL(file) : '';
+          if (f.hidden) {
+            data[f.key] = el.value || '';
+          } else {
+            const file = el.files && el.files[0];
+            data[f.key] = file ? await fileToDataURL(file) : '';
+          }
         } else if (f.type === 'checkbox') {
           data[f.key] = el.checked;
         } else {
