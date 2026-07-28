@@ -411,12 +411,12 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   .sidebar.open{transform:translateX(0);}
   .view{padding:64px 16px 22px; width:100%; max-width:100%;}
 
-  /* 小屏：圆环缩小，仍保持左圆环 + 右清单 */
-  .checkin-card{gap:14px; padding:16px;}
+  /* 小屏：圆环在上、清单占满整行，确保打卡标题完整显示不截断 */
+  .checkin-card{flex-direction:column; gap:14px; padding:16px;}
   .ring-wrap{width:92px; height:92px;}
   .ring{width:92px; height:92px;}
   .ring-label{font-size:calc(23px * var(--fs));}
-  .checkin-list{gap:10px 12px;}
+  .checkin-list{flex:0 1 auto; align-self:stretch; gap:10px 12px;}
   /* 天气卡片手机端：保持横排行布局，仅收紧间距 */
   .weather-card{gap:8px; margin-top:12px;}
   .wx-topline{gap:6px;}
