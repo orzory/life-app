@@ -51,6 +51,17 @@
     </div>
   </div>
 
+  <!-- 运动月历：点带星标的日期，弹出当天运动数据 -->
+  <div class="modal-mask" id="sportDayModal">
+    <div class="modal day">
+      <div class="day-head">🏃 运动详情 <span id="sportDayModalDate" class="day-date"></span></div>
+      <div class="day-body" id="sportDayModalBody"></div>
+      <div class="day-actions">
+        <button id="sportDayCancel" class="btn-cancel" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tesseract.js：上传运动截图后做 OCR 识别中文（首次需在线下载约 10MB 语言包） -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="app.js"></script>
