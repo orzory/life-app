@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v115';
+const APP_VERSION = 'v116';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -39,7 +39,8 @@ const ICON_PATHS = {
   rain:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 16 L8 19"/><path d="M13 16 L12 19"/><path d="M17 16 L16 19"/>',
   snow:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 17 L9 19"/><path d="M13 17 L13 19"/><path d="M17 17 L17 19"/>',
   thunder:'<path d="M8 12 A3.6 3.6 0 0 1 8 6 A4.6 4.6 0 0 1 17 7.5 A3.2 3.2 0 0 1 17 12 Z"/><path d="M12 13 L9.5 18 H12 L10.5 21"/>',
-  cat:'<path d="M12 6.5 C16 6.5 18.5 9.5 18.5 14 C18.5 18 16 21 12 21 C8 21 5.5 18 5.5 14 C5.5 9.5 8 6.5 12 6.5 Z"/><path d="M7 8 L5.5 4 L9.5 6.5"/><path d="M17 8 L18.5 4 L14.5 6.5"/><circle cx="9.5" cy="13" r="0.8"/><circle cx="14.5" cy="13" r="0.8"/><path d="M11.5 16 C11.5 16 12 16.5 12.5 16"/>'
+  cat:'<path d="M12 6.5 C16 6.5 18.5 9.5 18.5 14 C18.5 18 16 21 12 21 C8 21 5.5 18 5.5 14 C5.5 9.5 8 6.5 12 6.5 Z"/><path d="M7 8 L5.5 4 L9.5 6.5"/><path d="M17 8 L18.5 4 L14.5 6.5"/><circle cx="9.5" cy="13" r="0.8"/><circle cx="14.5" cy="13" r="0.8"/><path d="M11.5 16 C11.5 16 12 16.5 12.5 16"/>',
+  vocab:'<path d="M3 9 L12 5 L21 9 L12 13 Z"/><path d="M7 11 V17 C7 17 9 19 12 19 C15 19 17 17 17 17 V11"/><path d="M21 9 V15"/>'
 };
 function ic(name){
   const p = ICON_PATHS[name];
@@ -333,6 +334,9 @@ const MODULES = {
       { key:'learn',   label:'【今日新知】', type:'textarea', ph:'今天学到了什么' },
       { key:'sleep',   label:'【睡眠评分】', type:'textarea', ph:'记录睡眠时间与质量、做的梦' }
     ]
+  },
+  word: {
+    title:'背背单词', icon:'vocab', daily:true, storageKey:'lifeapp_word', checkin:true,
   }
 };
 
@@ -842,6 +846,19 @@ function saveDiaryTemplate(m){
 function renderModule(key) {
   const m = MODULES[key];
   if (m.template === 'diary') return renderDiaryTemplate(m);
+
+  // 极简打卡模块：点一下=今天完成，不弹表单、不记任何字段
+  if (m.checkin) {
+    const done = isCheckedToday(m);
+    return `
+      <h2 class="sec-title">${ic(m.icon)} ${m.title}</h2>
+      <div class="checkin-box">
+        <button id="checkinBtn" class="checkin-btn ${done ? 'done' : ''}" type="button">
+          ${done ? ic('ok') + ' 今天已完成 ✓' : ic(m.icon) + ' 点击打卡'}
+        </button>
+        <p class="checkin-tip">${done ? '再点一下可取消今日打卡' : '背完今天的单词，点一下就好～'}</p>
+      </div>`;
+  }
   let list = load(m.storageKey);
   if (m.groupMeals) {                       // 好好吃饭：旧结构→新结构，规范化后回写
     list = normalizeMealList(list);
@@ -1248,6 +1265,23 @@ function bindModule(key) {
       if (countEl) countEl.textContent = `已填 ${diaryFilledCount(rec)}/7`;
       saveBtn.textContent = '已保存';
       setTimeout(() => { saveBtn.innerHTML = `${ic('disk')} 保存日记`; }, 1200);
+    });
+    return;
+  }
+
+  // 极简打卡模块：点击切换「今日打卡」
+  if (m.checkin) {
+    const btn = $('#checkinBtn');
+    if (btn) btn.addEventListener('click', () => {
+      const arr = load(m.storageKey);
+      const t = today();
+      if (arr.some(r => r.date === t)) {
+        save(m.storageKey, arr.filter(r => r.date !== t));   // 再点一下取消
+      } else {
+        arr.unshift({ id: uid(), date: t });
+        save(m.storageKey, arr);
+      }
+      render();
     });
     return;
   }
