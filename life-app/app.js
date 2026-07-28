@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v116';
+const APP_VERSION = 'v117';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -367,14 +367,33 @@ function render() {
   window.scrollTo(0, 0);
 }
 
-// 左侧导航高亮当前项
+// 左侧导航高亮当前项；checkin 模块点击直接切换打卡，不跳页
 function renderNav() {
   const cur = currentHash();
-  $('#nav').innerHTML = NAV.map(n => `
-    <a href="#/${n.key}" class="nav-item ${cur === n.key ? 'active' : ''}">
+  $('#nav').innerHTML = NAV.map(n => {
+    const isCheckin = n.key !== 'home' && MODULES[n.key] && MODULES[n.key].checkin;
+    return `
+    <a href="#/${n.key}" class="nav-item ${cur === n.key ? 'active' : ''}" data-key="${n.key}" ${isCheckin ? 'data-checkin="1"' : ''}>
       <span class="nav-icon">${ic(n.icon)}</span>
       <span class="nav-text">${n.title}</span>
-    </a>`).join('');
+    </a>`;
+  }).join('');
+}
+
+// 切换 checkin 模块的今日打卡状态，返回是否已完成
+function toggleCheckinToday(key) {
+  const m = MODULES[key];
+  if (!m || !m.checkin) return null;
+  const arr = load(m.storageKey);
+  const t = today();
+  const done = arr.some(r => r.date === t);
+  if (done) {
+    save(m.storageKey, arr.filter(r => r.date !== t));
+  } else {
+    arr.unshift({ id: uid(), date: t });
+    save(m.storageKey, arr);
+  }
+  return !done;
 }
 
 // ---------- 天气卡片（定位 + Open-Meteo 免费接口，无需密钥） ----------
@@ -1225,6 +1244,21 @@ function openDayModal(dateStr) {
 }
 function closeDayModal() { $('#dayModal').classList.remove('show'); }
 
+// 轻提示：操作后不弹窗，只在底部短暂显示一行文字
+function toast(msg) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.style.cssText = 'position:fixed; left:50%; bottom:calc(28px + env(safe-area-inset-bottom)); transform:translateX(-50%) scaleX(var(--sx)); background:var(--ink); color:#fff; padding:10px 18px; border-radius:var(--r-sm); font-size:calc(14px * var(--fs)); z-index:100; opacity:0; transition:opacity .25s ease; pointer-events:none; box-shadow:3px 4px 0 rgba(0,0,0,.15);';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.style.opacity = '0'; }, 1800);
+}
+
 function openSportFormModal(prefill = {}) {
   const m = MODULES.sport;
   const formHtml = m.fields.map(f => fieldHTML(f, prefill[f.key] !== undefined ? prefill[f.key] : '')).join('');
@@ -1273,14 +1307,7 @@ function bindModule(key) {
   if (m.checkin) {
     const btn = $('#checkinBtn');
     if (btn) btn.addEventListener('click', () => {
-      const arr = load(m.storageKey);
-      const t = today();
-      if (arr.some(r => r.date === t)) {
-        save(m.storageKey, arr.filter(r => r.date !== t));   // 再点一下取消
-      } else {
-        arr.unshift({ id: uid(), date: t });
-        save(m.storageKey, arr);
-      }
+      toggleCheckinToday(key);
       render();
     });
     return;
@@ -1603,6 +1630,21 @@ window.addEventListener('load', () => {
   const foot = document.querySelector('.sidebar-foot');
   if (foot) foot.innerHTML = ic('lock') + ' · ' + APP_VERSION +
     ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>';
+  // 左侧导航：checkin 模块点一下就打卡/取消，不跳页；其它模块正常路由
+  $('#nav').addEventListener('click', e => {
+    const a = e.target.closest('.nav-item');
+    if (!a) return;
+    const key = a.dataset.key;
+    if (!key || key === 'home') return;
+    const m = MODULES[key];
+    if (!m || !m.checkin) return;
+    e.preventDefault();
+    const done = toggleCheckinToday(key);
+    toast(done ? `今日「${m.title}」已打卡 ✓` : `已取消「${m.title}」今日打卡`);
+    render();            // 刷新首页打卡圆环、月历和导航高亮
+    closeDrawer();       // 手机端收起抽屉
+  });
+
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
   $('#ideaModal').addEventListener('click', e => { if (e.target.id === 'ideaModal') closeIdeaModal(); });
   $('#noteCancel').addEventListener('click', closeIdeaModal);
