@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v91';
+const APP_VERSION = 'v92';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -651,9 +651,10 @@ function renderHome() {
 
   return `
     <div class="hero">
-      <div id="clockDate" class="clock-time">${todayLabel()}</div>
       <div class="hero-greet"><span class="ic hero-ic">${ic('heart')}</span><span id="dailyQuote" class="hero-quote">今天也要加油呀</span></div>
       <div id="dailyQuoteFrom" class="hero-quote-from"></div>
+      <div id="clock" class="clock"></div>
+      <div id="clockDate" class="clock-date">${todayLabel()}</div>
     </div>
 
     <div class="weather-card" id="weatherCard">${renderWeatherInner(weatherCache)}</div>
@@ -767,9 +768,13 @@ function todayLabel() {
   return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${week}`;
 }
 function tickClock() {
+  const tEl = $('#clock');
   const dEl = $('#clockDate');
-  if (!dEl) return;
-  dEl.textContent = todayLabel();
+  if (!tEl && !dEl) return;
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  if (tEl) tEl.innerHTML = `<div class="clock-time">${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</div>`;
+  if (dEl) dEl.textContent = todayLabel();
 }
 
 // ---------- 日记模板（每日灵感） ----------
