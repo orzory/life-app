@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v39';
+const APP_VERSION = 'v40';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -692,7 +692,10 @@ function renderModule(key) {
         <p class="ocr-hint">${escapeHtml(m.ocr.hint || '')}</p>
         <div class="ocr-bar">
           <input type="file" id="workoutImg" class="ocr-input" accept="image/*">
+        </div>
+        <div class="ocr-actions">
           <button id="ocrBtn" class="btn-primary" type="button">🔍 识别截图</button>
+          <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
         </div>
         <div id="ocrStatus" class="ocr-status"></div>
       </div>`;
@@ -821,13 +824,7 @@ function renderModule(key) {
 
   // 弹窗表单：截图识别或点按钮后弹出，提交后隐藏（目前仅运动模块）
   const formSection = m.modalForm
-    ? `<div class="form-trigger-box">
-        ${ocrHtml}
-        <div class="form-trigger-actions">
-          <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
-          ${resetBtn ? `<button type="button" id="reset-today" class="btn-reset btn-reset-inline">🧹 清空</button>` : ''}
-        </div>
-      </div>`
+    ? `${ocrHtml}`
     : `${ocrHtml}
       <form id="add-form" class="add-form">
         ${formHtml}
@@ -929,7 +926,6 @@ function renderCalendar(m, list) {
       </div>
       <div class="cal-week">${['日','一','二','三','四','五','六'].map(w => `<span>${w}</span>`).join('')}</div>
       <div class="cal-grid">${cells}</div>
-      <div class="cal-legend">⭐ = 当天有运动记录，点日期看详情</div>
     </div>`;
 }
 
