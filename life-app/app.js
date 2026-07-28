@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v117';
+const APP_VERSION = 'v118';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -885,8 +885,12 @@ function renderModule(key) {
     if (JSON.stringify(raw) !== JSON.stringify(list)) save(m.storageKey, list);
   }
   const formHtml  = m.fields.map(f => fieldHTML(f)).join('');
-  const itemsHtml = list.map(item => m.groupMeals ? mealItemHTML(item) : itemHTML(m, item)).join('')
-                   || '<p class="empty">还没有记录，添加第一条吧～</p>';
+  // 每日模块只展示「今天」的记录：0 点过后自动回到空白状态，历史仍保留在首页月历的打卡足迹里
+  const showList = m.daily
+    ? list.filter(r => r.date && r.date.slice(0, 10) === today())
+    : list;
+  const itemsHtml = showList.map(item => m.groupMeals ? mealItemHTML(item) : itemHTML(m, item)).join('')
+                   || `<p class="empty">${m.daily ? '今天还没有记录，添加第一条吧～' : '还没有记录，添加第一条吧～'}</p>`;
   // 每日模块提供「清空今日」按钮，实现每日重置
   const resetBtn = m.daily
     ? `<button id="reset-today" class="btn-reset">${ic('broom')} 清空今日</button>` : '';
@@ -1664,9 +1668,21 @@ window.addEventListener('load', () => {
     const sfc = document.getElementById('sportFormCancel');
     if (sfc) sfc.addEventListener('click', closeSportFormModal);
   }
+  // 0 点自动刷新：跨日时把当前视图重渲染为空白的新一天（历史仍保留在月历）
+  function scheduleMidnightRefresh() {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 3); // 次日凌晨 00:00:03
+    const ms = next - now;
+    setTimeout(() => {
+      try { render(); } catch (e) { /* 跨日渲染失败不应中断后续 */ }
+      scheduleMidnightRefresh();   // 排下一天
+    }, ms);
+  }
+
   fillStaticIcons();
   syncTodayWeekPlanToDaily();
   render();
+  scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
