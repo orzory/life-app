@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v107';
+const APP_VERSION = 'v108';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -596,6 +596,11 @@ async function refreshDailyQuote() {
   const fromEl = document.getElementById('dailyQuoteFrom');
   if (!el) return;
   const t = today();
+  // 箴言署名格式升级时，清掉旧缓存，让当天也立即用新格式（仅作者名）
+  if (localStorage.getItem('lifeapp_quote_fmt') !== '2') {
+    localStorage.removeItem(QUOTE_KEY);
+    localStorage.setItem('lifeapp_quote_fmt', '2');
+  }
   const cached = getDailyQuoteCache();
   // 当天已取过：直接复用，保证同日不变
   if (cached && cached.date === t) {
@@ -611,9 +616,8 @@ async function refreshDailyQuote() {
     const text = (j.hitokoto || '').trim() || QUOTE_FALLBACK[dayOfYear() % QUOTE_FALLBACK.length];
     const who = (j.from_who || '').trim();
     const src = (j.from || '').trim();
-    const from = who
-      ? ('—— ' + who + (src ? '《' + src + '》' : ''))
-      : (src ? ('—— ' + src) : '');
+    // 箴言下方只显示作者名字（有作者优先，其次作品名），不再带《书名》
+    const from = who ? ('—— ' + who) : (src ? ('—— ' + src) : '');
     setDailyQuoteCache({ date: t, text, from });
     el.textContent = text;
     if (fromEl) fromEl.textContent = from;
