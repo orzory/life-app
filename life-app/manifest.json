@@ -1,6 +1,6 @@
 {
-  "name": "我的小日子",
-  "short_name": "小日子",
+  "name": "Oh My Day!",
+  "short_name": "Oh My Day!",
   "description": "记录学习、阅读、运动、饮食、记账、计划、灵感与复盘，数据本地留存",
   "start_url": ".",
   "scope": ".",
@@ -9,6 +9,7 @@
   "background_color": "#fffdf3",
   "theme_color": "#f5b301",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
