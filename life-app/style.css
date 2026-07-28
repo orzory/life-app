@@ -107,7 +107,10 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   padding:28px 20px; text-align:center;
   box-shadow:3px 4px 0 rgba(0,0,0,.06);
 }
-.hero-greet{font-size:calc(15px * var(--fs)); color:var(--muted); margin-bottom:8px;}
+.hero-greet{font-size:calc(15px * var(--fs)); color:var(--muted); margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;}
+.hero-ic{width:1.1em; height:1.1em; flex:none;}
+.hero-quote{font-size:calc(17px * var(--fs)); color:var(--ink); font-weight:600; line-height:1.5;}
+.hero-quote-from{font-size:calc(13px * var(--fs)); color:var(--muted); margin:-2px 0 8px;}
 .clock-time{font-size:calc(44px * var(--fs)); font-weight:700; letter-spacing:2px; color:var(--ink);}
 .clock-date{font-size:calc(15px * var(--fs)); color:var(--muted); margin-top:6px;}
 
