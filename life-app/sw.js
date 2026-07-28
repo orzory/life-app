@@ -5,8 +5,8 @@
    - 只缓存「同源 + 响应 200」的内容，绝不把错误页 / HTML 当成 JS/CSS 存起来。
    - 网络失败时按「原 URL → 去掉 ?v 查询参数的 URL → 导航兜底首页」回退；
      资源请求若都拿不到，返回 404 而非 HTML，避免把 HTML 当脚本执行。 */
-const CACHE = 'lifeapp-v101';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'lifeapp-v102';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './SentyDonut.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
