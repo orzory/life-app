@@ -1,3 +1,9 @@
+/* 引入「站酷快乐体」(ZCOOL KuaiLe)：可爱手写中文字体，联网加载后浏览器缓存 */
+@font-face{
+  font-family:'ZCOOL KuaiLe';
+  src:url('https://cdn.jsdelivr.net/npm/@fontsource/zcool-kuaile/files/zcool-kuaile-chinese-simplified-400-normal.woff2') format('woff2');
+  font-display:swap;
+}
 /* =========================================================================
    我的小日子 —— grug 手绘风（v50：灰色虚线边框 + 规则圆角）
    纸张底色 + 手写体 + 灰色虚线边框 + 统一规则圆角
@@ -24,7 +30,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
 body{
-  font-family:"Chalkboard SE","Comic Sans MS","Marker Felt","STXingkai","KaiTi",cursive,sans-serif;
+  font-family:"Chalkboard SE","Comic Sans MS","Marker Felt","ZCOOL KuaiLe","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
