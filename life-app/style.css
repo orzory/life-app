@@ -207,7 +207,7 @@ body{
 .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px;}
 .cal-cell{
   position:relative; aspect-ratio:1/1; border:1px solid transparent; background:#fffdf6;
-  border-radius:12px; font-size:17px; font-weight:600; color:var(--text); cursor:default;
+  border-radius:12px; font-size:14px; font-weight:500; color:var(--text); cursor:default;
   display:flex; align-items:center; justify-content:center; padding:0;
 }
 .cal-cell.empty{background:transparent; border-color:transparent;}
@@ -215,7 +215,7 @@ body{
 .cal-cell.has-data:active{background:#ffe9a8;}
 .cal-cell.today{border-color:var(--primary); box-shadow:0 0 0 1px var(--primary) inset;}
 .cal-num{line-height:1; padding-top:2px;}
-.cal-star{position:absolute; bottom:5px; right:5px; font-size:13px; line-height:1;}
+.cal-star{position:absolute; bottom:4px; right:4px; font-size:11px; line-height:1;}
 
 /* ---- 运动某天详情弹窗 ---- */
 .modal.day{background:#fffef9; max-width:460px;}
