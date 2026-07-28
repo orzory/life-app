@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 优先加载中文字体，减少 iOS PWA fallback 到系统字体的概率 -->
   <link rel="preload" href="SentyDonut.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v99" />
+  <link rel="stylesheet" href="style.css?v100" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -32,7 +32,12 @@
     </aside>
 
     <!-- 主内容区（仪表盘 / 各模块）由 app.js 渲染 -->
-    <main id="view" class="view"></main>
+    <main id="view" class="view">
+      <div id="boot-msg" style="padding:120px 24px;text-align:center;color:#7a746b;font-size:16px;">
+        正在加载 Oh My Day…<br>
+        <span style="font-size:13px;opacity:.7;">若长时间空白，请检查网络或杀 App 重开</span>
+      </div>
+    </main>
   </div>
 
   <!-- 灵感便签弹窗（静态常驻，不被 #view 重渲染影响） -->
@@ -80,6 +85,14 @@
 
   <!-- Tesseract.js：上传运动截图后做 OCR 识别中文（首次需在线下载约 10MB 语言包） -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="app.js?v99"></script>
+  <script>
+    // 主脚本加载失败时给出明确提示，避免纯白屏
+    function onAppError() {
+      document.body.innerHTML = '<div style="padding:120px 24px;text-align:center;color:#7a746b;font-size:16px;">' +
+        'Oh My Day 加载失败<br><span style="font-size:13px;opacity:.7;">请检查网络，或杀掉 App 重新打开</span></div>';
+    }
+    window.addEventListener('error', function(e) { onAppError(); });
+  </script>
+  <script src="app.js?v100" onerror="onAppError()"></script>
 </body>
 </html>
