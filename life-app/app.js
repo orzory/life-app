@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v74';
+const APP_VERSION = 'v75';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -762,7 +762,7 @@ function renderModule(key) {
   const m = MODULES[key];
   if (m.template === 'diary') return renderDiaryTemplate(m);
   const list = load(m.storageKey);
-  const formHtml  = m.fields.map(fieldHTML).join('');
+  const formHtml  = m.fields.map(f => fieldHTML(f)).join('');
   const itemsHtml = list.map(item => itemHTML(m, item)).join('')
                    || '<p class="empty">还没有记录，添加第一条吧～</p>';
   // 每日模块提供「清空今日」按钮，实现每日重置
@@ -876,7 +876,7 @@ function renderModule(key) {
       </div>
     `).join('') || `<div class="np-empty">还没有${isDaily ? '今天' : '今年'}的计划，添加一条吧～</div>`;
     return `
-      <h2 class="sec-title">${m.icon} ${m.title}</h2>
+      <h2 class="sec-title">${ic(m.icon)} ${m.title}</h2>
       ${extra}
       <div class="notepad">
         <div class="np-date">${dateLabel}</div>
@@ -908,7 +908,7 @@ function renderModule(key) {
       </form>`;
 
   return `
-    <h2 class="sec-title">${m.icon} ${m.title}</h2>
+    <h2 class="sec-title">${ic(m.icon)} ${m.title}</h2>
     ${extra}
     ${formSection}
     ${m.calendar
