@@ -1,8 +1,9 @@
-/* 清松手写体 1号（圆润）：免费商用，含完整简体中文（实测缺字 0），走 jsdelivr CDN
-   自己定义 @font-face 并用自有家族名 'Qingsong'，避免外部 CSS 字体名不一致导致不生效 */
+/* 汉仪新蒂珍珠奶茶体（HanyiSentyBubbleTea）：用户本地上传字库，自托管部署，不依赖外部 CDN
+   个人非商用授权（用户已下载个人版）。实测简体缺字 0，11297 字形。
+   本地 woff2（4.3MB）随 app 一起部署，离线可用、加载稳定 */
 @font-face{
-  font-family:'Qingsong';
-  src:url('https://cdn.jsdelivr.net/gh/max32002/JasonHandWritingFonts@20220828/webfont/JasonHandwriting1-Regular.woff2') format('woff2');
+  font-family:'BubbleTea';
+  src:url('HanyiSentyBubbleTea.woff2') format('woff2');
   font-display:swap;
 }
 /* =========================================================================
@@ -31,7 +32,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
 body{
-  font-family:"Qingsong","Chalkboard SE","Comic Sans MS","Marker Felt","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
+  font-family:"BubbleTea","Chalkboard SE","Comic Sans MS","Marker Felt","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
