@@ -304,16 +304,20 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .cal-grid{display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:8px;}
 .cal-cell{
   position:relative; aspect-ratio:1/1; border:2px solid transparent; background:#fff;
-  border-radius:12px; font-size:calc(14px * var(--fs)); font-weight:500; color:var(--text); cursor:default;
-  display:flex; align-items:center; justify-content:center; padding:0; min-width:0;
+  border-radius:12px; font-weight:500; color:var(--text); cursor:default;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:2px 0; min-width:0;
 }
 .cal-cell.prev-month,.cal-cell.next-month{color:var(--muted); background:transparent; border-color:transparent; opacity:.55; cursor:pointer;}
 .cal-cell.prev-month:active,.cal-cell.next-month:active{opacity:.8;}
 .cal-cell.has-data{cursor:pointer; background:#fff8e1;}
 .cal-cell.has-data:active{background:#ffeeb8;}
 .cal-cell.today{border-color:var(--muted); box-shadow:0 0 0 2px var(--muted) inset;}
-.cal-num{line-height:1; padding-top:2px;}
-.cal-star{position:absolute; bottom:4px; right:4px; font-size:calc(11px * var(--fs)); line-height:1;}
+.cal-num{line-height:1; font-size:calc(13px * var(--fs));}
+.cal-icons{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1px; margin-top:1px; width:100%;}
+.cal-ic{width:11px; height:11px; display:inline-flex; color:var(--ink);}
+.cal-ic .ic{width:11px; height:11px;}
+.cal-more{font-size:9px; line-height:1; color:var(--muted); font-weight:700; margin-left:1px;}
+.home-cal-wrap{margin:20px 0;}
 
 /* ---- 运动某天详情弹窗 ---- */
 .modal.day{background:#fff; max-width:460px; border-radius:var(--r);}
@@ -329,6 +333,11 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .day-rec-body div{margin:2px 0;}
 .day-rec .btn-del{margin-top:8px;}
 .day-actions{display:flex; gap:10px; margin-top:14px;}
+.day-mod{display:flex; align-items:center; gap:10px; background:var(--bg); border:none; border-radius:var(--r-sm); padding:12px 14px; text-decoration:none; color:var(--ink);}
+.day-mod:active{background:#fff;}
+.day-mod-ic{width:24px; height:24px; display:inline-flex; flex:none; color:var(--ink);}
+.day-mod-title{font-size:calc(15px * var(--fs)); font-weight:600; flex:1;}
+.day-mod-count{font-size:calc(13px * var(--fs)); color:var(--muted);}
 
 /* ---- 运动记录录入弹窗 ---- */
 .sport-form-modal{background:#fff; max-width:460px; max-height:85vh; display:flex; flex-direction:column; border-radius:var(--r);}
