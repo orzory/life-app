@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v113';
+const APP_VERSION = 'v114';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -256,7 +256,7 @@ const MODULES = {
     ]
   },
   sport: {
-    title:'锻炼身体', icon:'run', daily:true, storageKey:'lifeapp_sport', modalForm:true,
+    title:'嘿哈运动', icon:'run', daily:true, storageKey:'lifeapp_sport', modalForm:true,
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
     launch:{ label:'打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
@@ -881,7 +881,7 @@ function renderModule(key) {
     }).join(' · ');
     extra += `<div class="mod-summary">${ic('chart')} 今日：${parts || '还没有记录'}</div>`;
   }
-  // 运动截图 OCR（仅配置了 ocr 的模块，如锻炼身体）
+  // 运动截图 OCR（仅配置了 ocr 的模块，如嘿哈运动）
   let ocrHtml = '';
   if (m.ocr) {
     ocrHtml = `
@@ -897,7 +897,7 @@ function renderModule(key) {
         <div id="ocrStatus" class="ocr-status"></div>
       </div>`;
   }
-  // 周计划（仅配置了 weeklyPlan 的模块，如锻炼身体）
+  // 周计划（仅配置了 weeklyPlan 的模块，如嘿哈运动）
   let planHtml = '';
   if (m.weeklyPlan) {
     const wk = m.weeklyPlan;
@@ -925,7 +925,7 @@ function renderModule(key) {
         </div>
       </div>`;
   }
-  // 月度运动总结（仅配置了 monthlySummary 的模块，如锻炼身体）
+  // 月度运动总结（仅配置了 monthlySummary 的模块，如嘿哈运动）
   let monthHtml = '';
   if (m.monthlySummary) {
     const y = new Date().getFullYear();
