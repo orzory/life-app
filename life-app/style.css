@@ -4,7 +4,7 @@
    实测 app 内缺字 0，子集后约 2.8MB / 6393 字形。 */
 @font-face{
   font-family:'Donut';
-  src:url('SentyDonut.woff2') format('woff2');
+  src:url('SentyDonut.woff2?v102') format('woff2');
   font-display:swap;
 }
 /* =========================================================================
