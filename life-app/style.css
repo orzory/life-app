@@ -42,6 +42,13 @@ body{
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
+
+/* 手绘风 SVG 图标：继承文字色（单色线条），尺寸随字号，垂直居中 */
+.ic{width:1.15em; height:1.15em; vertical-align:-0.18em; flex:none; display:inline-block;}
+.nav-icon .ic{width:22px; height:22px; vertical-align:-5px;}
+.wx-ic{width:2.4em; height:2.4em; flex:none; vertical-align:middle; margin-right:4px;}
+.btn-launch .ic, .note-img-btn .ic, .day-head .ic, .note-head .ic, .brand .ic{margin-right:4px; vertical-align:-0.18em;}
+.menu-btn .ic{width:22px; height:22px; vertical-align:middle;}
 /* iOS PWA 状态栏背景统一：和主背景色一致 */
 .status-bar-fill{
   position:fixed; top:0; left:0; right:0; z-index:9999;
