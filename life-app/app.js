@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v118';
+const APP_VERSION = 'v119';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -436,6 +436,7 @@ async function fetchWeather() {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}`
     + `&current=temperature_2m,relative_humidity_2m,weather_code`
     + `&hourly=temperature_2m,relative_humidity_2m,precipitation_probability`
+    + `&daily=temperature_2m_max,temperature_2m_min`
     + `&timezone=auto&forecast_days=2`;
   const [wx, geo] = await Promise.all([
     fetch(url).then(r => r.json()),
@@ -463,7 +464,7 @@ function analyzeWeather(wx, city, forTomorrow) {
   const hums  = (wx.hourly && wx.hourly.relative_humidity_2m) || [];
   const pops  = (wx.hourly && wx.hourly.precipitation_probability) || [];
   if (temp === undefined || temp === null) {
-    return { city, temp:null, humidity:null, condition, code, dayLabel, bestWindow:'—', note:'天气数据暂不可用' };
+    return { city, temp:null, humidity:null, condition, code, dayLabel, bestWindow:'—', note:'天气数据暂不可用', dailyMin:null, dailyMax:null, dailyAvgHum:null };
   }
 
   // 目标日期：今天 or 明天（本地时区 YYYY-MM-DD）
@@ -473,13 +474,21 @@ function analyzeWeather(wx, city, forTomorrow) {
 
   const nowH = new Date().getHours();
   const minH = forTomorrow ? 5 : Math.max(5, nowH);  // 明天从早5点起；今天从当前小时起
-  const rows = [];
+  const rows = [], dayAll = [];
   for (let i = 0; i < times.length; i++) {
     if (times[i].slice(0,10) !== targetDate) continue;
     const hh = parseInt(times[i].slice(11,13), 10);
-    if (hh < minH || hh > 21) continue;               // 只看 5–21 点
-    rows.push({ hh, temp:temps[i], hum:hums[i], pop:pops[i] ?? 0 });
+    const item = { hh, temp:temps[i], hum:hums[i], pop:pops[i] ?? 0 };
+    dayAll.push(item);
+    if (hh >= minH && hh <= 21) rows.push(item);      // 只看 5–21 点
   }
+
+  // 每日实际最高/最低温 + 全天平均湿度（用于天气摘要，避免和「最佳跑步窗口」混淆）
+  const dailyTimes = (wx.daily && wx.daily.time) || [];
+  const dayIdx = dailyTimes.indexOf(targetDate);
+  const dailyMin = dayIdx >= 0 ? wx.daily.temperature_2m_min[dayIdx] : null;
+  const dailyMax = dayIdx >= 0 ? wx.daily.temperature_2m_max[dayIdx] : null;
+  const dailyAvgHum = dayAll.length ? dayAll.reduce((a, r) => a + r.hum, 0) / dayAll.length : null;
 
   const good = r => r.temp >= 15 && r.temp <= 27 && r.hum <= 85 && r.pop < 40;
   let runStart = null, runEnd = null; const runs = [];
@@ -492,7 +501,7 @@ function analyzeWeather(wx, city, forTomorrow) {
   if (!rows.length) {
     // 今天已没有可跑时段 → 直接改为分析明天（标题/时间/说明保持一致，不再出现「今日…明早」的矛盾）
     if (!forTomorrow) return analyzeWeather(wx, city, true);
-    return { city, temp, humidity, condition, code, dayLabel, bestWindow:'—', note:'明日预报数据暂不可用，稍后再看' };
+    return { city, temp, humidity, condition, code, dayLabel, bestWindow:'—', note:'明日预报数据暂不可用，稍后再看', dailyMin, dailyMax, dailyAvgHum };
   }
   if (runs.length) {
     runs.sort((a,b) => (b[1]-b[0]) - (a[1]-a[0]));   // 最长舒适窗口优先
@@ -504,7 +513,8 @@ function analyzeWeather(wx, city, forTomorrow) {
     const maxT = Math.max(...win.map(r => r.temp));
     return { city, temp, humidity, condition, code, dayLabel,
       bestWindow: `${fmtH(s)}–${fmtH(e)}`,
-      bestTemp: avgT, bestHum: avgH, bestTempMin: minT, bestTempMax: maxT };
+      bestTemp: avgT, bestHum: avgH, bestTempMin: minT, bestTempMax: maxT,
+      dailyMin, dailyMax, dailyAvgHum };
   }
   // 无理想窗口：挑综合最佳单小时
   let best = rows[0];
@@ -515,7 +525,8 @@ function analyzeWeather(wx, city, forTomorrow) {
   }
   return { city, temp, humidity, condition, code, dayLabel,
     bestWindow: fmtH(best.hh),
-    bestTemp: best.temp, bestHum: best.hum, bestTempMin: best.temp, bestTempMax: best.temp };
+    bestTemp: best.temp, bestHum: best.hum, bestTempMin: best.temp, bestTempMax: best.temp,
+    dailyMin, dailyMax, dailyAvgHum };
 }
 
 function renderWeatherInner(d) {
@@ -523,10 +534,20 @@ function renderWeatherInner(d) {
   if (d.error) return `<div class="wx-error">${ic('warn')} 天气获取失败，请检查网络</div>`;
   const t = (d.temp === null || d.temp === undefined) ? '—' : Math.round(d.temp) + '°';
   const h = (d.humidity === null || d.humidity === undefined) ? '—' : Math.round(d.humidity) + '%';
-  const minT = (d.bestTempMin === undefined || d.bestTempMin === null) ? '—' : Math.round(d.bestTempMin);
-  const maxT = (d.bestTempMax === undefined || d.bestTempMax === null) ? '—' : Math.round(d.bestTempMax);
-  const rh = (d.bestHum === undefined || d.bestHum === null) ? '—' : Math.round(d.bestHum);
-  const runMeta = `${d.dayLabel || '今日'} ${minT}°C–${maxT}°C / 湿度 ${rh}%`;
+  const dMin = (d.dailyMin === undefined || d.dailyMin === null) ? '—' : Math.round(d.dailyMin);
+  const dMax = (d.dailyMax === undefined || d.dailyMax === null) ? '—' : Math.round(d.dailyMax);
+  const avgH = (d.dailyAvgHum === undefined || d.dailyAvgHum === null) ? '—' : Math.round(d.dailyAvgHum);
+  const runMeta = `${d.dayLabel || '今日'} ${dMin}°C–${dMax}°C / 平均湿度 ${avgH}%`;
+
+  // 最佳窗口内的具体温湿（单小时时不显示「24–24」这样的重复范围）
+  const wMin = (d.bestTempMin === undefined || d.bestTempMin === null) ? null : Math.round(d.bestTempMin);
+  const wMax = (d.bestTempMax === undefined || d.bestTempMax === null) ? null : Math.round(d.bestTempMax);
+  const wHum = (d.bestHum === undefined || d.bestHum === null) ? null : Math.round(d.bestHum);
+  let winNote = '';
+  if (d.bestWindow && d.bestWindow !== '—' && wMin !== null && wMax !== null && wHum !== null) {
+    const range = wMin === wMax ? `约 ${wMin}°C` : `${wMin}°C–${wMax}°C`;
+    winNote = `${ic('drop')} ${range} / 湿度 ${wHum}%`;
+  }
   return `
     <div class="wx-topline">
       <span class="wx-ic">${ic(wxIcon(d.code))}</span>
@@ -541,6 +562,7 @@ function renderWeatherInner(d) {
         <span class="wx-run-title">${ic('run')} 最佳户外跑步时段</span>
         <span class="wx-run-time">${d.bestWindow}</span>
       </div>
+      ${winNote ? `<div class="wx-run-note">${winNote}</div>` : ''}
     </div>`;
 }
 
