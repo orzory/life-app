@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v114';
+const APP_VERSION = 'v115';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -13,7 +13,6 @@ const ICON_PATHS = {
   rainbow:'<path d="M4 19 A9 9 0 0 1 20 19"/><path d="M7.5 19 A5.5 5.5 0 0 1 16.5 19"/><path d="M11 19 A1 1 0 0 1 13 19"/>',
   star:'<path d="M12 3.5 L14.2 9 L20 9.3 L15.5 13.2 L17 19 L12 15.6 L7 19 L8.5 13.2 L4 9.3 L9.8 9 Z"/>',
   spark:'<path d="M12 4 L13 11 L20 12 L13 13 L12 20 L11 13 L4 12 L11 11 Z"/>',
-  moon:'<path d="M16 4.5 A7.5 7.5 0 1 0 16 19.5 A6 6 0 1 1 16 4.5 Z"/>',
   flower:'<circle cx="12" cy="12" r="2"/><path d="M12 10 C10 6 14 6 12 10 Z"/><path d="M14 12 C18 10 18 14 14 12 Z"/><path d="M12 14 C10 18 14 18 12 14 Z"/><path d="M10 12 C6 10 6 14 10 12 Z"/>',
   link:'<path d="M10 14 L14 10"/><path d="M8.5 16.5 A3 3 0 1 1 8.5 10.5 L11 13"/><path d="M15.5 13.5 A3 3 0 1 1 15.5 7.5 L13 10"/>',
   heart:'<path d="M12 20 C12 20 4.5 14.5 4.5 9.2 A3.7 3.7 0 0 1 12 8 A3.7 3.7 0 0 1 19.5 9.2 C19.5 14.5 12 20 12 20 Z"/>',
@@ -334,14 +333,6 @@ const MODULES = {
       { key:'learn',   label:'【今日新知】', type:'textarea', ph:'今天学到了什么' },
       { key:'sleep',   label:'【睡眠评分】', type:'textarea', ph:'记录睡眠时间与质量、做的梦' }
     ]
-  },
-  review: {
-    title:'每日复盘', icon:'moon', daily:true, storageKey:'lifeapp_review',
-    fields:[
-      { key:'mood',     label:'今日心情', type:'text',     ph:'开心 / 一般 / 累' },
-      { key:'summary',  label:'今日总结', type:'textarea', ph:'今天怎么样' },
-      { key:'tomorrow', label:'明天打算', type:'textarea', ph:'明天做点啥' }
-    ]
   }
 };
 
@@ -623,8 +614,8 @@ async function refreshDailyQuote() {
 
 // ---------- 概览（桌面/首页）：时间 + 天气 + 今日打卡 ----------
 function renderHome() {
-  // 今日打卡只统计部分每日模块（灵感/复盘不计入打卡）
-  const EXCLUDE_FROM_CHECKIN = ['idea', 'review'];
+  // 今日打卡只统计部分每日模块（灵感不计入打卡）
+  const EXCLUDE_FROM_CHECKIN = ['idea'];
   const dailyMods = Object.entries(MODULES)
     .filter(([, m]) => m.daily)
     .filter(([key]) => !EXCLUDE_FROM_CHECKIN.includes(key));
