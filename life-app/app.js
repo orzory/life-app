@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v53';
+const APP_VERSION = 'v54';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -170,8 +170,8 @@ function parseWorkoutText(text) {
 const MODULES = {
   english: {
     title:'英语学习', icon:'🗣️', daily:true, storageKey:'lifeapp_english',
-    // 一键跳转到「不背单词」：装了 App 会直接唤起，没装则打开官网（如需改跳转，把 url 换成 bubei:// 之类 scheme）
-    launch:{ label:'🔗 打开不背单词背词', url:'https://www.bbdc.cn/' },
+    // 一键跳转到「不背单词」：装了 App 会直接唤起（bubei://），没装则打开官网
+    launch:{ label:'🔗 打开不背单词背词', url:'https://www.bbdc.cn/', scheme:'bubei://' },
     // 今日学习概览：把今天各条记录的这些数字字段求和展示
     dailySummary:[ { key:'words', label:'已背单词', unit:'个' }, { key:'minutes', label:'学习时长', unit:'分' } ],
     fields:[
@@ -185,8 +185,8 @@ const MODULES = {
   },
   reading: {
     title:'每日阅读', icon:'📚', daily:true, storageKey:'lifeapp_reading',
-    // 一键跳转到「微信读书」：手机装了 App 会直接唤起，没装则打开网页版（如需改 scheme 直接唤起，把 url 换成 weread:// 之类）
-    launch:{ label:'🔗 打开微信读书', url:'https://weread.qq.com/' },
+    // 一键跳转到「微信读书」：手机装了 App 会直接唤起（weread://），没装则打开网页版
+    launch:{ label:'🔗 打开微信读书', url:'https://weread.qq.com/', scheme:'weread://' },
     // 今日阅读概览：把今天各条记录的时长字段求和
     dailySummary:[ { key:'minutes', label:'阅读时长', unit:'分' } ],
     fields:[
