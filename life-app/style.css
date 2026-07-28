@@ -39,7 +39,7 @@ body{
 /* ---- 手机端菜单按钮 + 遮罩 ---- */
 .menu-btn{
   position:fixed; top:calc(10px + env(safe-area-inset-top)); left:10px; z-index:30;
-  width:44px; height:44px; border:var(--bd); border-radius:var(--r-sm);
+  width:44px; height:44px; border:none; border-radius:var(--r-sm);
   background:#fff; color:var(--ink); font-size:18px; display:none;
   box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
@@ -158,7 +158,7 @@ body{
 .idea-thumb img{width:100%; max-height:160px; object-fit:cover; border-radius:12px; display:block;}
 .idea-empty{color:var(--muted);}
 .idea-write{
-  border:var(--bd); background:#fff; color:var(--ink); font-weight:700;
+  border:none; background:#fff; color:var(--ink); font-weight:700;
   padding:9px 16px; border-radius:var(--r-sm);
   font-size:14px; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
@@ -195,7 +195,7 @@ body{
 .note-img-row{display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap;}
 .note-img-btn{
   display:inline-flex; align-items:center; gap:6px; cursor:pointer;
-  border:var(--bd); background:#fff; color:var(--ink); font-size:14px; font-weight:700;
+  border:none; background:#fff; color:var(--ink); font-size:14px; font-weight:700;
   padding:8px 14px; border-radius:var(--r-sm);
   box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
@@ -203,16 +203,16 @@ body{
 .note-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:10px; border:none;}
 .note-err{color:var(--danger); font-size:13px;}
 .note-actions{display:flex; gap:10px; margin-top:16px;}
-.btn-cancel{flex:1; border:var(--bd); background:#fff; color:var(--muted); border-radius:var(--r-sm); padding:11px; font-size:15px;}
+.btn-cancel{flex:1; border:none; background:#fff; color:var(--muted); border-radius:var(--r-sm); padding:11px; font-size:15px;}
 .btn-cancel:active{background:var(--bg);}
-.btn-save{flex:1; border:var(--bd); background:var(--ink); color:#fff; border-radius:var(--r-sm); padding:11px; font-size:15px; font-weight:700;}
+.btn-save{flex:1; border:none; background:var(--ink); color:#fff; border-radius:var(--r-sm); padding:11px; font-size:15px; font-weight:700;}
 .btn-save:active{background:var(--primary-d);}
 
 /* ---- 运动月历 ---- */
 .cal-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px 16px 24px; margin:20px 0; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
 .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
 .cal-title{font-size:18px; font-weight:700; color:var(--ink);}
-.cal-nav{width:38px; height:38px; border:var(--bd); background:#fff; color:var(--ink); border-radius:50%; font-size:20px; line-height:1; cursor:pointer; box-shadow:2px 2px 0 rgba(0,0,0,.08);}
+.cal-nav{width:38px; height:38px; border:none; background:#fff; color:var(--ink); border-radius:50%; font-size:20px; line-height:1; cursor:pointer; box-shadow:2px 2px 0 rgba(0,0,0,.08);}
 .cal-nav:active{background:var(--bg); transform:translate(1px,2px); box-shadow:none;}
 .cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px;}
 .cal-week span{text-align:center; font-size:13px; color:var(--muted);}
@@ -259,11 +259,11 @@ body{
 .add-form textarea{resize:vertical; min-height:64px;}
 .add-form label.cb{display:flex; align-items:center; gap:8px; color:var(--text); font-size:15px; margin:12px 0 4px;}
 .add-form label.cb input{width:18px; height:18px;}
-.btn-primary{width:100%; margin-top:14px; padding:13px; border:var(--bd); border-radius:var(--r-sm); background:var(--ink); color:#fff; font-size:16px; font-weight:700; box-shadow:2px 3px 0 rgba(0,0,0,.12);}
+.btn-primary{width:100%; margin-top:14px; padding:13px; border:none; border-radius:var(--r-sm); background:var(--ink); color:#fff; font-size:16px; font-weight:700; box-shadow:2px 3px 0 rgba(0,0,0,.12);}
 .btn-primary:active{background:var(--primary-d); transform:translate(1px,2px); box-shadow:none;}
-.btn-reset{width:100%; margin-top:10px; padding:10px; border:var(--bd); background:#fff; color:var(--muted); font-size:14px;}
+.btn-reset{width:100%; margin-top:10px; padding:10px; border:none; background:#fff; color:var(--muted); font-size:14px;}
 /* 模块顶部：跳转到外部 App 的按钮 + 今日汇总 */
-.btn-launch{display:inline-block; text-decoration:none; background:#fff; color:var(--ink); font-weight:700; padding:9px 16px; border:var(--bd); border-radius:var(--r-sm); font-size:14px; box-shadow:2px 3px 0 rgba(0,0,0,.08); margin:2px 0 12px;}
+.btn-launch{display:inline-block; text-decoration:none; background:#fff; color:var(--ink); font-weight:700; padding:9px 16px; border:none; border-radius:var(--r-sm); font-size:14px; box-shadow:2px 3px 0 rgba(0,0,0,.08); margin:2px 0 12px;}
 .btn-launch:active{transform:translate(1px,2px); box-shadow:none; background:var(--bg);}
 .mod-summary{margin:0 0 14px; padding:12px 16px; background:var(--bg); border:var(--bd); border-radius:var(--r-sm); font-size:14px; color:var(--text);}
 .mod-summary b{color:var(--ink); font-size:17px; margin:0 2px;}
@@ -311,7 +311,7 @@ body{
 .item-body div{margin:2px 0;}
 .tag{display:inline-block; font-size:12px; padding:2px 8px; border-radius:20px; background:var(--bg); color:var(--muted); border:none; margin:2px 4px 2px 0;}
 .tag.on{background:#e0f5e7; color:#1a7a3e;}
-.btn-del{flex-shrink:0; border:var(--bd); background:#fff; color:var(--danger); border-radius:10px; padding:7px 12px; font-size:13px; margin-top:6px;}
+.btn-del{flex-shrink:0; border:none; background:#fff; color:var(--danger); border-radius:10px; padding:7px 12px; font-size:13px; margin-top:6px;}
 .btn-del:active{background:#fdeee9;}
 .empty{color:var(--muted); text-align:center; padding:30px 0; font-size:14px;}
 .item-img{width:100%; max-width:240px; max-height:200px; object-fit:cover; border-radius:12px; margin-top:4px; display:block;}
@@ -410,7 +410,7 @@ body{
   background:var(--bg); color:var(--text); font-size:15px;
 }
 .np-add button{
-  flex:0 0 auto; padding:10px 16px; border:var(--bd); border-radius:var(--r-sm);
+  flex:0 0 auto; padding:10px 16px; border:none; border-radius:var(--r-sm);
   background:#fff; color:var(--ink); font-size:14px; font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
 .np-add button:active{background:var(--bg); transform:translate(1px,2px); box-shadow:none;}
@@ -421,6 +421,6 @@ body{
 }
 .notepad .btn-reset{
   margin-top:12px; width:100%;
-  border:var(--bd); background:var(--bg);
+  border:none; background:var(--bg);
   color:var(--text); border-radius:var(--r-sm); padding:9px; font-size:13px;
 }
