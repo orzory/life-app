@@ -270,12 +270,6 @@ body{
 .wp-item input:focus{outline:none; border-color:var(--primary);}
 #saveWeekPlan{width:100%;}
 
-/* ---- 身体数据（锻炼身体模块内，独立子日志） ---- */
-.bd-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:20px 0;}
-.bd-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px;}
-.bd-box .add-form{margin-bottom:12px;}
-.bd-box #bd-list{margin-top:4px;}
-
 /* ---- 运动截图 OCR（锻炼身体模块） ---- */
 .ocr-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:16px; margin:0 0 16px;}
 .ocr-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:6px;}
