@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v33';
+const APP_VERSION = 'v34';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -277,7 +277,7 @@ const MODULES = {
     ]
   },
   year: {
-    title:'年度计划', icon:'🌟', daily:false, storageKey:'lifeapp_year',
+    title:'年度计划', icon:'🌟', daily:false, storageKey:'lifeapp_year', notepad:true,
     fields:[
       { key:'text', label:'年度目标', type:'text',     ph:'今年想完成的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
@@ -782,33 +782,36 @@ function renderModule(key) {
       </div>`;
   }
 
-  // 每日计划便签纸视图
+  // 便签纸视图（每日计划 / 年度计划共用：
+  //   daily=true  → 日期显示今天，且只列出今天的计划；
+  //   daily=false → 日期显示当前年份，列出全部年度目标）
   if (m.notepad) {
-    const todayStr = today();
-    const todayList = list.filter(r => r.date === todayStr)
+    const isDaily = !!m.daily;
+    const dateLabel = isDaily ? today() : (new Date().getFullYear() + ' 年');
+    const items = (isDaily ? list.filter(r => r.date === today()) : list.slice())
       .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
-    const npItems = todayList.map(it => `
+    const npItems = items.map(it => `
       <div class="np-item ${it.done ? 'done' : ''}" data-id="${it.id}">
         <span class="np-check">${it.done ? '✓' : ''}</span>
         <span class="np-text">${escapeHtml(it.text || '')}</span>
         <button class="np-del" data-id="${it.id}">×</button>
       </div>
-    `).join('') || '<div class="np-empty">今天还没有计划，添加一条吧～</div>';
+    `).join('') || `<div class="np-empty">还没有${isDaily ? '今天' : '今年'}的计划，添加一条吧～</div>`;
     return `
       <h2 class="sec-title">${m.icon} ${m.title}</h2>
       ${extra}
       <div class="notepad">
-        <div class="np-date">${todayStr}</div>
+        <div class="np-date">${dateLabel}</div>
         <div class="np-meta">
           <div class="np-line"><span>FROM:</span><em>ME</em></div>
           <div class="np-line"><span>TO:</span><em>MYSELF</em></div>
         </div>
         <div class="np-list" id="np-list">${npItems}</div>
         <form id="np-add" class="np-add">
-          <input type="text" name="text" placeholder="+ 添加今日计划" autocomplete="off">
+          <input type="text" name="text" placeholder="+ 添加${isDaily ? '今日' : '年度'}计划" autocomplete="off">
           <button type="submit">添加</button>
         </form>
-        <div class="np-tags">#我的一天 #工作日</div>
+        <div class="np-tags">${isDaily ? '#我的一天 #工作日' : '#我的' + new Date().getFullYear() + ' #flag'}</div>
         ${resetBtn}
       </div>`;
   }
