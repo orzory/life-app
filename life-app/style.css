@@ -161,7 +161,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .checkin-list{flex:1 1 180px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 12px; min-width:0;}
 .check-row{
   display:flex; align-items:center; gap:8px; text-decoration:none;
-  color:var(--text); font-size:calc(14px * var(--fs)); padding:2px 0; min-width:0;
+  color:var(--text); font-size:calc(14px * var(--fs)); padding:2px 0 2px 8px; min-width:0;
 }
 .check-row .box{
   width:20px; height:20px; flex:0 0 auto; border:2px solid var(--muted);
