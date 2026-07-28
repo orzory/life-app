@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v104';
+const APP_VERSION = 'v105';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1076,11 +1076,17 @@ function renderCalendar(m, list) {
   const { y, m: mo } = view;
   const startW = new Date(y, mo - 1, 1).getDay();   // 0=周日
   const days = new Date(y, mo, 0).getDate();
+  const prevDays = new Date(y, mo - 1, 0).getDate();
   const byDate = {};
   list.forEach(r => { if (r.date) (byDate[r.date] = byDate[r.date] || []).push(r); });
 
   let cells = '';
-  for (let i = 0; i < startW; i++) cells += '<span class="cal-cell empty"></span>';
+  // 上月末尾日期补齐，保持每行 7 格，间隔一致
+  for (let i = 0; i < startW; i++) {
+    const d = prevDays - startW + 1 + i;
+    const ds = calDateStr(y, mo - 1, d);
+    cells += `<button type="button" class="cal-cell prev-month" data-date="${ds}" data-delta="-1" aria-label="${ds}">${d}</button>`;
+  }
   for (let d = 1; d <= days; d++) {
     const ds = calDateStr(y, mo, d);
     const has = (byDate[ds] || []).length > 0;
@@ -1089,7 +1095,11 @@ function renderCalendar(m, list) {
            + `<span class="cal-num">${d}</span>${has ? '<span class="cal-star">' + ic('star') + '</span>' : ''}</button>`;
   }
   const tail = (7 - ((startW + days) % 7)) % 7;
-  for (let i = 0; i < tail; i++) cells += '<span class="cal-cell empty"></span>';
+  for (let i = 0; i < tail; i++) {
+    const d = i + 1;
+    const ds = calDateStr(y, mo + 1, d);
+    cells += `<button type="button" class="cal-cell next-month" data-date="${ds}" data-delta="1" aria-label="${ds}">${d}</button>`;
+  }
 
   return `
     <div class="cal-box">
@@ -1285,8 +1295,10 @@ function bindModule(key) {
     if (wrap) wrap.addEventListener('click', e => {
       const nav = e.target.closest('.cal-nav');
       if (nav) { navigateMonth(parseInt(nav.dataset.delta, 10) || 0); return; }
-      const cell = e.target.closest('.cal-cell.has-data');
-      if (cell) openSportDayModal(cell.dataset.date);
+      const cell = e.target.closest('.cal-cell');
+      if (!cell) return;
+      if (cell.dataset.delta) { navigateMonth(parseInt(cell.dataset.delta, 10)); return; }
+      if (cell.classList.contains('has-data')) openSportDayModal(cell.dataset.date);
     });
   }
 
