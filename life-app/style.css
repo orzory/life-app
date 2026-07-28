@@ -1,9 +1,5 @@
-/* 引入「清松手写体 1 号」：圆润原子笔手写体，和你图片里的日记字体最接近 */
-@font-face{
-  font-family:'JasonHandwriting1';
-  src:url('https://cdn.jsdelivr.net/gh/max32002/JasonHandWritingFonts@20220828/webfont/JasonHandwriting1-Regular.woff2') format('woff2');
-  font-display:swap;
-}
+/* 引入「沐瑶软笔手写体」(wenfeng-mysxt)：圆润可爱的沐瑶手写体系列，免费商用，走 windfonts CDN */
+@import url('https://app.windfonts.com/api/css?family=wenfeng-mysxt&weight=regular&version=full');
 /* =========================================================================
    我的小日子 —— grug 手绘风（v50：灰色虚线边框 + 规则圆角）
    纸张底色 + 手写体 + 灰色虚线边框 + 统一规则圆角
@@ -30,7 +26,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
 body{
-  font-family:"Chalkboard SE","Comic Sans MS","Marker Felt","JasonHandwriting1","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
+  font-family:"wenfeng-mysxt","Chalkboard SE","Comic Sans MS","Marker Felt","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
