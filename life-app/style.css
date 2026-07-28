@@ -363,7 +363,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .mod-summary{margin:0 0 14px; padding:12px 16px; background:var(--bg); border:var(--bd); border-radius:var(--r-sm); font-size:calc(14px * var(--fs)); color:var(--text);}
 .mod-summary b{color:var(--ink); font-size:calc(17px * var(--fs)); margin:0 2px;}
 
-/* ---- 周计划（锻炼身体模块内） ---- */
+/* ---- 周计划（嘿哈运动模块内） ---- */
 .wp-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px; margin:20px 0; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
 .wp-head{font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:10px;}
 .wp-toolbar{display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
@@ -376,7 +376,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .wp-item input:focus{outline:none; border-color:var(--muted);}
 #saveWeekPlan{width:100%;}
 
-/* ---- 运动截图 OCR（锻炼身体模块） ---- */
+/* ---- 运动截图 OCR（嘿哈运动模块） ---- */
 .ocr-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px; margin:0 0 16px; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
 .ocr-head{font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:10px;}
 .ocr-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:6px;}
@@ -385,7 +385,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .ocr-actions .btn-primary{flex:1; margin-top:0; padding:12px 8px; font-size:calc(15px * var(--fs));}
 .ocr-status{font-size:calc(13px * var(--fs)); color:var(--text); margin-top:10px; line-height:1.5;}
 
-/* ---- 月度运动总结（锻炼身体模块） ---- */
+/* ---- 月度运动总结（嘿哈运动模块） ---- */
 .month-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px; margin:20px 0; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
 .month-head{font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:12px;}
 .month-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:0;}
