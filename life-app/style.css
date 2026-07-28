@@ -88,7 +88,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .sidebar-foot{font-size:calc(12px * var(--fs)); color:var(--muted); text-align:center; padding-top:10px; transform:scaleX(var(--sx)); transform-origin:center;}
 .nav-item{
   display:flex; align-items:center; gap:12px;
-  padding:7px 12px; border-radius:var(--r-sm);
+  padding:7px 12px 7px 20px; border-radius:var(--r-sm);
   text-decoration:none; color:var(--text); font-size:calc(15px * var(--fs));
   border:2px solid transparent;
 }
@@ -409,6 +409,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
     transform:translateX(-100%); transition:transform .25s ease;
     box-shadow:4px 0 0 rgba(0,0,0,.08);
     padding-top:calc(18px + env(safe-area-inset-top));
+    padding-bottom:calc(16px + env(safe-area-inset-bottom));
   }
   .sidebar.open{transform:translateX(0);}
   .view{padding:64px 16px 22px; width:100%; max-width:100%;}
