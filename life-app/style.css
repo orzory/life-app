@@ -1,6 +1,7 @@
 /* 新蒂甜甜圈体（SentyDonut）：用户本地上传字库，自托管部署，不依赖外部 CDN
-   新蒂字库个人非商用免费。实测简体缺字 0，11051 字形。
-   本地 woff2（约 4.9MB）随 app 一起部署，离线可用、加载稳定 */
+   新蒂字库个人非商用免费。为提升 iOS PWA 加载成功率，已子集化：
+   保留通用规范汉字表一/二级（约 6500 字）+ app 内全部汉字，
+   实测 app 内缺字 0，子集后约 2.8MB / 6393 字形。 */
 @font-face{
   font-family:'Donut';
   src:url('SentyDonut.woff2') format('woff2');
@@ -42,6 +43,8 @@ body{
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
+/* 强制表单元素继承手写体，避免 iOS 用系统默认字体 */
+input,textarea,button,select,optgroup,option{font-family:inherit; font-size:inherit; color:inherit;}
 
 /* 手绘风 SVG 图标：继承文字色（单色线条），尺寸随字号，垂直居中 */
 .ic{width:1.15em; height:1.15em; vertical-align:-0.18em; flex:none; display:inline-block;}
