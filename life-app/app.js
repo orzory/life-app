@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v34';
+const APP_VERSION = 'v35';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -196,7 +196,7 @@ const MODULES = {
     ]
   },
   sport: {
-    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport',
+    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport', calendar:true,
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
     launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
@@ -816,6 +816,9 @@ function renderModule(key) {
       </div>`;
   }
 
+  // 进入带月历的模块时，默认回到当前月份（主动翻月后离开再回来则重置）
+  if (m.calendar) sportCalView = currentMonthView();
+
   return `
     <h2 class="sec-title">${m.icon} ${m.title}</h2>
     ${extra}
@@ -825,7 +828,9 @@ function renderModule(key) {
       <button type="submit" class="btn-primary">+ 添加</button>
       ${resetBtn}
     </form>
-    <div class="list" id="list">${itemsHtml}</div>
+    ${m.calendar
+      ? `<div id="calendarWrap">${renderCalendar(m, list)}</div>`
+      : `<div class="list" id="list">${itemsHtml}</div>`}
     ${planHtml}
     ${bodyHtml}
     ${monthHtml}`;
@@ -867,6 +872,116 @@ function itemHTML(m, item) {
     </div>
   </details>`;
 }
+
+/* =========================================================================
+   运动月历：带星标的日期 = 当天上传过运动数据，点日期弹出当天详情
+   ========================================================================= */
+let sportCalView = null;   // 月历当前查看的年月 {y, m}（1-based）
+
+function currentMonthView() {
+  const n = new Date();
+  return { y: n.getFullYear(), m: n.getMonth() + 1 };
+}
+
+function calDateStr(y, mo, d) {
+  return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function renderCalendar(m, list) {
+  const view = sportCalView || (sportCalView = currentMonthView());
+  const { y, m: mo } = view;
+  const startW = new Date(y, mo - 1, 1).getDay();   // 0=周日
+  const days = new Date(y, mo, 0).getDate();
+  const byDate = {};
+  list.forEach(r => { if (r.date) (byDate[r.date] = byDate[r.date] || []).push(r); });
+
+  let cells = '';
+  for (let i = 0; i < startW; i++) cells += '<span class="cal-cell empty"></span>';
+  for (let d = 1; d <= days; d++) {
+    const ds = calDateStr(y, mo, d);
+    const has = (byDate[ds] || []).length > 0;
+    const isToday = ds === today();
+    cells += `<button type="button" class="cal-cell ${has ? 'has-data' : ''} ${isToday ? 'today' : ''}" data-date="${ds}">`
+           + `<span class="cal-num">${d}</span>${has ? '<span class="cal-star">⭐</span>' : ''}</button>`;
+  }
+  const tail = (7 - ((startW + days) % 7)) % 7;
+  for (let i = 0; i < tail; i++) cells += '<span class="cal-cell empty"></span>';
+
+  return `
+    <div class="cal-box">
+      <div class="cal-head">
+        <button type="button" class="cal-nav" data-delta="-1" aria-label="上个月">‹</button>
+        <span class="cal-title">${y}年${mo}月</span>
+        <button type="button" class="cal-nav" data-delta="1" aria-label="下个月">›</button>
+      </div>
+      <div class="cal-week">${['日','一','二','三','四','五','六'].map(w => `<span>${w}</span>`).join('')}</div>
+      <div class="cal-grid">${cells}</div>
+      <div class="cal-legend">⭐ = 当天有运动记录，点日期看详情</div>
+    </div>`;
+}
+
+function renderCalendarInto(m) {
+  const wrap = document.getElementById('calendarWrap');
+  if (!wrap) return;
+  wrap.innerHTML = renderCalendar(m, load(m.storageKey));
+}
+
+function navigateMonth(delta) {
+  const v = sportCalView || currentMonthView();
+  let y = v.y, m = v.m + delta;
+  if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
+  sportCalView = { y, m };
+  const key = Object.keys(MODULES).find(k => MODULES[k].calendar);
+  if (key) renderCalendarInto(MODULES[key]);
+}
+
+// 把一条运动记录渲染成「字段：值」列表（供日历弹窗使用）
+function recordDetailHTML(m, item) {
+  const vals = m.fields.map(f => {
+    let v = item[f.key];
+    if (f.key === 'totalCalories' && !v && item.calories) v = item.calories;
+    if (f.key === 'date') return '';     // 日期由弹窗标题显示
+    if (f.type === 'checkbox')
+      return `<span class="tag ${v ? 'on' : ''}">${f.label}${v ? ' ✓' : ''}</span>`;
+    if (f.type === 'image')
+      return (v && v.startsWith('data:image')) ? `<div class="rec-img"><b>${f.label}:</b><br><img class="item-img" src="${v}" alt=""></div>` : '';
+    return (v !== undefined && v !== '') ? `<div><b>${f.label}:</b> ${escapeHtml(v)}</div>` : '';
+  }).filter(s => s).join('');
+  return vals || '<div class="empty">（这条记录没有更多详情）</div>';
+}
+
+function openSportDayModal(dateStr) {
+  const m = Object.values(MODULES).find(x => x.calendar) || MODULES.sport;
+  const list = load(m.storageKey).filter(r => r.date === dateStr)
+    .sort((a, b) => (a.id > b.id ? -1 : 1));   // 最新在前
+  const body = list.length
+    ? list.map(it => `
+      <div class="day-rec">
+        <div class="day-rec-bar">
+          <span class="day-rec-type">${escapeHtml(it.type || '运动')}</span>
+          ${it.distance ? `<span class="day-rec-dist">${escapeHtml(it.distance)} km</span>` : ''}
+          ${it.duration ? `<span class="day-rec-dist">${escapeHtml(it.duration)} 分</span>` : ''}
+        </div>
+        <div class="day-rec-body">${recordDetailHTML(m, it)}</div>
+        <button type="button" class="btn-del day-del" data-id="${it.id}">删除</button>
+      </div>`).join('')
+    : '<p class="empty">这一天还没有运动记录</p>';
+  $('#sportDayModalDate').textContent = dateStr;
+  $('#sportDayModalBody').innerHTML = body;
+  $('#sportDayModal').classList.add('show');
+  // 删除按钮每次打开都是新元素，重新绑定
+  $$('#sportDayModalBody .day-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (!confirm('确定删除这条运动记录吗？')) return;
+      save(m.storageKey, load(m.storageKey).filter(x => x.id !== id));
+      openSportDayModal(dateStr);             // 刷新弹窗
+      const key = Object.keys(MODULES).find(k => MODULES[k].calendar);
+      if (key) renderCalendarInto(MODULES[key]);  // 刷新月历星标
+    });
+  });
+}
+function closeSportDayModal() { $('#sportDayModal').classList.remove('show'); }
 
 // 绑定某容器内记录的「删除」按钮（按 storageKey 过滤）
 function bindDeletes(scope, storageKey) {
@@ -911,6 +1026,17 @@ function bindModule(key) {
   });
 
   bindDeletes('#list', m.storageKey);
+
+  // 运动月历：翻月 + 点星标日看详情（事件委托在容器上，翻月重渲染后仍有效）
+  if (m.calendar) {
+    const wrap = $('#calendarWrap');
+    if (wrap) wrap.addEventListener('click', e => {
+      const nav = e.target.closest('.cal-nav');
+      if (nav) { navigateMonth(parseInt(nav.dataset.delta, 10) || 0); return; }
+      const cell = e.target.closest('.cal-cell.has-data');
+      if (cell) openSportDayModal(cell.dataset.date);
+    });
+  }
 
   // 运动截图 OCR（仅配置了 ocr 的模块）
   if (m.ocr) {
@@ -1130,6 +1256,13 @@ window.addEventListener('load', () => {
   $('#noteCancel').addEventListener('click', closeIdeaModal);
   $('#noteSave').addEventListener('click', saveIdeaNote);
   $('#noteImg').addEventListener('change', onNoteImgChange);
+  // 运动月历「当天详情」弹窗（静态常驻，不被 #view 重渲染影响）
+  const sdm = document.getElementById('sportDayModal');
+  if (sdm) {
+    sdm.addEventListener('click', e => { if (e.target.id === 'sportDayModal') closeSportDayModal(); });
+    const sdc = document.getElementById('sportDayCancel');
+    if (sdc) sdc.addEventListener('click', closeSportDayModal);
+  }
   render();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
