@@ -86,6 +86,9 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .brand{font-size:calc(20px * var(--fs)); font-weight:700; padding:6px 10px 12px; color:var(--text); letter-spacing:.5px; transform:scaleX(var(--sx)); transform-origin:left center;}
 .nav{display:flex; flex-direction:column; gap:4px; flex:1; overflow-y:auto; transform:scaleX(var(--sx)); transform-origin:left center;}
 .sidebar-foot{font-size:calc(12px * var(--fs)); color:var(--muted); text-align:center; padding-top:10px; transform:scaleX(var(--sx)); transform-origin:center;}
+.backup-btns{display:inline-flex; gap:4px; margin-left:2px;}
+.mini-btn{font:inherit; font-size:calc(11px * var(--fs)); line-height:1; color:var(--muted); background:transparent; border:1px solid var(--line,#e6e0d4); border-radius:7px; padding:3px 6px; cursor:pointer; transform:scaleX(var(--sx)); transform-origin:center;}
+.mini-btn:hover{color:var(--ink); border-color:var(--ink);}
 .nav-item{
   display:flex; align-items:center; gap:12px;
   padding:7px 12px 7px 20px; border-radius:var(--r-sm);
