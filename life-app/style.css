@@ -1,6 +1,10 @@
-/* 引入「沐瑶软笔手写体」(windfonts-mysxt)：圆润可爱的沐瑶手写体系列，免费商用，走 windfonts CDN
-   注意：API 返回的 @font-face 字体名是 "windfonts-mysxt"（带 d），body 必须引用这个名字 */
-@import url('https://app.windfonts.com/api/css?family=wenfeng-mysxt&weight=regular&version=full');
+/* 清松手写体 1号（圆润）：免费商用，含完整简体中文（实测缺字 0），走 jsdelivr CDN
+   自己定义 @font-face 并用自有家族名 'Qingsong'，避免外部 CSS 字体名不一致导致不生效 */
+@font-face{
+  font-family:'Qingsong';
+  src:url('https://cdn.jsdelivr.net/gh/max32002/JasonHandWritingFonts@20220828/webfont/JasonHandwriting1-Regular.woff2') format('woff2');
+  font-display:swap;
+}
 /* =========================================================================
    我的小日子 —— grug 手绘风（v50：灰色虚线边框 + 规则圆角）
    纸张底色 + 手写体 + 灰色虚线边框 + 统一规则圆角
@@ -27,7 +31,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
 body{
-  font-family:"windfonts-mysxt","Chalkboard SE","Comic Sans MS","Marker Felt","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
+  font-family:"Qingsong","Chalkboard SE","Comic Sans MS","Marker Felt","Yuanti SC","YouYuan","STKaiti","KaiTi",cursive,sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
