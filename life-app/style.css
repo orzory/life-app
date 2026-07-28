@@ -18,7 +18,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
 body{
-  font-family:"KaiTi","STXingkai","Comic Sans MS","Chalkboard SE","Marker Felt",cursive,sans-serif;
+  font-family:"Chalkboard SE","Comic Sans MS","Marker Felt","STXingkai","KaiTi",cursive,sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   letter-spacing:.2px;
 }
@@ -64,7 +64,7 @@ body{
 
 /* ---- 主内容 ---- */
 .view{padding:22px; flex:1; max-width:720px; margin:0 auto; width:100%; min-width:0; box-sizing:border-box;}
-.sec-title{font-size:20px; margin:24px 0 14px; letter-spacing:.5px; font-weight:700;}
+.sec-title{font-size:20px; margin:24px 0 14px; letter-spacing:.5px; font-weight:700; display:inline-block; border-bottom:2px solid var(--ink); padding-bottom:6px;}
 
 /* ---- 概览：时钟 ---- */
 .hero{
@@ -141,8 +141,9 @@ body{
   padding:18px 20px; margin:18px 0 22px;
   box-shadow:3px 4px 0 rgba(0,0,0,.06);
   cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;
+  transform:rotate(-0.8deg);
 }
-.idea-card:active{transform:translate(2px,3px); box-shadow:none;}
+.idea-card:active{transform:rotate(-0.8deg) translate(2px,3px); box-shadow:none;}
 .idea-head{display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:700; color:var(--ink);}
 .idea-count{font-size:13px; font-weight:500; color:var(--muted);}
 .idea-body{margin:12px 0; font-size:15px; color:var(--text);}
@@ -196,7 +197,7 @@ body{
 .note-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:10px; border:2px solid var(--line);}
 .note-err{color:var(--danger); font-size:13px;}
 .note-actions{display:flex; gap:10px; margin-top:16px;}
-.btn-cancel{flex:1; border:2px solid var(--line); background:#fff; color:var(--muted); border-radius:12px; padding:11px; font-size:15px;}
+.btn-cancel{flex:1; border:2px solid var(--line); background:#fff; color:var(--muted); border-radius:255px 12px 225px 12px / 12px 225px 12px 255px; padding:11px; font-size:15px;}
 .btn-cancel:active{background:var(--bg);}
 .btn-save{flex:1; border:2px solid var(--ink); background:var(--ink); color:#fff; border-radius:12px; padding:11px; font-size:15px; font-weight:700;}
 .btn-save:active{background:var(--primary-d);}
@@ -223,7 +224,7 @@ body{
 .cal-star{position:absolute; bottom:4px; right:4px; font-size:11px; line-height:1;}
 
 /* ---- 运动某天详情弹窗 ---- */
-.modal.day{background:#fff; max-width:460px; border-radius:24px;}
+.modal.day{background:#fff; max-width:460px; border-radius:255px 24px 255px 24px / 24px 255px 24px 255px;}
 .day-head{font-size:18px; font-weight:700; color:var(--ink); margin-bottom:10px; display:flex; align-items:baseline; gap:8px;}
 .day-date{font-size:14px; color:var(--muted); font-weight:500;}
 .day-body{max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:12px;}
@@ -238,7 +239,7 @@ body{
 .day-actions{display:flex; gap:10px; margin-top:14px;}
 
 /* ---- 运动记录录入弹窗 ---- */
-.sport-form-modal{background:#fff; max-width:460px; max-height:85vh; display:flex; flex-direction:column; border-radius:24px;}
+.sport-form-modal{background:#fff; max-width:460px; max-height:85vh; display:flex; flex-direction:column; border-radius:255px 24px 255px 24px / 24px 255px 24px 255px;}
 .sport-form-modal .day-head{flex-shrink:0;}
 .sport-form-modal .modal-form{flex:1; overflow-y:auto; margin:0 0 10px; padding:16px; border-radius:16px;}
 /* ---- 表单 ---- */
@@ -254,7 +255,7 @@ body{
 .add-form label.cb input{width:18px; height:18px;}
 .btn-primary{width:100%; margin-top:14px; padding:13px; border:2px solid var(--ink); border-radius:255px 14px 225px 14px / 14px 225px 14px 255px; background:var(--ink); color:#fff; font-size:16px; font-weight:700; box-shadow:2px 3px 0 rgba(0,0,0,.12);}
 .btn-primary:active{background:var(--primary-d); transform:translate(1px,2px); box-shadow:none;}
-.btn-reset{width:100%; margin-top:10px; padding:10px; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--muted); font-size:14px;}
+.btn-reset{width:100%; margin-top:10px; padding:10px; border:2px solid var(--line); border-radius:255px 12px 225px 12px / 12px 225px 12px 255px; background:#fff; color:var(--muted); font-size:14px;}
 /* 模块顶部：跳转到外部 App 的按钮 + 今日汇总 */
 .btn-launch{display:inline-block; text-decoration:none; background:#fff; color:var(--ink); font-weight:700; padding:9px 16px; border:2px solid var(--ink); border-radius:255px 12px 225px 12px / 12px 225px 12px 255px; font-size:14px; box-shadow:2px 3px 0 rgba(0,0,0,.08); margin:2px 0 12px;}
 .btn-launch:active{transform:translate(1px,2px); box-shadow:none; background:var(--bg);}
@@ -415,5 +416,5 @@ body{
 .notepad .btn-reset{
   margin-top:12px; width:100%;
   border:2px solid var(--line); background:var(--bg);
-  color:var(--text); border-radius:12px; padding:9px; font-size:13px;
+  color:var(--text); border-radius:255px 12px 225px 12px / 12px 225px 12px 255px; padding:9px; font-size:13px;
 }
