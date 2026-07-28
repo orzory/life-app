@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v43';
+const APP_VERSION = 'v46';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -727,17 +727,10 @@ function renderModule(key) {
     const totalMin = monthList.reduce((a, r) => a + parseDurationToMin(r.duration), 0);
     const totalCal = monthList.reduce((a, r) => a + (Number(r.totalCalories) || Number(r.calories) || 0), 0);
     const activeCal = monthList.reduce((a, r) => a + (Number(r.activeCalories) || 0), 0);
-    const avgHr = monthList.filter(r => r.avgHr).length
-      ? Math.round(monthList.reduce((a, r) => a + (Number(r.avgHr) || 0), 0) / monthList.filter(r => r.avgHr).length)
-      : 0;
     const paces = monthList.map(r => parsePaceToSec(r.pace)).filter(s => s > 0);
     const avgPaceSec = paces.length ? Math.round(paces.reduce((a, b) => a + b, 0) / paces.length) : 0;
     const avgPace = avgPaceSec ? formatPace(avgPaceSec) : '—';
     const h = Math.floor(totalMin / 60), mn = totalMin % 60;
-    const byDay = monthList.slice().sort((a, b) => (a.date > b.date ? 1 : -1)).map(r => {
-      const d = r.date ? r.date.slice(8) : '--';
-      return `<div class="ms-row"><span>${d}日</span><span>${r.type || '运动'}</span><span>${r.distance || 0}km</span><span>${r.duration || 0}min</span></div>`;
-    }).join('') || '<p class="empty">本月还没有运动记录</p>';
     monthHtml = `
       <div class="month-box">
         <div class="month-head">📅 ${y}年${mo}月 运动总结</div>
@@ -748,9 +741,7 @@ function renderModule(key) {
           <div class="month-cell"><b>${Math.round(activeCal)}</b><span>活动热量(kcal)</span></div>
           <div class="month-cell"><b>${Math.round(totalCal)}</b><span>总消耗(kcal)</span></div>
           <div class="month-cell"><b>${avgPace}</b><span>平均配速</span></div>
-          <div class="month-cell"><b>${avgHr || '—'}</b><span>平均心率</span></div>
         </div>
-        <div class="month-list">${byDay}</div>
       </div>`;
   }
 
