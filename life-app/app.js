@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v119';
+const APP_VERSION = 'v120';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -72,7 +72,13 @@ function fillStaticIcons(){
 // ---------- 小工具 ----------
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-const today = () => new Date().toISOString().slice(0, 10);
+// 本地日期（东八区等场景必须按本地时区算「今天」，不能用 toISOString 的 UTC 日期，
+// 否则本地 0 点已过、UTC 还没过 0 点时会把「昨天」误判成「今天」，导致前一天内容不消失）
+const today = () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
 const uid   = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 // 读 / 写 localStorage
