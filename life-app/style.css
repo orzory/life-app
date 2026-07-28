@@ -34,7 +34,7 @@
   --sx:0.88;
   /* 整体字号旋钮：1=原生，>1 大一号，<1 小一号。
      所有 font-size 已改为 calc(Npx * var(--fs))，改这一处即全局缩放 */
-  --fs:1.30;
+  --fs:1.15;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
@@ -45,6 +45,10 @@ body{
 }
 /* 强制表单元素继承手写体，避免 iOS 用系统默认字体 */
 input,textarea,button,select,optgroup,option{font-family:inherit; font-size:inherit; color:inherit;}
+/* 文件选择控件的系统按钮文字也要继承字体（iOS Safari 默认用系统字） */
+input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]::file-selector-button{
+  font-family:inherit; font-size:inherit; color:inherit;
+}
 
 /* 手绘风 SVG 图标：继承文字色（单色线条），尺寸随字号，垂直居中 */
 .ic{width:1.15em; height:1.15em; vertical-align:-0.18em; flex:none; display:inline-block;}
