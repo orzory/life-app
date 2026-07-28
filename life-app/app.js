@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v87';
+const APP_VERSION = 'v88';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -332,14 +332,14 @@ const MODULES = {
     ]
   },
   idea: {
-    title:'每日灵感', icon:'spark', daily:true, storageKey:'lifeapp_idea',
+    title:'絮絮叨叨', icon:'spark', daily:true, storageKey:'lifeapp_idea',
     template:'diary',
     fields:[
       { key:'weather', label:'日期 / 天气', type:'text',     ph:'2026年7月28日 周二 · 晴' },
       { key:'event',   label:'【今日要事】', type:'textarea', ph:'去了哪、见了谁、做了什么' },
       { key:'book',    label:'【今日书账】', type:'textarea', ph:'阅读页码、知识点、金句摘抄' },
       { key:'life',    label:'【生活记录】', type:'textarea', ph:'饮食、见闻、影音' },
-      { key:'idea',    label:'【今日灵感】', type:'textarea', ph:'突然闪现的脑洞、段子或观察' },
+      { key:'idea',    label:'【絮絮叨叨】', type:'textarea', ph:'突然闪现的脑洞、段子或观察' },
       { key:'learn',   label:'【今日新知】', type:'textarea', ph:'今天学到了什么' },
       { key:'sleep',   label:'【睡眠评分】', type:'textarea', ph:'记录睡眠时间与质量、做的梦' }
     ]
@@ -680,7 +680,7 @@ function renderIdeaCard() {
     : '用今日份哗啦啦记录今天…';
   return `
     <a class="idea-card" id="ideaCard" href="#/idea" role="button">
-      <div class="idea-head"><span>${ic('spark')} 每日灵感</span><span class="idea-count">${filled}/7</span></div>
+      <div class="idea-head"><span>${ic('spark')} 絮絮叨叨</span><span class="idea-count">${filled}/7</span></div>
       <div class="idea-body"><div class="idea-empty">${ic('cat')} ${hint}</div></div>
       <span class="idea-write">${ic('pencil')} 写日记</span>
     </a>`;
@@ -806,7 +806,7 @@ function renderDiaryTemplate(m){
         ${row('event', '【今日要事】')}
         ${row('book',  '【今日书账】')}
         ${row('life',  '【生活记录】')}
-        ${row('idea',  '【今日灵感】')}
+        ${row('idea',  '【絮絮叨叨】')}
         ${row('learn', '【今日新知】')}
         ${row('sleep', '【睡眠评分】')}
       </div>
