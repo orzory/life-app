@@ -98,7 +98,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 
 /* ---- 主内容 ---- */
 .view{padding:22px; flex:1; max-width:720px; margin:0 auto; width:100%; min-width:0; box-sizing:border-box; transform:scaleX(var(--sx));}
-.sec-title{font-size:calc(20px * var(--fs)); margin:24px 0 14px; letter-spacing:.5px; font-weight:700; display:inline-block; border-bottom:var(--bd); padding-bottom:6px;}
+.sec-title{font-size:calc(20px * var(--fs)); margin:24px 0 14px; letter-spacing:.5px; font-weight:700;}
 
 /* ---- 概览：时钟 ---- */
 .hero{
