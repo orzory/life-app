@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v120';
+const APP_VERSION = 'v121';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -588,6 +588,7 @@ async function refreshWeather() {
     weatherCache = data;
     const c2 = $('#weatherCard');
     if (c2) c2.innerHTML = renderWeatherInner(data);
+    autoFillDiaryWeather();   // 天气到位后，若日记页已打开且「日期/天气」还空着，自动补当天实况
   } catch (e) {
     const c2 = $('#weatherCard');
     if (c2) c2.innerHTML = `<div class="wx-error">${ic('warn')} 天气获取失败，请检查网络</div>`;
@@ -821,6 +822,18 @@ function todayLabel() {
   const week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
   return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${week}`;
 }
+// 日记「日期/天气」自动预填文案：当天日期 + 当前实况（天气卡片加载完成后才有温度/天气）
+function currentWeatherText() {
+  if (weatherCache && weatherCache.temp != null && weatherCache.condition) {
+    return `${todayLabel()} · ${weatherCache.condition} ${Math.round(weatherCache.temp)}°`;
+  }
+  return todayLabel();
+}
+// 天气卡片加载完、且日记页已打开时，若「日期/天气」还空着，自动补上当天实况
+function autoFillDiaryWeather() {
+  const el = document.querySelector('.diary-page [name="weather"]');
+  if (el && !el.value.trim()) el.value = currentWeatherText();
+}
 function tickClock() {
   const tEl = $('#clock');
   const dEl = $('#clockDate');
@@ -846,6 +859,8 @@ function renderDiaryTemplate(m){
   const rec = diaryTodayRecord(m.storageKey);
   const val = k => escapeHtml(rec[k] || '');
   const ph = k => escapeHtml(m.fields.find(f => f.key === k).ph || '');
+  // 「日期/天气」没手填过时，自动预填当天日期+当前天气；已填过则保留用户原文
+  const weatherVal = rec.weather ? val('weather') : escapeHtml(currentWeatherText());
   const row = (k, label) => `
     <label class="diary-field">
       <span class="diary-label">${label}</span>
@@ -861,7 +876,7 @@ function renderDiaryTemplate(m){
       <div class="diary-weather-row">
         <label>
           <span class="diary-label">日期 / 天气</span>
-          <input type="text" name="weather" value="${val('weather')}" placeholder="${ph('weather')}">
+          <input type="text" name="weather" value="${weatherVal}" placeholder="${ph('weather')}">
         </label>
       </div>
       <div class="diary-fields">
