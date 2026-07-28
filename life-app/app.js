@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v90';
+const APP_VERSION = 'v91';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -680,7 +680,7 @@ function renderIdeaCard() {
   const filled = diaryFilledCount(rec);
   const hint = filled
     ? '今日日记已填 ' + filled + '/7，点击查看或继续写…'
-    : '用今日份哗啦啦记录今天…';
+    : '该写流水账啦';
   return `
     <a class="idea-card" id="ideaCard" href="#/idea" role="button">
       <div class="idea-head"><span>${ic('spark')} 絮絮叨叨</span><span class="idea-count">${filled}/7</span></div>
