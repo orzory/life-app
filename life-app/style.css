@@ -313,10 +313,10 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .cal-cell.has-data:active{background:#ffeeb8;}
 .cal-cell.today{border-color:var(--muted); box-shadow:0 0 0 2px var(--muted) inset;}
 .cal-num{line-height:1; font-size:calc(13px * var(--fs));}
-.cal-icons{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1px; margin-top:1px; width:100%;}
-.cal-ic{width:11px; height:11px; display:inline-flex; color:var(--ink);}
-.cal-ic .ic{width:11px; height:11px;}
-.cal-more{font-size:9px; line-height:1; color:var(--muted); font-weight:700; margin-left:1px;}
+.cal-icons{display:flex; flex-wrap:nowrap; justify-content:center; align-items:center; gap:1px; margin-top:1px; width:100%; overflow:hidden;}
+.cal-ic{width:10px; height:10px; display:inline-flex; flex:none; color:var(--ink);}
+.cal-ic .ic{width:10px; height:10px;}
+.cal-more{font-size:8px; line-height:1; color:var(--muted); font-weight:700; margin-left:1px; flex:none;}
 .home-cal-wrap{margin:20px 0;}
 
 /* ---- 运动某天详情弹窗 ---- */
