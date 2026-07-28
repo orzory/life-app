@@ -33,7 +33,7 @@
   --sx:0.88;
   /* 整体字号旋钮：1=原生，>1 大一号，<1 小一号。
      所有 font-size 已改为 calc(Npx * var(--fs))，改这一处即全局缩放 */
-  --fs:1.15;
+  --fs:1.30;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{margin:0; padding:0; height:100%; position:relative; width:100%; overflow-x:hidden; touch-action:pan-y;}
