@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v84';
+const APP_VERSION = 'v85';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1436,7 +1436,7 @@ window.addEventListener('load', () => {
   $('#overlay').addEventListener('click', closeDrawer);
   // 侧边栏底部显示当前版本号，方便确认是否加载到最新版
   const foot = document.querySelector('.sidebar-foot');
-  if (foot) foot.innerHTML = '数据仅存于本机 ' + ic('lock') + ' · ' + APP_VERSION +
+  if (foot) foot.innerHTML = ic('lock') + ' · ' + APP_VERSION +
     ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>';
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
   $('#ideaModal').addEventListener('click', e => { if (e.target.id === 'ideaModal') closeIdeaModal(); });
