@@ -1,7 +1,67 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v67';
+const APP_VERSION = 'v68';
+
+// ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
+const ICON_PATHS = {
+  home:'<path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/><path d="M10.5 20 V14 H13.5 V20"/>',
+  speech:'<path d="M4 5 H20 V15 H13 L9 19 V15 H4 Z"/><path d="M8 9 H16"/><path d="M8 12 H13"/>',
+  book:'<path d="M12 6 C9 4.5 5.5 4.5 4.5 5.5 V18 C5.5 17 9 17 12 19 C15 17 18.5 17 19.5 18 V5.5 C18.5 4.5 15 4.5 12 6 Z"/><path d="M12 6 V19"/>',
+  run:'<circle cx="14" cy="5.5" r="1.6"/><path d="M12 9 C14 8 15 10 14 12 L12 16"/><path d="M14 12 L18 11"/><path d="M12 16 L10 21"/><path d="M14 12 L17 16"/>',
+  meal:'<path d="M4 10 H20 C20 15 16.5 18.5 12 18.5 C7.5 18.5 4 15 4 10 Z"/><path d="M3.5 10 H20.5"/><path d="M9 3.5 C8.5 5.5 9.5 6.5 9 8.5"/><path d="M13 2.5 C12.5 4.5 13.5 5.5 13 7.5"/>',
+  piggy:'<path d="M5 13.5 C5 9.5 9 7.5 13 7.5 C17 7.5 19 9.5 19 12.5 C19 15.5 16 17.5 12 17.5 H8 C6 17.5 5 15.5 5 13.5 Z"/><circle cx="15.5" cy="11.5" r="0.9"/><path d="M7.5 10.5 L4.5 9.5"/><path d="M9 17.5 V19.5 H11"/>',
+  rainbow:'<path d="M4 19 A9 9 0 0 1 20 19"/><path d="M7.5 19 A5.5 5.5 0 0 1 16.5 19"/><path d="M11 19 A1 1 0 0 1 13 19"/>',
+  star:'<path d="M12 3.5 L14.2 9 L20 9.3 L15.5 13.2 L17 19 L12 15.6 L7 19 L8.5 13.2 L4 9.3 L9.8 9 Z"/>',
+  spark:'<path d="M12 4 L13 11 L20 12 L13 13 L12 20 L11 13 L4 12 L11 11 Z"/>',
+  moon:'<path d="M16 4.5 A7.5 7.5 0 1 0 16 19.5 A6 6 0 1 1 16 4.5 Z"/>',
+  flower:'<circle cx="12" cy="12" r="2"/><path d="M12 10 C10 6 14 6 12 10 Z"/><path d="M14 12 C18 10 18 14 14 12 Z"/><path d="M12 14 C10 18 14 18 12 14 Z"/><path d="M10 12 C6 10 6 14 10 12 Z"/>',
+  link:'<path d="M10 14 L14 10"/><path d="M8.5 16.5 A3 3 0 1 1 8.5 10.5 L11 13"/><path d="M15.5 13.5 A3 3 0 1 1 15.5 7.5 L13 10"/>',
+  heart:'<path d="M12 20 C12 20 4.5 14.5 4.5 9.2 A3.7 3.7 0 0 1 12 8 A3.7 3.7 0 0 1 19.5 9.2 C19.5 14.5 12 20 12 20 Z"/>',
+  pencil:'<path d="M4 20 L5 16 L15.5 5.5 L18.5 8.5 L8 19 Z"/><path d="M14 6.5 L17 9.5"/>',
+  broom:'<path d="M7 4 L13 10"/><path d="M13 10 L19 16"/><path d="M11 12 L19 15"/><path d="M12 14 L20 17"/>',
+  chart:'<path d="M4 20 V4"/><path d="M4 20 H20"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="14" width="3" height="4"/>',
+  camera:'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7 L10.5 5 H13.5 L15 7"/><circle cx="12" cy="13" r="3"/>',
+  search:'<circle cx="11" cy="11" r="5"/><path d="M15 15 L20 20"/>',
+  cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5 H20"/><path d="M8.5 3 V6"/><path d="M15.5 3 V6"/>',
+  disk:'<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 5 V10 H15 V5"/><rect x="9" y="14" width="6" height="4"/>',
+  trash:'<path d="M5 7 H19"/><path d="M9 7 V5 H15 V7"/><path d="M7 7 L8 20 H16 L17 7"/><path d="M10 10.5 V16.5"/><path d="M14 10.5 V16.5"/>',
+  pin:'<path d="M12 21 C12 21 5 14 5 9.5 A7 7 0 0 1 19 9.5 C19 14 12 21 12 21 Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  drop:'<path d="M12 3.5 C12 3.5 6 10.5 6 14.5 A6 6 0 0 0 18 14.5 C18 10.5 12 3.5 12 3.5 Z"/>',
+  menu:'<path d="M4 7 H20"/><path d="M4 12 H20"/><path d="M4 17 H20"/>',
+  warn:'<path d="M12 4 L22 20 H2 Z"/><path d="M12 10 V15"/><circle cx="12" cy="17.5" r="0.7"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11 V8 A4 4 0 0 1 16 8 V11"/><circle cx="12" cy="15" r="1.1"/>',
+  ok:'<circle cx="12" cy="12" r="8"/><path d="M8 12 L11 15 L16 9"/>',
+  no:'<circle cx="12" cy="12" r="8"/><path d="M9 9 L15 15"/><path d="M15 9 L9 15"/>',
+  hourglass:'<path d="M7 4 H17"/><path d="M7 20 H17"/><path d="M8 4 C8 9 16 9 16 12 C16 15 8 15 8 20"/><path d="M8 4 H16"/>',
+  sun:'<circle cx="12" cy="12" r="3.6"/><path d="M12 3 V6"/><path d="M12 18 V21"/><path d="M3 12 H6"/><path d="M18 12 H21"/><path d="M5.5 5.5 L7.5 7.5"/><path d="M16.5 16.5 L18.5 18.5"/><path d="M5.5 18.5 L7.5 16.5"/><path d="M16.5 7.5 L18.5 5.5"/>',
+  suncloud:'<circle cx="8" cy="7.5" r="2.4"/><path d="M8 2.5 V4.3"/><path d="M3 7 H4.8"/><path d="M9 13 A3.2 3.2 0 0 1 9 7.5 A4 4 0 0 1 17.5 9 A3 3 0 0 1 17.5 15 H10 A3.2 3.2 0 0 1 9 13 Z"/>',
+  cloud:'<path d="M8 17 A4 4 0 0 1 8 9 A5 5 0 0 1 18 10.5 A3.5 3.5 0 0 1 18 17 Z"/>',
+  fog:'<path d="M8 14 A3.6 3.6 0 0 1 8 8 A4.6 4.6 0 0 1 17 9.5 A3.2 3.2 0 0 1 17 14 Z"/><path d="M5 18 H19"/><path d="M6.5 20.5 H17.5"/>',
+  rain:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 16 L8 19"/><path d="M13 16 L12 19"/><path d="M17 16 L16 19"/>',
+  snow:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 17 L9 19"/><path d="M13 17 L13 19"/><path d="M17 17 L17 19"/>',
+  thunder:'<path d="M8 12 A3.6 3.6 0 0 1 8 6 A4.6 4.6 0 0 1 17 7.5 A3.2 3.2 0 0 1 17 12 Z"/><path d="M12 13 L9.5 18 H12 L10.5 21"/>'
+};
+function ic(name){
+  const p = ICON_PATHS[name];
+  if (!p) return '';
+  return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+}
+// 天气代码 → 图标
+function wxIcon(code){
+  if (code === 0) return 'sun';
+  if (code === 1 || code === 2) return 'suncloud';
+  if (code === 3) return 'cloud';
+  if (code === 45 || code === 48) return 'fog';
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return 'rain';
+  if ([71,73,75,77,85,86].includes(code)) return 'snow';
+  if ([95,96,99].includes(code)) return 'thunder';
+  return 'cloud';
+}
+// 填充 index.html 里静态的 data-ic 占位（运行一次）
+function fillStaticIcons(){
+  document.querySelectorAll('[data-ic]').forEach(el => { el.innerHTML = ic(el.dataset.ic); });
+}
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -169,9 +229,9 @@ function parseWorkoutText(text) {
    ========================================================================= */
 const MODULES = {
   english: {
-    title:'英语学习', icon:'🗣️', daily:true, storageKey:'lifeapp_english',
+    title:'英语学习', icon:'speech', daily:true, storageKey:'lifeapp_english',
     // 一键跳转到「不背单词」：装了 App 会直接唤起（bubei://），没装则打开官网
-    launch:{ label:'🔗 打开不背单词背词', url:'https://www.bbdc.cn/', scheme:'bubei://' },
+    launch:{ label:'打开不背单词背词', url:'https://www.bbdc.cn/', scheme:'bubei://' },
     // 今日学习概览：把今天各条记录的这些数字字段求和展示
     dailySummary:[ { key:'words', label:'已背单词', unit:'个' }, { key:'minutes', label:'学习时长', unit:'分' } ],
     fields:[
@@ -184,9 +244,9 @@ const MODULES = {
     ]
   },
   reading: {
-    title:'每日阅读', icon:'📚', daily:true, storageKey:'lifeapp_reading',
+    title:'每日阅读', icon:'book', daily:true, storageKey:'lifeapp_reading',
     // 一键跳转到「微信读书」：手机装了 App 会直接唤起（weread://），没装则打开网页版
-    launch:{ label:'🔗 打开微信读书', url:'https://weread.qq.com/', scheme:'weread://' },
+    launch:{ label:'打开微信读书', url:'https://weread.qq.com/', scheme:'weread://' },
     // 今日阅读概览：把今天各条记录的时长字段求和
     dailySummary:[ { key:'minutes', label:'阅读时长', unit:'分' } ],
     fields:[
@@ -196,9 +256,9 @@ const MODULES = {
     ]
   },
   sport: {
-    title:'锻炼身体', icon:'🏃‍♀️', daily:true, storageKey:'lifeapp_sport', calendar:true, modalForm:true,
+    title:'锻炼身体', icon:'run', daily:true, storageKey:'lifeapp_sport', calendar:true, modalForm:true,
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
-    launch:{ label:'🔗 打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
+    launch:{ label:'打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
     dailySummary:[ { key:'duration', label:'运动时长', unit:'分' }, { key:'distance', label:'距离', unit:'km' } ],
     // 上传运动截图做 OCR，自动识别华为健康等 App 的详情页数据
@@ -240,7 +300,7 @@ const MODULES = {
     ]
   },
   meal: {
-    title:'好好吃饭', icon:'🍱', daily:true, storageKey:'lifeapp_meal',
+    title:'好好吃饭', icon:'meal', daily:true, storageKey:'lifeapp_meal',
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
       { key:'meal',     label:'餐次',   type:'text',     ph:'早餐 / 午餐 / 晚餐' },
@@ -249,7 +309,7 @@ const MODULES = {
     ]
   },
   account: {
-    title:'每日记账', icon:'🐷', daily:true, storageKey:'lifeapp_account',
+    title:'每日记账', icon:'piggy', daily:true, storageKey:'lifeapp_account',
     fields:[
       { key:'category', label:'类别', type:'text',     ph:'餐饮 / 交通 / 购物' },
       { key:'amount',   label:'金额', type:'number',   ph:'金额' },
@@ -257,28 +317,28 @@ const MODULES = {
     ]
   },
   daily: {
-    title:'每日计划', icon:'🌈', daily:true, storageKey:'lifeapp_daily', notepad:true,
+    title:'每日计划', icon:'rainbow', daily:true, storageKey:'lifeapp_daily', notepad:true,
     fields:[
       { key:'text', label:'计划内容', type:'text',     ph:'今天要做的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
     ]
   },
   year: {
-    title:'年度计划', icon:'🌟', daily:false, storageKey:'lifeapp_year', notepad:true,
+    title:'年度计划', icon:'star', daily:false, storageKey:'lifeapp_year', notepad:true,
     fields:[
       { key:'text', label:'年度目标', type:'text',     ph:'今年想完成的事' },
       { key:'done', label:'已完成',   type:'checkbox' }
     ]
   },
   idea: {
-    title:'今日灵感', icon:'✨', daily:true, storageKey:'lifeapp_idea',
+    title:'今日灵感', icon:'spark', daily:true, storageKey:'lifeapp_idea',
     fields:[
       { key:'text',  label:'灵感文字', type:'textarea', ph:'突然想到的点子…' },
       { key:'image', label:'配图',     type:'image' }
     ]
   },
   review: {
-    title:'每日复盘', icon:'🌜', daily:true, storageKey:'lifeapp_review',
+    title:'每日复盘', icon:'moon', daily:true, storageKey:'lifeapp_review',
     fields:[
       { key:'mood',     label:'今日心情', type:'text',     ph:'开心 / 一般 / 累' },
       { key:'summary',  label:'今日总结', type:'textarea', ph:'今天怎么样' },
@@ -288,7 +348,7 @@ const MODULES = {
 };
 
 // 左侧导航项：今日概览 + 所有模块
-const NAV = [{ key:'home', icon:'🏡', title:'今日概览' }].concat(
+const NAV = [{ key:'home', icon:'home', title:'今日概览' }].concat(
   Object.entries(MODULES).map(([key, m]) => ({ key, icon:m.icon, title:m.title }))
 );
 
@@ -319,7 +379,7 @@ function renderNav() {
   const cur = currentHash();
   $('#nav').innerHTML = NAV.map(n => `
     <a href="#/${n.key}" class="nav-item ${cur === n.key ? 'active' : ''}">
-      <span class="nav-icon">${n.icon}</span>
+      <span class="nav-icon">${ic(n.icon)}</span>
       <span class="nav-text">${n.title}</span>
     </a>`).join('');
 }
@@ -330,12 +390,12 @@ function renderNav() {
 const USE_PHONE_LOCATION = false;
 const FALLBACK_LOC = { lat:23.1291, lon:113.2644, city:'广州' }; // 定位失败回退广州
 const WMO = {
-  0:'晴 ☀️',1:'大致晴朗 🌤️',2:'局部多云 ⛅',3:'阴 ☁️',45:'雾 🌫️',48:'雾凇 🌫️',
-  51:'毛毛雨 🌦️',53:'毛毛雨 🌦️',55:'毛毛雨 🌦️',56:'冻毛雨 🌧️',57:'冻毛雨 🌧️',
-  61:'小雨 🌧️',63:'中雨 🌧️',65:'大雨 🌧️',66:'冻雨 🌧️',67:'冻雨 🌧️',
-  71:'小雪 🌨️',73:'中雪 🌨️',75:'大雪 🌨️',77:'雪粒 🌨️',
-  80:'阵雨 🌦️',81:'阵雨 🌧️',82:'强阵雨 🌧️',85:'阵雪 🌨️',86:'强阵雪 🌨️',
-  95:'雷阵雨 ⛈️',96:'雷阵雨 ⛈️',99:'雷阵雨 ⛈️'
+  0:'晴',1:'大致晴朗',2:'局部多云',3:'阴',45:'雾',48:'雾凇',
+  51:'毛毛雨',53:'毛毛雨',55:'毛毛雨',56:'冻毛雨',57:'冻毛雨',
+  61:'小雨',63:'中雨',65:'大雨',66:'冻雨',67:'冻雨',
+  71:'小雪',73:'中雪',75:'大雪',77:'雪粒',
+  80:'阵雨',81:'阵雨',82:'强阵雨',85:'阵雪',86:'强阵雪',
+  95:'雷阵雨',96:'雷阵雨',99:'雷阵雨'
 };
 let geoCoords = null;     // 定位结果缓存（只问一次）
 let weatherCache = null;  // 天气结果缓存（按天）
@@ -391,7 +451,7 @@ function analyzeWeather(wx, city, forTomorrow) {
   const hums  = (wx.hourly && wx.hourly.relative_humidity_2m) || [];
   const pops  = (wx.hourly && wx.hourly.precipitation_probability) || [];
   if (temp === undefined || temp === null) {
-    return { city, temp:null, humidity:null, condition, dayLabel, bestWindow:'—', note:'天气数据暂不可用' };
+    return { city, temp:null, humidity:null, condition, code, dayLabel, bestWindow:'—', note:'天气数据暂不可用' };
   }
 
   // 目标日期：今天 or 明天（本地时区 YYYY-MM-DD）
@@ -420,7 +480,7 @@ function analyzeWeather(wx, city, forTomorrow) {
   if (!rows.length) {
     // 今天已没有可跑时段 → 直接改为分析明天（标题/时间/说明保持一致，不再出现「今日…明早」的矛盾）
     if (!forTomorrow) return analyzeWeather(wx, city, true);
-    return { city, temp, humidity, condition, dayLabel, bestWindow:'—', note:'明日预报数据暂不可用，稍后再看' };
+    return { city, temp, humidity, condition, code, dayLabel, bestWindow:'—', note:'明日预报数据暂不可用，稍后再看' };
   }
   if (runs.length) {
     runs.sort((a,b) => (b[1]-b[0]) - (a[1]-a[0]));   // 最长舒适窗口优先
@@ -428,7 +488,7 @@ function analyzeWeather(wx, city, forTomorrow) {
     const win = rows.filter(r => r.hh >= s && r.hh <= e);
     const avgT = win.reduce((a,r)=>a+r.temp,0) / win.length;
     const avgH = win.reduce((a,r)=>a+r.hum,0) / win.length;
-    return { city, temp, humidity, condition, dayLabel,
+    return { city, temp, humidity, condition, code, dayLabel,
       bestWindow: `${fmtH(s)}–${fmtH(e)}`,
       note: `气温约 ${Math.round(avgT)}℃、湿度 ${Math.round(avgH)}%，体感舒适，适合户外跑` };
   }
@@ -439,26 +499,27 @@ function analyzeWeather(wx, city, forTomorrow) {
     const bs = Math.abs(best.temp-20) + best.hum/20 + best.pop/10;
     if (sc < bs) best = r;
   }
-  return { city, temp, humidity, condition, dayLabel,
+  return { city, temp, humidity, condition, code, dayLabel,
     bestWindow: fmtH(best.hh),
     note: `${dayLabel}条件一般（${Math.round(best.temp)}℃ / 湿度${Math.round(best.hum)}%），这是相对最适宜的时段` };
 }
 
 function renderWeatherInner(d) {
-  if (!d) return `<div class="wx-loading">🌤️ 正在获取当地天气…</div>`;
-  if (d.error) return `<div class="wx-error">⚠️ 天气获取失败，请检查网络</div>`;
+  if (!d) return `<div class="wx-loading">${ic('suncloud')} 正在获取当地天气…</div>`;
+  if (d.error) return `<div class="wx-error">${ic('warn')} 天气获取失败，请检查网络</div>`;
   const t = (d.temp === null || d.temp === undefined) ? '—' : Math.round(d.temp) + '°';
   const h = (d.humidity === null || d.humidity === undefined) ? '—' : Math.round(d.humidity) + '%';
   return `
     <div class="wx-topline">
-      <span class="wx-city">📍 ${escapeHtml(d.city || '当地')}</span>
+      <span class="wx-ic">${ic(wxIcon(d.code))}</span>
+      <span class="wx-city">${ic('pin')} ${escapeHtml(d.city || '当地')}</span>
       <span class="wx-temp">${t}</span>
       <span class="wx-cond">${d.condition}</span>
-      <span class="wx-hum">💧 湿度 ${h}</span>
+      <span class="wx-hum">${ic('drop')} 湿度 ${h}</span>
     </div>
     <div class="wx-run">
       <div class="wx-run-line">
-        <span class="wx-run-title">🏃 ${d.dayLabel || '今日'}最佳户外跑步时段</span>
+        <span class="wx-run-title">${ic('run')} ${d.dayLabel || '今日'}最佳户外跑步时段</span>
         <span class="wx-run-time">${d.bestWindow}</span>
       </div>
       <div class="wx-run-note">${d.note}</div>
@@ -483,7 +544,7 @@ async function refreshWeather() {
     if (c2) c2.innerHTML = renderWeatherInner(data);
   } catch (e) {
     const c2 = $('#weatherCard');
-    if (c2) c2.innerHTML = `<div class="wx-error">⚠️ 天气获取失败，请检查网络</div>`;
+    if (c2) c2.innerHTML = `<div class="wx-error">${ic('warn')} 天气获取失败，请检查网络</div>`;
   }
 }
 
@@ -512,7 +573,7 @@ function renderHome() {
 
   return `
     <div class="hero">
-      <div class="hero-greet">👋 今天也要加油呀</div>
+      <div class="hero-greet">${ic('heart')} 今天也要加油呀</div>
       <div id="clock" class="clock"></div>
     </div>
 
@@ -546,13 +607,13 @@ function renderIdeaCard() {
     body = `<div class="idea-text">${escapeHtml(txt)}</div>`
          + (latest.image ? `<div class="idea-thumb"><img src="${latest.image}" alt="灵感配图"></div>` : '');
   } else {
-    body = `<div class="idea-empty">✏️ 点此随手记一条灵感…</div>`;
+    body = `<div class="idea-empty">${ic('pencil')} 点此随手记一条灵感…</div>`;
   }
   return `
     <div class="idea-card" id="ideaCard" role="button" tabindex="0">
-      <div class="idea-head"><span>✨ 每日灵感</span><span class="idea-count">今日 ${n} 条</span></div>
+      <div class="idea-head"><span>${ic('spark')} 每日灵感</span><span class="idea-count">今日 ${n} 条</span></div>
       <div class="idea-body">${body}</div>
-      <button class="idea-write" id="ideaWriteBtn" type="button">✏️ 写灵感</button>
+      <button class="idea-write" id="ideaWriteBtn" type="button">${ic('pencil')} 写灵感</button>
     </div>`;
 }
 
@@ -651,15 +712,15 @@ function renderModule(key) {
                    || '<p class="empty">还没有记录，添加第一条吧～</p>';
   // 每日模块提供「清空今日」按钮，实现每日重置
   const resetBtn = m.daily
-    ? `<button id="reset-today" class="btn-reset">🧹 清空今日</button>` : '';
+    ? `<button id="reset-today" class="btn-reset">${ic('broom')} 清空今日</button>` : '';
   // 模块附加上方：跳转到外部 App 的按钮 + 今日汇总
   let extra = '';
   if (m.launch) {
     if (m.launch.scheme) {
       // 优先用 scheme 唤起 App，失败（未安装）则在 1.8s 后回退到网页
-      extra += `<button class="btn-launch" type="button" data-scheme="${m.launch.scheme}" data-fallback="${m.launch.url}">${m.launch.label}</button>`;
+      extra += `<button class="btn-launch" type="button" data-scheme="${m.launch.scheme}" data-fallback="${m.launch.url}">${ic('link')} ${m.launch.label}</button>`;
     } else {
-      extra += `<a class="btn-launch" href="${m.launch.url}" target="_blank" rel="noopener">${m.launch.label}</a>`;
+      extra += `<a class="btn-launch" href="${m.launch.url}" target="_blank" rel="noopener">${ic('link')} ${m.launch.label}</a>`;
     }
   }
   if (m.dailySummary) {
@@ -668,19 +729,19 @@ function renderModule(key) {
       const sum = todayList.reduce((a, r) => a + (Number(r[s.key]) || 0), 0);
       return `${s.label} <b>${sum}</b>${s.unit || ''}`;
     }).join(' · ');
-    extra += `<div class="mod-summary">📊 今日：${parts || '还没有记录'}</div>`;
+    extra += `<div class="mod-summary">${ic('chart')} 今日：${parts || '还没有记录'}</div>`;
   }
   // 运动截图 OCR（仅配置了 ocr 的模块，如锻炼身体）
   let ocrHtml = '';
   if (m.ocr) {
     ocrHtml = `
       <div class="ocr-box">
-        <div class="ocr-head">📷 上传运动截图自动识别</div>
+        <div class="ocr-head">${ic('camera')} 上传运动截图自动识别</div>
         <div class="ocr-bar">
           <input type="file" id="workoutImg" class="ocr-input" accept="image/*">
         </div>
         <div class="ocr-actions">
-          <button id="ocrBtn" class="btn-primary" type="button">🔍 识别截图</button>
+          <button id="ocrBtn" class="btn-primary" type="button">${ic('search')} 识别截图</button>
           <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
         </div>
         <div id="ocrStatus" class="ocr-status"></div>
@@ -697,7 +758,7 @@ function renderModule(key) {
     const tplOpts = (wk.templates || []).map((t, i) => `<option value="${i}">${escapeHtml(t.name)}</option>`).join('');
     planHtml = `
       <div class="wp-box">
-        <div class="wp-head">📅 本周计划</div>
+        <div class="wp-head">${ic('cal')} 本周计划</div>
         <div class="wp-toolbar">
           <span class="wp-tpl-label">套用模板：</span>
           <select id="wpTemplate" class="wp-select">
@@ -709,8 +770,8 @@ function renderModule(key) {
           ${days.map(d => `<label class="wp-item">${d}<input name="wp-${d}" value="${escapeHtml(plan[d]||'')}" placeholder="休息/训练…"></label>`).join('')}
         </div>
         <div class="wp-actions">
-          <button id="saveWeekPlan" class="btn-primary" type="button">💾 保存周计划</button>
-          <button id="clearWeekPlan" class="btn-reset" type="button">🗑 清空</button>
+          <button id="saveWeekPlan" class="btn-primary" type="button">${ic('disk')} 保存周计划</button>
+          <button id="clearWeekPlan" class="btn-reset" type="button">${ic('trash')} 清空</button>
         </div>
       </div>`;
   }
@@ -732,7 +793,7 @@ function renderModule(key) {
     const h = Math.floor(totalMin / 60), mn = totalMin % 60;
     monthHtml = `
       <div class="month-box">
-        <div class="month-head">📅 ${y}年${mo}月 运动总结</div>
+        <div class="month-head">${ic('cal')} ${y}年${mo}月 运动总结</div>
         <div class="month-grid">
           <div class="month-cell"><b>${count}</b><span>运动次数</span></div>
           <div class="month-cell"><b>${totalDist.toFixed(1)}</b><span>总距离(km)</span></div>
@@ -834,7 +895,7 @@ function itemHTML(m, item) {
   }).join('');
   // 折叠显示：默认收起，只显示日期；点开看详情，避免长列表撑太长
   return `<details class="item">
-    <summary class="item-summary">📅 ${escapeHtml(dateTag)}</summary>
+    <summary class="item-summary">${ic('cal')} ${escapeHtml(dateTag)}</summary>
     <div class="item-body">${vals}
       <button class="btn-del" data-id="${item.id}">删除</button>
     </div>
@@ -870,7 +931,7 @@ function renderCalendar(m, list) {
     const has = (byDate[ds] || []).length > 0;
     const isToday = ds === today();
     cells += `<button type="button" class="cal-cell ${has ? 'has-data' : ''} ${isToday ? 'today' : ''}" data-date="${ds}">`
-           + `<span class="cal-num">${d}</span>${has ? '<span class="cal-star">⭐</span>' : ''}</button>`;
+           + `<span class="cal-num">${d}</span>${has ? '<span class="cal-star">' + ic('star') + '</span>' : ''}</button>`;
   }
   const tail = (7 - ((startW + days) % 7)) % 7;
   for (let i = 0; i < tail; i++) cells += '<span class="cal-cell empty"></span>';
@@ -1069,22 +1130,22 @@ function bindModule(key) {
       if (!file) { if (ocrStatus) ocrStatus.textContent = '请先选择一张截图'; return; }
       if (typeof Tesseract === 'undefined') { if (ocrStatus) ocrStatus.textContent = 'OCR 脚本未加载，请检查网络后刷新'; return; }
       try {
-        if (ocrStatus) ocrStatus.textContent = '⏳ 正在压缩图片…';
+        if (ocrStatus) ocrStatus.textContent = '正在压缩图片…';
         const dataURL = await fileToDataURL(file);   // 压缩后的 base64
 
-        if (ocrStatus) ocrStatus.textContent = '⏳ 正在初始化 OCR，首次需下载中文包（约 10MB）…';
+        if (ocrStatus) ocrStatus.textContent = '正在初始化 OCR，首次需下载中文包（约 10MB）…';
         const worker = await Tesseract.createWorker('chi_sim', 1, {
           logger: m => {
             console.log('[tesseract]', m);
             if (!ocrStatus) return;
             const pct = m.progress ? `${(m.progress * 100).toFixed(0)}%` : '';
-            if (m.status === 'loading language traineddata') ocrStatus.textContent = `⏳ 下载中文语言包 ${pct}`;
-            else if (m.status === 'initializing api') ocrStatus.textContent = `⏳ 初始化识别引擎 ${pct}`;
-            else if (m.status === 'recognizing text') ocrStatus.textContent = `⏳ 识别文字中 ${pct}`;
+            if (m.status === 'loading language traineddata') ocrStatus.textContent = `${ic('hourglass')} 下载中文语言包 ${pct}`;
+            else if (m.status === 'initializing api') ocrStatus.textContent = `${ic('hourglass')} 初始化识别引擎 ${pct}`;
+            else if (m.status === 'recognizing text') ocrStatus.textContent = `${ic('hourglass')} 识别文字中 ${pct}`;
           }
         });
 
-        if (ocrStatus) ocrStatus.textContent = '⏳ 正在识别文字…';
+        if (ocrStatus) ocrStatus.textContent = '正在识别文字…';
         const ret = await worker.recognize(dataURL);
         await worker.terminate();
         const parsed = parseWorkoutText(ret.data.text);
@@ -1096,7 +1157,7 @@ function bindModule(key) {
         if (ocrStatus) {
           const rawOneLine = ret.data.text.replace(/\n/g, ' | ');
           const rawPreview = rawOneLine.slice(0, 800);
-          ocrStatus.innerHTML = '✅ 识别完成：' + (filled || '未解析到关键数据，请手动填写') +
+          ocrStatus.innerHTML = '识别完成：' + (filled || '未解析到关键数据，请手动填写') +
             '<br><small style="opacity:.7;display:block;word-break:break-all;">原始：' + rawPreview + (rawOneLine.length > 800 ? '…' : '') + '</small>' +
             '<br><small><a href="javascript:void(0)" id="copyRawOcr" style="color:inherit;text-decoration:underline">复制完整原始文本</a></small>';
           const copyBtn = document.getElementById('copyRawOcr');
@@ -1115,7 +1176,7 @@ function bindModule(key) {
           else if (typeof err === 'string') detail = err;
           else detail = err.message || err.stack || (err.toString && err.toString()) || JSON.stringify(err) || '未知错误';
         } catch (e) {}
-        const msg = '❌ 识别失败：' + detail;
+        const msg = '识别失败：' + detail;
         if (ocrStatus) ocrStatus.textContent = msg;
         alert(msg);
       }
@@ -1175,8 +1236,8 @@ function bindModule(key) {
         if (v) plan[d] = v;
       });
       save(m.weeklyPlan.storageKey, plan);
-      sp.textContent = '✅ 已保存';
-      setTimeout(() => { sp.textContent = '💾 保存周计划'; }, 1200);
+      sp.textContent = '已保存';
+      setTimeout(() => { sp.textContent = '保存周计划'; }, 1200);
     });
     // 套用模板：从下拉选模板一，自动填进 7 个格子（不自动保存，用户看过后点「保存周计划」）
     const tpl = $('#wpTemplate');
@@ -1199,8 +1260,8 @@ function bindModule(key) {
         if (el) el.value = '';
       });
       localStorage.removeItem(m.weeklyPlan.storageKey);
-      cp.textContent = '✅ 已清空';
-      setTimeout(() => { cp.textContent = '🗑 清空'; }, 1200);
+      cp.textContent = '已清空';
+      setTimeout(() => { cp.textContent = '清空'; }, 1200);
     });
   }
 
@@ -1235,7 +1296,7 @@ window.addEventListener('load', () => {
   $('#overlay').addEventListener('click', closeDrawer);
   // 侧边栏底部显示当前版本号，方便确认是否加载到最新版
   const foot = document.querySelector('.sidebar-foot');
-  if (foot) foot.innerHTML = '数据仅存于本机 🔒 · ' + APP_VERSION +
+  if (foot) foot.innerHTML = '数据仅存于本机 ' + ic('lock') + ' · ' + APP_VERSION +
     ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>';
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
   $('#ideaModal').addEventListener('click', e => { if (e.target.id === 'ideaModal') closeIdeaModal(); });
@@ -1256,6 +1317,7 @@ window.addEventListener('load', () => {
     const sfc = document.getElementById('sportFormCancel');
     if (sfc) sfc.addEventListener('click', closeSportFormModal);
   }
+  fillStaticIcons();
   render();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
