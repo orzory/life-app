@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v86';
+const APP_VERSION = 'v87';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -304,7 +304,7 @@ const MODULES = {
     title:'好好吃饭', icon:'meal', daily:true, storageKey:'lifeapp_meal',
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
-      { key:'meal',     label:'餐次',   type:'text',     ph:'早餐 / 午餐 / 晚餐' },
+      { key:'meal',     label:'餐次',   type:'select',  options:['早餐','午餐','下午茶','晚餐'] },
       { key:'food',     label:'吃了什么', type:'textarea', ph:'菜品…' },
       { key:'image',    label:'配图',     type:'image' }
     ]
@@ -1002,6 +1002,12 @@ function fieldHTML(f, val = '') {
   }
   if (f.type === 'number')
     return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
+  if (f.type === 'select') {
+    const opts = (f.options || []).map(o =>
+      `<option value="${escapeHtml(o)}"${String(val) === String(o) ? ' selected' : ''}>${escapeHtml(o)}</option>`
+    ).join('');
+    return `<label>${f.label}<select name="${f.key}">${opts}</select></label>`;
+  }
   return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
 }
 
