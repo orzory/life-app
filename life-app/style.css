@@ -204,11 +204,11 @@ body{
 .cal-nav:active{background:var(--sidebar);}
 .cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px;}
 .cal-week span{text-align:center; font-size:13px; color:var(--muted);}
-.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px;}
+.cal-grid{display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:8px;}
 .cal-cell{
   position:relative; aspect-ratio:1/1; border:1px solid transparent; background:#fffdf6;
   border-radius:12px; font-size:14px; font-weight:500; color:var(--text); cursor:default;
-  display:flex; align-items:center; justify-content:center; padding:0;
+  display:flex; align-items:center; justify-content:center; padding:0; min-width:0;
 }
 .cal-cell.empty{background:transparent; border-color:transparent;}
 .cal-cell.has-data{cursor:pointer; background:#fff3cf; border-color:var(--line);}
