@@ -5,7 +5,7 @@
    - 只缓存「同源 + 响应 200」的内容，绝不把错误页 / HTML 当成 JS/CSS 存起来。
    - 网络失败时按「原 URL → 去掉 ?v 查询参数的 URL → 导航兜底首页」回退；
      资源请求若都拿不到，返回 404 而非 HTML，避免把 HTML 当脚本执行。 */
-const CACHE = 'lifeapp-v102';
+const CACHE = 'lifeapp-v103';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './SentyDonut.woff2'];
 
 self.addEventListener('install', e => {
@@ -34,6 +34,13 @@ function stripSearch(url) {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const req = e.request;
+  // iOS PWA 字体陷阱：2.79MB 甜甜圈体经浏览器 Range 分段请求，若被 SW 缓存成
+  // 206 Partial Content 再返回，iOS 字体加载器会拒绝应用，回退系统字体。
+  // 让字体请求直连网络（与 Safari 行为一致），避开此坑；其余资源仍走缓存策略。
+  if (req.destination === 'font') {
+    e.respondWith(fetch(req));
+    return;
+  }
   e.respondWith((async () => {
     try {
       const resp = await fetch(req);
