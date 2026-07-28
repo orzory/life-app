@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 优先加载中文字体，减少 iOS PWA fallback 到系统字体的概率 -->
   <link rel="preload" href="SentyDonut.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v100" />
+  <link rel="stylesheet" href="style.css?v101" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -83,8 +83,7 @@
     </div>
   </div>
 
-  <!-- Tesseract.js：上传运动截图后做 OCR 识别中文（首次需在线下载约 10MB 语言包） -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- Tesseract.js 改为“点击 OCR 时才动态加载”，避免外部脚本阻塞首屏 -->
   <script>
     // 主脚本加载失败时给出明确提示，避免纯白屏
     function onAppError() {
@@ -93,6 +92,6 @@
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v100" onerror="onAppError()"></script>
+  <script src="app.js?v101" onerror="onAppError()"></script>
 </body>
 </html>
