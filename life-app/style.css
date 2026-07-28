@@ -196,14 +196,14 @@ body{
 .btn-save:active{background:#5e470d;}
 
 /* ---- 运动月历 ---- */
-.cal-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin:16px 0;}
-.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
-.cal-title{font-size:16px; font-weight:700; color:var(--text);}
+.cal-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:20px 0;}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.cal-title{font-size:17px; font-weight:700; color:var(--text);}
 .cal-nav{width:36px; height:36px; border:1px solid var(--line); background:#fff; color:var(--text); border-radius:10px; font-size:20px; line-height:1; cursor:pointer;}
 .cal-nav:active{background:var(--sidebar);}
-.cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px;}
+.cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px;}
 .cal-week span{text-align:center; font-size:13px; color:var(--muted);}
-.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px;}
 .cal-cell{
   position:relative; aspect-ratio:1/1; border:1px solid transparent; background:#fffdf6;
   border-radius:12px; font-size:17px; font-weight:600; color:var(--text); cursor:default;
@@ -215,7 +215,7 @@ body{
 .cal-cell.today{border-color:var(--primary); box-shadow:0 0 0 1px var(--primary) inset;}
 .cal-num{line-height:1; padding-top:2px;}
 .cal-star{position:absolute; bottom:5px; right:5px; font-size:13px; line-height:1;}
-.cal-legend{margin-top:12px; font-size:12px; color:var(--muted); text-align:center;}
+.cal-legend{margin-top:16px; padding-top:6px; font-size:12px; color:var(--muted); text-align:center; border-top:1px dashed var(--line);}
 
 /* ---- 运动某天详情弹窗 ---- */
 .modal.day{background:#fffef9; max-width:460px;}
@@ -237,11 +237,11 @@ body{
 .sport-form-modal .day-head{flex-shrink:0;}
 .sport-form-modal .modal-form{flex:1; overflow-y:auto; margin:0 0 10px; padding:16px; border-radius:16px;}
 .sport-form-modal .day-actions{flex-shrink:0; margin-top:0;}
-.form-trigger-box{margin-bottom:16px;}
-.form-trigger-box .ocr-box{margin-bottom:10px;}
-.btn-add-record{margin-bottom:10px;}
-.btn-reset-inline{margin-top:0; font-size:13px; padding:9px; background:transparent; border-color:transparent; color:var(--muted); text-decoration:underline;}
-.btn-reset-inline:active{background:#fff3cf;}
+.form-trigger-box{margin-bottom:20px;}
+.form-trigger-box .ocr-box{margin-bottom:12px;}
+.form-trigger-actions{display:flex; gap:10px; align-items:center;}
+.form-trigger-actions .btn-add-record{flex:3; margin-bottom:0;}
+.form-trigger-actions .btn-reset-inline{flex:1; margin-top:0;}
 
 /* ---- 表单 ---- */
 .add-form{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04);}
@@ -264,7 +264,7 @@ body{
 .mod-summary b{color:var(--primary-d); font-size:17px; margin:0 2px;}
 
 /* ---- 周计划（锻炼身体模块内） ---- */
-.wp-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:14px; margin:6px 0 16px;}
+.wp-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:16px; margin:20px 0;}
 .wp-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:10px;}
 .wp-toolbar{display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
 .wp-tpl-label{font-size:13px; color:var(--muted);}
@@ -277,13 +277,13 @@ body{
 #saveWeekPlan{width:100%;}
 
 /* ---- 身体数据（锻炼身体模块内，独立子日志） ---- */
-.bd-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin-top:6px;}
+.bd-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:20px 0;}
 .bd-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px;}
 .bd-box .add-form{margin-bottom:12px;}
 .bd-box #bd-list{margin-top:4px;}
 
 /* ---- 运动截图 OCR（锻炼身体模块） ---- */
-.ocr-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:14px; margin:6px 0 16px;}
+.ocr-box{background:#fffaf0; border:1px solid var(--line); border-radius:16px; padding:16px; margin:0 0 12px;}
 .ocr-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:6px;}
 .ocr-hint{font-size:12px; color:var(--muted); margin:0 0 10px;}
 .ocr-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
@@ -291,7 +291,7 @@ body{
 .ocr-status{font-size:13px; color:var(--text); margin-top:10px; line-height:1.5;}
 
 /* ---- 月度运动总结（锻炼身体模块） ---- */
-.month-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin:16px 0;}
+.month-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:20px 0;}
 .month-head{font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px;}
 .month-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:14px;}
 .month-cell{background:#fffaf0; border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center;}
