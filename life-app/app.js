@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v89';
+const APP_VERSION = 'v90';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -495,9 +495,11 @@ function analyzeWeather(wx, city, forTomorrow) {
     const win = rows.filter(r => r.hh >= s && r.hh <= e);
     const avgT = win.reduce((a,r)=>a+r.temp,0) / win.length;
     const avgH = win.reduce((a,r)=>a+r.hum,0) / win.length;
+    const minT = Math.min(...win.map(r => r.temp));
+    const maxT = Math.max(...win.map(r => r.temp));
     return { city, temp, humidity, condition, code, dayLabel,
       bestWindow: `${fmtH(s)}–${fmtH(e)}`,
-      bestTemp: avgT, bestHum: avgH };
+      bestTemp: avgT, bestHum: avgH, bestTempMin: minT, bestTempMax: maxT };
   }
   // 无理想窗口：挑综合最佳单小时
   let best = rows[0];
@@ -508,7 +510,7 @@ function analyzeWeather(wx, city, forTomorrow) {
   }
   return { city, temp, humidity, condition, code, dayLabel,
     bestWindow: fmtH(best.hh),
-    bestTemp: best.temp, bestHum: best.hum };
+    bestTemp: best.temp, bestHum: best.hum, bestTempMin: best.temp, bestTempMax: best.temp };
 }
 
 function renderWeatherInner(d) {
@@ -516,10 +518,10 @@ function renderWeatherInner(d) {
   if (d.error) return `<div class="wx-error">${ic('warn')} 天气获取失败，请检查网络</div>`;
   const t = (d.temp === null || d.temp === undefined) ? '—' : Math.round(d.temp) + '°';
   const h = (d.humidity === null || d.humidity === undefined) ? '—' : Math.round(d.humidity) + '%';
-  const runTempHum = (d.bestTemp !== undefined && d.bestHum !== undefined)
-    ? `（${Math.round(d.bestTemp)}°C / 湿度${Math.round(d.bestHum)}%）`
-    : '';
-  const runTitle = `${ic('run')} ${d.dayLabel || '今日'}${runTempHum}最佳跑步时段`;
+  const minT = (d.bestTempMin === undefined || d.bestTempMin === null) ? '—' : Math.round(d.bestTempMin);
+  const maxT = (d.bestTempMax === undefined || d.bestTempMax === null) ? '—' : Math.round(d.bestTempMax);
+  const rh = (d.bestHum === undefined || d.bestHum === null) ? '—' : Math.round(d.bestHum);
+  const runMeta = `${d.dayLabel || '今日'} ${minT}°C–${maxT}°C / 湿度 ${rh}%`;
   return `
     <div class="wx-topline">
       <span class="wx-ic">${ic(wxIcon(d.code))}</span>
@@ -529,8 +531,9 @@ function renderWeatherInner(d) {
       <span class="wx-hum">${ic('drop')} 湿度 ${h}</span>
     </div>
     <div class="wx-run">
+      <div class="wx-run-meta">${runMeta}</div>
       <div class="wx-run-line">
-        <span class="wx-run-title">${runTitle}</span>
+        <span class="wx-run-title">${ic('run')} 最佳户外跑步时段</span>
         <span class="wx-run-time">${d.bestWindow}</span>
       </div>
     </div>`;
