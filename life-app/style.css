@@ -125,7 +125,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink);}
 /* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用 muted/ink 配色） */
 .wx-topline{
-  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; white-space:nowrap;
 }
 .wx-run-line{
   display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
@@ -414,7 +414,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   .checkin-list{gap:10px 12px;}
   /* 天气卡片手机端：保持横排行布局，仅收紧间距 */
   .weather-card{gap:8px; margin-top:12px;}
-  .wx-topline{gap:10px;}
+  .wx-topline{gap:6px;}
 }
 
 /* =========================================================================
