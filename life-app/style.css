@@ -195,6 +195,43 @@ body{
 .btn-save{flex:1; border:none; background:#7a5c12; color:#fff; border-radius:12px; padding:11px; font-size:15px; font-weight:700;}
 .btn-save:active{background:#5e470d;}
 
+/* ---- 运动月历 ---- */
+.cal-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin:16px 0;}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.cal-title{font-size:16px; font-weight:700; color:var(--text);}
+.cal-nav{width:36px; height:36px; border:1px solid var(--line); background:#fff; color:var(--text); border-radius:10px; font-size:20px; line-height:1; cursor:pointer;}
+.cal-nav:active{background:var(--sidebar);}
+.cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:6px;}
+.cal-week span{text-align:center; font-size:12px; color:var(--muted);}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+.cal-cell{
+  position:relative; aspect-ratio:1/1; border:1px solid transparent; background:#fffdf6;
+  border-radius:10px; font-size:15px; color:var(--text); cursor:default;
+  display:flex; align-items:center; justify-content:center; padding:0;
+}
+.cal-cell.empty{background:transparent; border-color:transparent;}
+.cal-cell.has-data{cursor:pointer; background:#fff3cf; border-color:var(--line);}
+.cal-cell.has-data:active{background:#ffe9a8;}
+.cal-cell.today{border-color:var(--primary); box-shadow:0 0 0 1px var(--primary) inset;}
+.cal-num{line-height:1;}
+.cal-star{position:absolute; bottom:3px; right:4px; font-size:11px; line-height:1;}
+.cal-legend{margin-top:10px; font-size:12px; color:var(--muted); text-align:center;}
+
+/* ---- 运动某天详情弹窗 ---- */
+.modal.day{background:#fffef9; max-width:460px;}
+.day-head{font-size:17px; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:baseline; gap:8px;}
+.day-date{font-size:14px; color:var(--muted); font-weight:500;}
+.day-body{max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:12px;}
+.day-rec{background:#fffaf0; border:1px solid var(--line); border-radius:14px; padding:12px;}
+.day-rec-bar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;}
+.day-rec-type{font-size:15px; font-weight:700; color:var(--primary-d);}
+.day-rec-dist{font-size:13px; color:var(--muted); background:#fff; border:1px solid var(--line); border-radius:20px; padding:2px 10px;}
+.day-rec-body{font-size:14px; line-height:1.6;}
+.day-rec-body b{color:var(--muted); font-weight:500; margin-right:4px;}
+.day-rec-body div{margin:2px 0;}
+.day-rec .btn-del{margin-top:8px;}
+.day-actions{display:flex; gap:10px; margin-top:14px;}
+
 /* ---- 表单 ---- */
 .add-form{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .add-form label{display:block; font-size:13px; color:var(--muted); margin:10px 0 4px;}
