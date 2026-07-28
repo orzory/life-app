@@ -6,7 +6,7 @@
    健壮性：
    - install 逐个缓存，单个失败不影响整体；
    - 只缓存「同源 + 200」响应，绝不把错误页 / HTML 当 JS/CSS 存。 */
-const CACHE = 'lifeapp-v107';
+const CACHE = 'lifeapp-v108';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './SentyDonut.woff2'];
 
 self.addEventListener('install', e => {
