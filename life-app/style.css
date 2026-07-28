@@ -335,7 +335,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 /* ---- 表单 ---- */
 .add-form{background:var(--card); border:var(--bd); border-radius:var(--r); padding:18px; margin-bottom:18px; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
 .add-form label{display:block; font-size:calc(14px * var(--fs)); color:var(--muted); margin:10px 0 4px;}
-.add-form input[type=text],.add-form input[type=date],.add-form input[type=number],.add-form textarea{
+.add-form input[type=text],.add-form input[type=date],.add-form input[type=number],.add-form textarea,.add-form select{
   width:100%; padding:10px 12px; border:none; border-radius:var(--r-sm);
   font-size:calc(15px * var(--fs)); background:var(--bg); color:var(--text);
   -webkit-appearance:none; appearance:none; min-height:auto; line-height:1.3;
