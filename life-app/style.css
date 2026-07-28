@@ -136,7 +136,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 
 /* ---- 今日打卡卡片：左侧圆环 + 右侧清单 ---- */
 .checkin-card{
-  display:flex; align-items:center; gap:20px;
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap; justify-content:center;
   background:var(--card); border:var(--bd);
   border-radius:var(--r);
   padding:18px 20px; margin:18px 0 22px;
@@ -155,7 +155,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .ring-pct{font-size:calc(15px * var(--fs)); font-weight:700; margin-left:1px;}
 
-.checkin-list{flex:1 1 auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 12px; min-width:0;}
+.checkin-list{flex:1 1 180px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 12px; min-width:0;}
 .check-row{
   display:flex; align-items:center; gap:8px; text-decoration:none;
   color:var(--text); font-size:calc(14px * var(--fs)); padding:2px 0; min-width:0;
@@ -168,6 +168,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .check-row.done .box{background:var(--muted); border-color:var(--muted);}
 .check-row .row-title{
   white-space:nowrap; line-height:1.25; word-break:normal; overflow:hidden; text-overflow:ellipsis;
+  min-width:0; flex:1 1 0;
 }
 .check-row.done .row-title{color:var(--muted); text-decoration:line-through;}
 
@@ -407,7 +408,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
     padding-top:calc(18px + env(safe-area-inset-top));
   }
   .sidebar.open{transform:translateX(0);}
-  .view{padding-top:64px; width:100%; max-width:100%;}
+  .view{padding:64px 16px 22px; width:100%; max-width:100%;}
 
   /* 小屏：圆环缩小，仍保持左圆环 + 右清单 */
   .checkin-card{gap:14px; padding:16px;}
@@ -418,6 +419,21 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   /* 天气卡片手机端：保持横排行布局，仅收紧间距 */
   .weather-card{gap:8px; margin-top:12px;}
   .wx-topline{gap:6px;}
+}
+
+/* 超小屏（手机）：整体收紧字号与间距，避免任何内容换行/溢出 */
+@media (max-width: 480px){
+  .hero-quote{font-size:calc(15px * var(--fs));}
+  .clock-time{font-size:calc(36px * var(--fs));}
+  .wx-temp{font-size:calc(23px * var(--fs));}
+  .sec-title{font-size:calc(18px * var(--fs));}
+  .np-date{font-size:calc(22px * var(--fs));}
+  .cal-title{font-size:calc(16px * var(--fs));}
+  .diary-date{font-size:calc(14px * var(--fs));}
+  .checkin-card{gap:12px; padding:14px;}
+  .ring-wrap{width:84px; height:84px;}
+  .ring{width:84px; height:84px;}
+  .ring-label{font-size:calc(21px * var(--fs));}
 }
 
 /* =========================================================================
