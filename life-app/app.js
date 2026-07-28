@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v112';
+const APP_VERSION = 'v113';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -10,7 +10,6 @@ const ICON_PATHS = {
   book:'<path d="M12 6 C9 4.5 5.5 4.5 4.5 5.5 V18 C5.5 17 9 17 12 19 C15 17 18.5 17 19.5 18 V5.5 C18.5 4.5 15 4.5 12 6 Z"/><path d="M12 6 V19"/>',
   run:'<circle cx="14" cy="5.5" r="1.6"/><path d="M12 9 C14 8 15 10 14 12 L12 16"/><path d="M14 12 L18 11"/><path d="M12 16 L10 21"/><path d="M14 12 L17 16"/>',
   meal:'<path d="M4 10 H20 C20 15 16.5 18.5 12 18.5 C7.5 18.5 4 15 4 10 Z"/><path d="M3.5 10 H20.5"/><path d="M9 3.5 C8.5 5.5 9.5 6.5 9 8.5"/><path d="M13 2.5 C12.5 4.5 13.5 5.5 13 7.5"/>',
-  piggy:'<path d="M5 13.5 C5 9.5 9 7.5 13 7.5 C17 7.5 19 9.5 19 12.5 C19 15.5 16 17.5 12 17.5 H8 C6 17.5 5 15.5 5 13.5 Z"/><circle cx="15.5" cy="11.5" r="0.9"/><path d="M7.5 10.5 L4.5 9.5"/><path d="M9 17.5 V19.5 H11"/>',
   rainbow:'<path d="M4 19 A9 9 0 0 1 20 19"/><path d="M7.5 19 A5.5 5.5 0 0 1 16.5 19"/><path d="M11 19 A1 1 0 0 1 13 19"/>',
   star:'<path d="M12 3.5 L14.2 9 L20 9.3 L15.5 13.2 L17 19 L12 15.6 L7 19 L8.5 13.2 L4 9.3 L9.8 9 Z"/>',
   spark:'<path d="M12 4 L13 11 L20 12 L13 13 L12 20 L11 13 L4 12 L11 11 Z"/>',
@@ -307,14 +306,6 @@ const MODULES = {
       { key:'meal',     label:'餐次',   type:'select',  options:['早餐','午餐','下午茶','晚餐'] },
       { key:'food',     label:'吃了什么', type:'textarea', ph:'菜品…' },
       { key:'image',    label:'配图',     type:'image' }
-    ]
-  },
-  account: {
-    title:'每日记账', icon:'piggy', daily:true, storageKey:'lifeapp_account',
-    fields:[
-      { key:'category', label:'类别', type:'text',     ph:'餐饮 / 交通 / 购物' },
-      { key:'amount',   label:'金额', type:'number',   ph:'金额' },
-      { key:'note',     label:'备注', type:'textarea' }
     ]
   },
   daily: {
