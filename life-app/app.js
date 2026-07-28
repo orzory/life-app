@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v121';
+const APP_VERSION = 'v122';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -88,6 +88,59 @@ function load(key) {
 }
 function save(key, arr) {
   localStorage.setItem(key, JSON.stringify(arr));
+}
+// 数据备份 / 恢复：把所有 lifeapp_* 数据导出成 JSON 文件，也可从文件还原。
+// 用途：① iOS 长期不开会清理 PWA 缓存导致数据丢失时的兜底；
+//      ② 浏览器 ↔ 桌面（主屏）PWA 存储互相隔离，用备份文件手动搬运数据。
+function collectBackup() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('lifeapp_')) data[k] = localStorage.getItem(k);
+  }
+  return { app: 'oh-my-day', version: APP_VERSION, exportedAt: new Date().toISOString(), data };
+}
+function exportBackup() {
+  const payload = collectBackup();
+  const keys = Object.keys(payload.data);
+  if (!keys.length) { toast('当前没有可备份的数据'); return; }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  a.href = url;
+  a.download = `oh-my-day-backup-${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast(`已导出备份（${keys.length} 项），建议存到文件 App / 云盘`);
+}
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const payload = JSON.parse(reader.result);
+      const data = payload && payload.data ? payload.data : payload;
+      if (!data || typeof data !== 'object') throw new Error('文件格式不对');
+      const keys = Object.keys(data).filter(k => k.startsWith('lifeapp_'));
+      if (!keys.length) throw new Error('备份里没有 Oh My Day 数据');
+      const go = () => {
+        keys.forEach(k => { try { localStorage.setItem(k, data[k]); } catch (e) {} });
+        toast('备份已恢复，正在刷新…');
+        setTimeout(() => location.reload(), 600);
+      };
+      const hasExisting = keys.some(k => localStorage.getItem(k) !== null);
+      if (hasExisting) {
+        if (confirm('导入会用备份内容覆盖当前同名数据（每个模块以备份为准），确定继续？')) go();
+      } else {
+        go();
+      }
+    } catch (e) {
+      toast('导入失败：' + e.message);
+    }
+  };
+  reader.readAsText(file);
 }
 // 防注入：用户输入转义后再显示
 function escapeHtml(s) {
@@ -1676,7 +1729,24 @@ window.addEventListener('load', () => {
   // 侧边栏底部显示当前版本号，方便确认是否加载到最新版
   const foot = document.querySelector('.sidebar-foot');
   if (foot) foot.innerHTML = ic('lock') + ' · ' + APP_VERSION +
-    ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>';
+    ' · <a href="javascript:void(0)" id="checkUpdate" style="color:inherit;text-decoration:underline">检查更新</a>' +
+    ' <span class="backup-btns">' +
+    '<button id="btnExport" class="mini-btn" type="button">导出备份</button>' +
+    '<button id="btnImport" class="mini-btn" type="button">导入</button>' +
+    '<input id="fileImport" type="file" accept="application/json,.json" hidden>' +
+    '</span>';
+  const btnExport = document.getElementById('btnExport');
+  if (btnExport) btnExport.addEventListener('click', exportBackup);
+  const btnImport = document.getElementById('btnImport');
+  const fileImport = document.getElementById('fileImport');
+  if (btnImport && fileImport) {
+    btnImport.addEventListener('click', () => fileImport.click());
+    fileImport.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (f) importBackup(f);
+      e.target.value = '';
+    });
+  }
   // 左侧导航：checkin 模块点一下就打卡/取消，不跳页；其它模块正常路由
   $('#nav').addEventListener('click', e => {
     const a = e.target.closest('.nav-item');
