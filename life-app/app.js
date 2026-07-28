@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v109';
+const APP_VERSION = 'v110';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -301,7 +301,7 @@ const MODULES = {
     ]
   },
   meal: {
-    title:'好好吃饭', icon:'meal', daily:true, storageKey:'lifeapp_meal',
+    title:'好好吃饭', icon:'meal', daily:true, storageKey:'lifeapp_meal', groupMeals:true,
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
       { key:'meal',     label:'餐次',   type:'select',  options:['早餐','午餐','下午茶','晚餐'] },
@@ -843,9 +843,14 @@ function saveDiaryTemplate(m){
 function renderModule(key) {
   const m = MODULES[key];
   if (m.template === 'diary') return renderDiaryTemplate(m);
-  const list = load(m.storageKey);
+  let list = load(m.storageKey);
+  if (m.groupMeals) {                       // 好好吃饭：旧结构→新结构，规范化后回写
+    list = normalizeMealList(list);
+    const raw = load(m.storageKey);
+    if (JSON.stringify(raw) !== JSON.stringify(list)) save(m.storageKey, list);
+  }
   const formHtml  = m.fields.map(f => fieldHTML(f)).join('');
-  const itemsHtml = list.map(item => itemHTML(m, item)).join('')
+  const itemsHtml = list.map(item => m.groupMeals ? mealItemHTML(item) : itemHTML(m, item)).join('')
                    || '<p class="empty">还没有记录，添加第一条吧～</p>';
   // 每日模块提供「清空今日」按钮，实现每日重置
   const resetBtn = m.daily
@@ -1037,6 +1042,41 @@ function loadTesseract() {
     document.head.appendChild(s);
   });
   return tesseractLoading;
+}
+
+// 把「好好吃饭」记录规范化：兼容旧版「每条=一餐」扁平结构，统一为「每天一条、meals 数组」结构
+function normalizeMealList(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map(r => {
+    if (r && Array.isArray(r.meals)) return r;            // 已是新结构
+    return {                                             // 旧结构：单条记录直接带 meal/food/image
+      id: r.id || uid(),
+      date: r.date || today(),
+      meals: [ { id: uid(), meal: r.meal || '', food: r.food || '', image: r.image || '' } ]
+    };
+  });
+}
+
+// 渲染「好好吃饭」某天的记录：一天一个折叠项，里面按餐次列出
+function mealItemHTML(item) {
+  const meals = item.meals || [];
+  const blocks = meals.map(me => {
+    const food = (me.food || '').trim();
+    const img = (me.image && me.image.startsWith('data:image'))
+      ? `<div><b>配图:</b><br><img class="item-img" src="${me.image}" alt=""></div>` : '';
+    return `<div class="meal-block" style="border-top:1px dashed rgba(0,0,0,.12); padding-top:8px; margin-top:8px;">
+      <div style="font-weight:600; margin-bottom:4px;">🍽️ ${escapeHtml(me.meal || '餐次')}</div>
+      ${food ? `<div style="white-space:pre-wrap; word-break:break-word;">${escapeHtml(food)}</div>` : ''}
+      ${img}
+      <button class="btn-del-meal" data-rid="${item.id}" data-mid="${me.id}"
+        style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:13px;padding:4px 0;">删除</button>
+    </div>`;
+  }).join('');
+  const openAttr = (item.date === today()) ? ' open' : '';
+  return `<details class="item"${openAttr}>
+    <summary class="item-summary">${ic('cal')} ${escapeHtml(item.date || '记录')} · ${meals.length} 餐</summary>
+    <div class="item-body">${blocks}</div>
+  </details>`;
 }
 
 function itemHTML(m, item) {
@@ -1248,6 +1288,24 @@ function bindModule(key) {
     }
     data.id = uid();
     if (m.daily) data.date = userDate || today();   // 填了日期用填的（补记），否则今天
+
+    // 好好吃饭：同一天多次上传的餐次合并进同一天记录（而不是每条单独占一行）
+    if (m.groupMeals) {
+      const date = data.date;
+      const entry = { id: uid(), meal: data.meal || '', food: data.food || '', image: data.image || '' };
+      const arr = load(m.storageKey);
+      const rec = arr.find(r => r.date === date);
+      if (rec) {
+        rec.meals = rec.meals || [];
+        rec.meals.push(entry);
+      } else {
+        arr.unshift({ id: uid(), date, meals: [entry] });
+      }
+      save(m.storageKey, arr);
+      render();
+      return;
+    }
+
     const arr = load(m.storageKey);
     arr.unshift(data);
     save(m.storageKey, arr);
@@ -1292,6 +1350,24 @@ function bindModule(key) {
   }
 
   bindDeletes('#list', m.storageKey);
+
+  // 好好吃饭：删除某天里的「某一餐」（同一天合并记录，不能整条删，要按餐次删）
+  if (m.groupMeals) {
+    const listEl = $('#list');
+    if (listEl) listEl.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-del-meal');
+      if (!btn) return;
+      const rid = btn.dataset.rid, mid = btn.dataset.mid;
+      const arr = load(m.storageKey);
+      const rec = arr.find(r => r.id === rid);
+      if (!rec) return;
+      rec.meals = (rec.meals || []).filter(x => x.id !== mid);
+      // 当天所有餐次都删光了，就连当天记录一起清掉，保持列表整洁
+      const next = arr.filter(r => r.id !== rid || (rec.meals && rec.meals.length));
+      save(m.storageKey, next);
+      render();
+    });
+  }
 
   // 运动月历：翻月 + 点星标日看详情（事件委托在容器上，翻月重渲染后仍有效）
   if (m.calendar) {
