@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v83';
+const APP_VERSION = 'v84';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -648,7 +648,7 @@ function renderHome() {
 
   return `
     <div class="hero">
-      <div id="clockDate" class="clock-time">${timeLabel()}</div>
+      <div id="clockDate" class="clock-time">${todayLabel()}</div>
       <div class="hero-greet"><span class="ic hero-ic">${ic('heart')}</span><span id="dailyQuote" class="hero-quote">今天也要加油呀</span></div>
       <div id="dailyQuoteFrom" class="hero-quote-from"></div>
     </div>
@@ -758,15 +758,15 @@ function bindHome() {
   refreshDailyQuote(); // 加载每日箴言（一言 API + 本地兜底）
   // 每日灵感卡片现在是链接到 #/idea，无需 JS 绑定
 }
-function timeLabel() {
+function todayLabel() {
   const d = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${week}`;
 }
 function tickClock() {
   const dEl = $('#clockDate');
   if (!dEl) return;
-  dEl.textContent = timeLabel();
+  dEl.textContent = todayLabel();
 }
 
 // ---------- 日记模板（每日灵感） ----------
