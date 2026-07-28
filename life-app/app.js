@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v76';
+const APP_VERSION = 'v77';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -555,6 +555,71 @@ async function refreshWeather() {
   }
 }
 
+// ---------- 每日箴言（一言 API + 本地兜底，按天缓存） ----------
+const QUOTE_KEY = 'lifeapp_quote';
+// 断网/接口失败时用的「生活治愈系」本地箴言，按年内天数轮换，保证每天一句
+const QUOTE_FALLBACK = [
+  '把寻常的日子，过出一点欢喜。',
+  '慢慢来，比较快。',
+  '今天也要好好吃饭、好好生活。',
+  '你所经历的一切，都会变成光。',
+  '心若安顿，处处是归处。',
+  '微小的进步，也是进步。',
+  '愿你被这世界温柔以待。',
+  '生活明朗，万物可爱。',
+  '不必借光而行，你亦是星辰。',
+  '保持热爱，奔赴山海。',
+  '万物皆有裂痕，那是光照进来的地方。',
+  '认真生活的人，自带光芒。',
+  '日子清清淡淡，心头温温热热。',
+  '好好爱自己，是终身浪漫的开始。'
+];
+function dayOfYear() {
+  const n = new Date();
+  const start = new Date(n.getFullYear(), 0, 0);
+  return Math.floor((n - start) / 86400000);
+}
+function getDailyQuoteCache() {
+  try { return JSON.parse(localStorage.getItem(QUOTE_KEY) || 'null'); } catch (e) { return null; }
+}
+function setDailyQuoteCache(obj) {
+  try { localStorage.setItem(QUOTE_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+async function refreshDailyQuote() {
+  const el = document.getElementById('dailyQuote');
+  const fromEl = document.getElementById('dailyQuoteFrom');
+  if (!el) return;
+  const t = today();
+  const cached = getDailyQuoteCache();
+  // 当天已取过：直接复用，保证同日不变
+  if (cached && cached.date === t) {
+    el.textContent = cached.text;
+    if (fromEl) fromEl.textContent = cached.from || '';
+    return;
+  }
+  try {
+    // 一言 API：文学(d) + 原创(e) + 哲学(k)，偏治愈/生活感
+    const r = await fetch('https://v1.hitokoto.cn/?c=d&c=e&c=k');
+    if (!r.ok) throw new Error('bad status');
+    const j = await r.json();
+    const text = (j.hitokoto || '').trim() || QUOTE_FALLBACK[dayOfYear() % QUOTE_FALLBACK.length];
+    const who = (j.from_who || '').trim();
+    const src = (j.from || '').trim();
+    const from = who
+      ? ('—— ' + who + (src ? '《' + src + '》' : ''))
+      : (src ? ('—— ' + src) : '');
+    setDailyQuoteCache({ date: t, text, from });
+    el.textContent = text;
+    if (fromEl) fromEl.textContent = from;
+  } catch (e) {
+    // 离线兜底：用本地库按天取一句
+    const pick = QUOTE_FALLBACK[dayOfYear() % QUOTE_FALLBACK.length];
+    setDailyQuoteCache({ date: t, text: pick, from: '' });
+    el.textContent = pick;
+    if (fromEl) fromEl.textContent = '';
+  }
+}
+
 // ---------- 概览（桌面/首页）：时间 + 天气 + 今日打卡 ----------
 function renderHome() {
   // 今日打卡只统计部分每日模块（灵感/复盘不计入打卡）
@@ -580,7 +645,8 @@ function renderHome() {
 
   return `
     <div class="hero">
-      <div class="hero-greet">${ic('heart')} 今天也要加油呀</div>
+      <div class="hero-greet"><span class="ic hero-ic">${ic('heart')}</span><span id="dailyQuote" class="hero-quote">今天也要加油呀</span></div>
+      <div id="dailyQuoteFrom" class="hero-quote-from"></div>
       <div id="clock" class="clock"></div>
     </div>
 
@@ -686,6 +752,7 @@ function bindHome() {
   tickClock();
   clockTimer = setInterval(tickClock, 1000);
   refreshWeather();   // 加载天气卡片
+  refreshDailyQuote(); // 加载每日箴言（一言 API + 本地兜底）
   // 每日灵感卡片现在是链接到 #/idea，无需 JS 绑定
 }
 function tickClock() {
