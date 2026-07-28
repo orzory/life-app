@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v52';
+const APP_VERSION = 'v53';
 
 /* =========================================================================
    我的小日子 —— 核心逻辑（纯前端）
@@ -676,7 +676,6 @@ function renderModule(key) {
     ocrHtml = `
       <div class="ocr-box">
         <div class="ocr-head">📷 上传运动截图自动识别</div>
-        <p class="ocr-hint">${escapeHtml(m.ocr.hint || '')}</p>
         <div class="ocr-bar">
           <input type="file" id="workoutImg" class="ocr-input" accept="image/*">
         </div>
