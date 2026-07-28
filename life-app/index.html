@@ -10,23 +10,23 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <link rel="stylesheet" href="style.css?v67" />
+  <link rel="stylesheet" href="style.css?v68" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
   <div class="status-bar-fill" aria-hidden="true"></div>
 
   <!-- 手机端用的菜单按钮（点开左侧导航抽屉） -->
-  <button id="menuBtn" class="menu-btn" aria-label="菜单">☰</button>
+  <button id="menuBtn" class="menu-btn" aria-label="菜单"><span class="ic" data-ic="menu"></span></button>
   <!-- 抽屉打开时的灰色遮罩 -->
   <div id="overlay" class="overlay"></div>
 
   <div class="layout">
     <!-- 左侧纵向导航栏（电脑常驻，手机变抽屉） -->
     <aside class="sidebar">
-      <div class="brand">🌸 我的小日子</div>
+      <div class="brand"><span class="ic" data-ic="flower"></span> 我的小日子</div>
       <nav id="nav" class="nav"></nav>
-      <div class="sidebar-foot">数据仅存于本机 🔒</div>
+      <div class="sidebar-foot">数据仅存于本机 <span class="ic" data-ic="lock"></span></div>
     </aside>
 
     <!-- 主内容区（仪表盘 / 各模块）由 app.js 渲染 -->
@@ -36,10 +36,10 @@
   <!-- 灵感便签弹窗（静态常驻，不被 #view 重渲染影响） -->
   <div class="modal-mask" id="ideaModal">
     <div class="modal note">
-      <div class="note-head">✨ 写点灵感…</div>
+      <div class="note-head"><span class="ic" data-ic="spark"></span> 写点灵感…</div>
       <textarea id="noteText" class="note-text" placeholder="突然冒出来的点子、一句话、灵感碎片…"></textarea>
       <div class="note-img-row">
-        <label class="note-img-btn">📷 加图片
+        <label class="note-img-btn"><span class="ic" data-ic="camera"></span> 加图片
           <input type="file" id="noteImg" accept="image/*" hidden>
         </label>
         <div class="note-img-preview" id="noteImgPrev"></div>
@@ -54,7 +54,7 @@
   <!-- 运动月历：点带星标的日期，弹出当天运动数据 -->
   <div class="modal-mask" id="sportDayModal">
     <div class="modal day">
-      <div class="day-head">🏃 运动详情 <span id="sportDayModalDate" class="day-date"></span></div>
+      <div class="day-head"><span class="ic" data-ic="run"></span> 运动详情 <span id="sportDayModalDate" class="day-date"></span></div>
       <div class="day-body" id="sportDayModalBody"></div>
       <div class="day-actions">
         <button id="sportDayCancel" class="btn-cancel" type="button">关闭</button>
@@ -65,7 +65,7 @@
   <!-- 运动记录录入弹窗：截图识别或手动添加时弹出 -->
   <div class="modal-mask" id="sportFormModal">
     <div class="modal sport-form-modal">
-      <div class="day-head">🏃 添加运动记录</div>
+      <div class="day-head"><span class="ic" data-ic="run"></span> 添加运动记录</div>
       <form id="sport-form" class="add-form modal-form">
         <!-- 字段由 app.js 在打开弹窗时填充 -->
       </form>
@@ -78,6 +78,6 @@
 
   <!-- Tesseract.js：上传运动截图后做 OCR 识别中文（首次需在线下载约 10MB 语言包） -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="app.js?v67"></script>
+  <script src="app.js?v68"></script>
 </body>
 </html>
