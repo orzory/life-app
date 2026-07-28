@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v70';
+const APP_VERSION = 'v72';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -40,7 +40,8 @@ const ICON_PATHS = {
   fog:'<path d="M8 14 A3.6 3.6 0 0 1 8 8 A4.6 4.6 0 0 1 17 9.5 A3.2 3.2 0 0 1 17 14 Z"/><path d="M5 18 H19"/><path d="M6.5 20.5 H17.5"/>',
   rain:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 16 L8 19"/><path d="M13 16 L12 19"/><path d="M17 16 L16 19"/>',
   snow:'<path d="M8 13 A3.6 3.6 0 0 1 8 7 A4.6 4.6 0 0 1 17 8.5 A3.2 3.2 0 0 1 17 13 Z"/><path d="M9 17 L9 19"/><path d="M13 17 L13 19"/><path d="M17 17 L17 19"/>',
-  thunder:'<path d="M8 12 A3.6 3.6 0 0 1 8 6 A4.6 4.6 0 0 1 17 7.5 A3.2 3.2 0 0 1 17 12 Z"/><path d="M12 13 L9.5 18 H12 L10.5 21"/>'
+  thunder:'<path d="M8 12 A3.6 3.6 0 0 1 8 6 A4.6 4.6 0 0 1 17 7.5 A3.2 3.2 0 0 1 17 12 Z"/><path d="M12 13 L9.5 18 H12 L10.5 21"/>',
+  cat:'<path d="M12 6.5 C16 6.5 18.5 9.5 18.5 14 C18.5 18 16 21 12 21 C8 21 5.5 18 5.5 14 C5.5 9.5 8 6.5 12 6.5 Z"/><path d="M7 8 L5.5 4 L9.5 6.5"/><path d="M17 8 L18.5 4 L14.5 6.5"/><circle cx="9.5" cy="13" r="0.8"/><circle cx="14.5" cy="13" r="0.8"/><path d="M11.5 16 C11.5 16 12 16.5 12.5 16"/>'
 };
 function ic(name){
   const p = ICON_PATHS[name];
@@ -331,10 +332,16 @@ const MODULES = {
     ]
   },
   idea: {
-    title:'今日灵感', icon:'spark', daily:true, storageKey:'lifeapp_idea',
+    title:'每日灵感', icon:'spark', daily:true, storageKey:'lifeapp_idea',
+    template:'diary',
     fields:[
-      { key:'text',  label:'灵感文字', type:'textarea', ph:'突然想到的点子…' },
-      { key:'image', label:'配图',     type:'image' }
+      { key:'weather', label:'日期 / 天气', type:'text',     ph:'2026年7月28日 周二 · 晴' },
+      { key:'event',   label:'【今日要事】', type:'textarea', ph:'去了哪、见了谁、做了什么' },
+      { key:'book',    label:'【今日书账】', type:'textarea', ph:'阅读页码、知识点、金句摘抄' },
+      { key:'life',    label:'【生活记录】', type:'textarea', ph:'饮食、见闻、影音' },
+      { key:'idea',    label:'【今日灵感】', type:'textarea', ph:'突然闪现的脑洞、段子或观察' },
+      { key:'learn',   label:'【今日新知】', type:'textarea', ph:'今天学到了什么' },
+      { key:'sleep',   label:'【睡眠评分】', type:'textarea', ph:'记录睡眠时间与质量、做的梦' }
     ]
   },
   review: {
@@ -597,24 +604,17 @@ function renderHome() {
 
 // 首页「每日灵感」便签卡片
 function renderIdeaCard() {
-  const list = load('lifeapp_idea');
-  const todayList = list.filter(r => r.date === today());
-  const n = todayList.length;
-  const latest = todayList[0];   // 最新一条排在最前
-  let body;
-  if (latest) {
-    const txt = (latest.text || '').slice(0, 60) || '（只有一张图）';
-    body = `<div class="idea-text">${escapeHtml(txt)}</div>`
-         + (latest.image ? `<div class="idea-thumb"><img src="${latest.image}" alt="灵感配图"></div>` : '');
-  } else {
-    body = `<div class="idea-empty">${ic('pencil')} 点此随手记一条灵感…</div>`;
-  }
+  const rec = diaryTodayRecord('lifeapp_idea');
+  const filled = diaryFilledCount(rec);
+  const hint = filled
+    ? '今日日记已填 ' + filled + '/7，点击查看或继续写…'
+    : '用马伯庸日记模板记录今天…';
   return `
-    <div class="idea-card" id="ideaCard" role="button" tabindex="0">
-      <div class="idea-head"><span>${ic('spark')} 每日灵感</span><span class="idea-count">今日 ${n} 条</span></div>
-      <div class="idea-body">${body}</div>
-      <button class="idea-write" id="ideaWriteBtn" type="button">${ic('pencil')} 写灵感</button>
-    </div>`;
+    <a class="idea-card" id="ideaCard" href="#/idea" role="button">
+      <div class="idea-head"><span>${ic('spark')} 每日灵感</span><span class="idea-count">${filled}/7</span></div>
+      <div class="idea-body"><div class="idea-empty">${ic('cat')} ${hint}</div></div>
+      <span class="idea-write">${ic('pencil')} 写日记</span>
+    </a>`;
 }
 
 // 文件 → 压缩后的 base64（限制尺寸，避免撑爆 localStorage）
@@ -686,11 +686,7 @@ function bindHome() {
   tickClock();
   clockTimer = setInterval(tickClock, 1000);
   refreshWeather();   // 加载天气卡片
-  const wb = $('#ideaWriteBtn');
-  if (wb) wb.addEventListener('click', e => { e.stopPropagation(); openIdeaModal(); });
-  // 点卡片主体也能打开便签
-  const card = $('#ideaCard');
-  if (card) card.addEventListener('click', () => openIdeaModal());
+  // 每日灵感卡片现在是链接到 #/idea，无需 JS 绑定
 }
 function tickClock() {
   const el = $('#clock');
@@ -703,9 +699,68 @@ function tickClock() {
     <div class="clock-date">${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${week}</div>`;
 }
 
+// ---------- 日记模板（每日灵感） ----------
+function diaryTodayRecord(key){
+  return load(key).find(r => r.date === today()) || {};
+}
+function diaryFilledCount(data){
+  const fields = ['weather','event','book','life','idea','learn','sleep'];
+  return fields.filter(k => String(data[k] || '').trim()).length;
+}
+function renderDiaryTemplate(m){
+  const d = new Date();
+  const week = ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  const dateLabel = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${week}`;
+  const rec = diaryTodayRecord(m.storageKey);
+  const val = k => escapeHtml(rec[k] || '');
+  const ph = k => escapeHtml(m.fields.find(f => f.key === k).ph || '');
+  const row = (k, label) => `
+    <label class="diary-field">
+      <span class="diary-label">${label}</span>
+      <textarea name="${k}" rows="3" placeholder="${ph(k)}">${val(k)}</textarea>
+    </label>`;
+  return `
+    <div class="diary-page">
+      <div class="diary-top">
+        <div class="diary-clip">${ic('cat')}</div>
+        <div class="diary-date">${dateLabel}</div>
+        <h2 class="diary-title">马伯庸日记模版</h2>
+      </div>
+      <div class="diary-weather-row">
+        <label>
+          <span class="diary-label">日期 / 天气</span>
+          <input type="text" name="weather" value="${val('weather')}" placeholder="${ph('weather')}">
+        </label>
+      </div>
+      <div class="diary-fields">
+        ${row('event', '【今日要事】')}
+        ${row('book',  '【今日书账】')}
+        ${row('life',  '【生活记录】')}
+        ${row('idea',  '【今日灵感】')}
+        ${row('learn', '【今日新知】')}
+        ${row('sleep', '【睡眠评分】')}
+      </div>
+      <div class="diary-actions">
+        <button type="button" id="diarySave" class="btn-primary">${ic('disk')} 保存日记</button>
+        <span class="diary-count">已填 ${diaryFilledCount(rec)}/7</span>
+      </div>
+    </div>`;
+}
+function saveDiaryTemplate(m){
+  const data = { id: diaryTodayRecord(m.storageKey).id || uid(), date: today() };
+  for (const f of m.fields) {
+    const el = $(`.diary-page [name="${f.key}"]`);
+    data[f.key] = el ? el.value.trim() : '';
+  }
+  const arr = load(m.storageKey).filter(r => r.date !== today());
+  arr.unshift(data);
+  save(m.storageKey, arr);
+}
+
 // ---------- 模块页：表单 + 列表 ----------
 function renderModule(key) {
   const m = MODULES[key];
+  if (m.template === 'diary') return renderDiaryTemplate(m);
   const list = load(m.storageKey);
   const formHtml  = m.fields.map(fieldHTML).join('');
   const itemsHtml = list.map(item => itemHTML(m, item)).join('')
@@ -1039,6 +1094,21 @@ function bindDeletes(scope, storageKey) {
   // 绑定「添加 / 删除 / 清空今日」事件
 function bindModule(key) {
   const m = MODULES[key];
+
+  // 日记模板（每日灵感）保存
+  if (m.template === 'diary') {
+    const saveBtn = $('#diarySave');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      saveDiaryTemplate(m);
+      // 刷新计数显示
+      const rec = diaryTodayRecord(m.storageKey);
+      const countEl = $('.diary-count');
+      if (countEl) countEl.textContent = `已填 ${diaryFilledCount(rec)}/7`;
+      saveBtn.textContent = '已保存';
+      setTimeout(() => { saveBtn.innerHTML = `${ic('disk')} 保存日记`; }, 1200);
+    });
+    return;
+  }
 
   const addForm = $('#add-form');
   if (addForm) addForm.addEventListener('submit', async e => {
