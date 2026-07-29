@@ -380,8 +380,8 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .dm-todo-text{flex:1; font-size:calc(14px * var(--fs)); color:var(--text);}
 .dm-todo-del{flex:0 0 auto; width:24px; height:24px; border:none; background:transparent; color:var(--muted); font-size:calc(18px * var(--fs)); line-height:1; border-radius:50%;}
 .dm-todo-del:active{background:var(--bg); color:var(--text);}
-.dm-todo-add{display:flex; gap:6px; margin-bottom:10px;}
-.dm-todo-add input{flex:1; padding:8px 10px; border:none; border-radius:var(--r-sm); background:#fff; color:var(--text); font-size:calc(14px * var(--fs));}
+.dm-todo-add{display:flex; gap:6px; margin-bottom:10px; width:100%; max-width:100%;}
+.dm-todo-add input{flex:1 1 0; min-width:0; max-width:100%; padding:8px 10px; border:none; border-radius:var(--r-sm); background:#fff; color:var(--text); font-size:calc(14px * var(--fs));}
 .dm-todo-add button{flex:0 0 auto; padding:8px 14px; border:none; border-radius:var(--r-sm); background:#fff; color:var(--ink); font-size:calc(13px * var(--fs)); font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);}
 .dm-jump{width:100%; border:none; background:transparent; color:var(--primary); font-size:calc(13px * var(--fs)); padding:6px; cursor:pointer; text-align:center;}
 .dm-jump:active{opacity:.7;}
