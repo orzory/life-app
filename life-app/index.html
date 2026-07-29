@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#f9f7f2" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Oh My Day!</title>
+  <title>My Daily Routine</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png?v83" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 中文字体已 base64 内联进 style.css，无需单独 preload -->
-  <link rel="stylesheet" href="style.css?v126" />
+  <link rel="stylesheet" href="style.css?v127" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -25,7 +25,7 @@
   <div class="layout">
     <!-- 左侧纵向导航栏（电脑常驻，手机变抽屉） -->
     <aside class="sidebar">
-      <div class="brand"><span class="ic" data-ic="flower"></span> Oh My Day!</div>
+      <div class="brand"><span class="ic" data-ic="flower"></span> My Daily Routine</div>
       <nav id="nav" class="nav"></nav>
       <div class="sidebar-foot"><span class="ic" data-ic="lock"></span></div>
     </aside>
@@ -33,7 +33,7 @@
     <!-- 主内容区（仪表盘 / 各模块）由 app.js 渲染 -->
     <main id="view" class="view">
       <div id="boot-msg" style="padding:120px 24px;text-align:center;color:#7a746b;font-size:16px;">
-        正在加载 Oh My Day…<br>
+        正在加载 My Daily Routine…<br>
         <span style="font-size:13px;opacity:.7;">若长时间空白，请检查网络或杀 App 重开</span>
       </div>
     </main>
@@ -87,10 +87,10 @@
     // 主脚本加载失败时给出明确提示，避免纯白屏
     function onAppError() {
       document.body.innerHTML = '<div style="padding:120px 24px;text-align:center;color:#7a746b;font-size:16px;">' +
-        'Oh My Day 加载失败<br><span style="font-size:13px;opacity:.7;">请检查网络，或杀掉 App 重新打开</span></div>';
+        'My Daily Routine 加载失败<br><span style="font-size:13px;opacity:.7;">请检查网络，或杀掉 App 重新打开</span></div>';
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v126" onerror="onAppError()"></script>
+  <script src="app.js?v127" onerror="onAppError()"></script>
 </body>
 </html>
