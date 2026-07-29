@@ -555,15 +555,15 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .np-del:active{background:var(--bg); color:var(--text);}
 .np-add{
-  display:flex; gap:8px; margin-bottom:12px;
+  display:flex; gap:6px; margin-bottom:8px;
 }
 .np-add input{
-  flex:1; padding:10px 12px; border:none; border-radius:var(--r-sm);
-  background:var(--bg); color:var(--text); font-size:calc(15px * var(--fs));
+  flex:1; padding:6px 10px; border:none; border-radius:var(--r-sm);
+  background:var(--bg); color:var(--text); font-size:calc(14px * var(--fs));
 }
 .np-add button{
-  flex:0 0 auto; padding:10px 16px; border:none; border-radius:var(--r-sm);
-  background:#fff; color:var(--ink); font-size:calc(14px * var(--fs)); font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);
+  flex:0 0 auto; padding:6px 12px; border:none; border-radius:var(--r-sm);
+  background:#fff; color:var(--ink); font-size:calc(13px * var(--fs)); font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
 .np-add button:active{background:var(--bg); transform:translate(1px,2px); box-shadow:none;}
 .np-tags{
