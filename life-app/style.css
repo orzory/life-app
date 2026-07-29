@@ -120,7 +120,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 
 /* ---- 天气卡片（置于时钟下方） ---- */
 .weather-card{
-  display:flex; flex-direction:column; gap:6px;
+  display:block;
   background:#fff;
   border:var(--bd); border-radius:var(--r);
   padding:14px 20px; margin:18px 0 0; color:var(--text);
@@ -128,14 +128,19 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .wx-city,.wx-cond,.wx-hum,.wx-run-title,.wx-run-note,.wx-run-meta,.wx-loading,.wx-error{color:var(--muted);}
 .wx-temp{font-size:calc(28px * var(--fs)); font-weight:700; line-height:1.1; color:var(--ink);}
-.wx-run{border-top:none; padding-top:0; display:flex; flex-direction:column; gap:6px;}
-.wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); flex:0 0 auto;}
-.wx-run-meta{font-size:calc(15px * var(--fs)); color:var(--muted);}
-.wx-run-note{font-size:calc(13px * var(--fs)); color:var(--muted); display:flex; align-items:center; gap:4px;}
-/* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用 muted/ink 配色） */
+/* 用显式 margin 控制行距（而非 flex gap），兼容老版本 iOS Safari */
 .wx-topline{
   display:flex; align-items:baseline; gap:8px; flex-wrap:nowrap; white-space:nowrap;
+  margin-bottom:6px;
 }
+.wx-run{
+  border-top:none; padding-top:0;
+  display:block; margin-top:0;
+}
+.wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); flex:0 0 auto;}
+.wx-run-meta{font-size:calc(15px * var(--fs)); color:var(--muted); margin-bottom:6px;}
+.wx-run-note{font-size:calc(13px * var(--fs)); color:var(--muted); display:flex; align-items:center; gap:4px;}
+/* 天气卡片：与 grug 纸墨配色统一（去掉原蓝色强调，沿用 muted/ink 配色） */
 .wx-run-line{
   display:flex; align-items:baseline; gap:10px; flex-wrap:nowrap; overflow:hidden;
 }
@@ -553,8 +558,8 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   .ring{width:92px; height:92px;}
   .ring-label{font-size:calc(23px * var(--fs));}
   .checkin-list{flex:1 1 180px; gap:10px 12px;}
-  /* 天气卡片手机端：保持横排行布局，仅收紧间距 */
-  .weather-card{gap:8px; margin-top:12px;}
+  /* 天气卡片手机端：横排行布局，间距由显式 margin 控制（见主规则） */
+  .weather-card{margin-top:12px;}
   .wx-topline{gap:6px;}
 }
 
