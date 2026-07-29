@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v145';
+const APP_VERSION = 'v146';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -920,7 +920,7 @@ function renderDiaryTemplate(m){
       <div class="diary-top">
         <div class="diary-clip">${ic('cat')}</div>
         <div class="diary-date">${dateLabel}</div>
-        <h2 class="diary-title">今日份哗啦啦</h2>
+        <h2 class="diary-title">今日份流水账</h2>
       </div>
       <div class="diary-weather-row">
         <label>
@@ -953,37 +953,36 @@ function saveDiaryTemplate(m){
   save(m.storageKey, arr);
 }
 
-// 从月历点「絮絮叨叨」时：只读弹出该日日记内容
+// 从月历点「絮絮叨叨」时：只读弹出该日日记内容（今日份流水账：一段汇总的流水，不分小框）
 function renderDiaryViewModal(dateStr){
   const m = MODULES.idea;
   const rec = diaryRecordByDate(m.storageKey, dateStr);
   const dateLabel = formatZhDate(dateStr);
   const val = k => (rec[k] || '').trim();
-  const row = (k, label, ph) => {
-    const v = val(k);
-    return `<div class="diary-view-item">
-      <div class="diary-view-item-label">${label}</div>
-      ${v ? `<div class="diary-view-item-text">${escapeHtml(v)}</div>` : `<div class="diary-view-item-empty">${escapeHtml(ph)}</div>`}
-    </div>`;
-  };
+  const fields = [
+    ['event', '【今日要事】'],
+    ['book',  '【今日书账】'],
+    ['life',  '【生活记录】'],
+    ['idea',  '【絮絮叨叨】'],
+    ['learn', '【今日新知】'],
+    ['sleep', '【睡眠评分】'],
+  ];
+  // 只汇集「填了内容」的字段，按原顺序流成一段，不再分小框
+  const rows = fields.filter(([k]) => val(k)).map(([k, label]) => `
+      <div class="dv-row">
+        <div class="dv-label">${label}</div>
+        <div class="dv-text">${escapeHtml(val(k))}</div>
+      </div>`).join('');
+  const body = rows || `<div class="dv-empty">这一天还没写流水账～</div>`;
   return `
     <div class="diary-view">
       <div class="diary-view-top">
         <div class="diary-view-clip">${ic('cat')}</div>
         <div class="diary-view-date">${dateLabel}</div>
-        <h2 class="diary-view-title">马伯庸日记模版</h2>
+        <h2 class="diary-view-title">今日份流水账</h2>
       </div>
-      <div class="diary-view-weather">
-        <div class="diary-view-weather-label">日期 / 天气</div>
-        <div class="diary-view-weather-text">${val('weather') ? escapeHtml(val('weather')) : escapeHtml(currentWeatherText())}</div>
-      </div>
-      <div class="diary-view-list">
-        ${row('event', '【今日要事】', '去了哪、见了谁、做了什么')}
-        ${row('book',  '【今日书账】', '阅读页码、知识点、金句摘抄')}
-        ${row('life',  '【生活记录】', '饮食、见闻、影音')}
-        ${row('idea',  '【絮絮叨叨】', '突然闪现的脑洞、段子或观察')}
-        ${row('learn', '【今日新知】', '今天学到了什么')}
-        ${row('sleep', '【睡眠评分】', '记录睡眠时间与质量、做的梦')}
+      <div class="diary-view-flow">
+        ${body}
       </div>
     </div>`;
 }

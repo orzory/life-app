@@ -333,6 +333,22 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .diary-view-item-empty{
   font-size:calc(14px * var(--fs)); color:var(--muted); line-height:1.7;
 }
+/* 今日份流水账：一段汇总的流水，不分小框 */
+.diary-view-flow{
+  background:#fff; border:var(--bd); border-radius:var(--r);
+  padding:16px 18px; display:flex; flex-direction:column; gap:14px;
+}
+.dv-row{ }
+.dv-label{
+  font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:4px;
+}
+.dv-text{
+  font-size:calc(15px * var(--fs)); color:var(--text); line-height:1.85;
+  white-space:pre-wrap; word-break:break-word;
+}
+.dv-empty{
+  font-size:calc(15px * var(--fs)); color:var(--muted); line-height:1.85; text-align:center;
+}
 
 /* ---- 弹窗（灵感便签） ---- */
 .modal-mask{
