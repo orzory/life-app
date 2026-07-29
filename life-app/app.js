@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v130';
+const APP_VERSION = 'v131';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -318,8 +318,8 @@ const MODULES = {
     title:'嘿哈运动', icon:'run', daily:true, storageKey:'lifeapp_sport', modalForm:true,
     // 一键跳转到「华为运动健康」：手机装了 App 会直接唤起，没装则打开官网
     launch:{ label:'打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
-    // 今日运动概览：把今天各条记录的运动时长/距离求和
-    dailySummary:[ { key:'duration', label:'运动时长', unit:'分' }, { key:'distance', label:'距离', unit:'km' } ],
+    // 今日运动概览：把今天各条记录的运动时长求和
+    dailySummary:[ { key:'duration', label:'运动时长', unit:'分' } ],
     // 周计划：7 天可编辑，覆盖式保存（不计入每日打卡）
     // 默认空白，想用时从「套用模板」下拉选模板一即可
     weeklyPlan:{
@@ -342,15 +342,8 @@ const MODULES = {
     fields:[
       { key:'date',           label:'日期',         type:'date', defaultToday:true },
       { key:'type',           label:'类型',         type:'select',  options:['跑步','力量','HIIT','有氧','其他'] },
-      { key:'distance',       label:'距离(km)',     type:'number',  ph:'如 5' },
       { key:'duration',       label:'时长(分)',     type:'number',  ph:'如 40' },
-      { key:'activeCalories', label:'活动热量(kcal)', type:'number',  ph:'如 362' },
-      { key:'totalCalories',  label:'总消耗热量(kcal)', type:'number', ph:'如 417' },
-      { key:'pace',           label:'配速',         type:'text',    ph:"如 7'30\"" },
-      { key:'avgHr',          label:'平均心率',     type:'number',  ph:'如 147' },
-      { key:'cadence',        label:'步频(步/分)',  type:'number',  ph:'如 175' },
-      { key:'steps',          label:'步数',         type:'number',  ph:'如 14582' },
-      { key:'note',       label:'备注',       type:'textarea' }
+      { key:'note',           label:'备注',         type:'textarea' }
     ]
   },
   meal: {
