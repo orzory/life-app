@@ -369,6 +369,22 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .day-mod-ic{width:24px; height:24px; display:inline-flex; flex:none; color:var(--ink);}
 .day-mod-title{font-size:calc(15px * var(--fs)); font-weight:600; flex:1;}
 .day-mod-count{font-size:calc(13px * var(--fs)); color:var(--muted);}
+/* 当日弹窗：待办事项区块 */
+.dm-section{margin-top:16px;}
+.dm-section-title{font-size:calc(14px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:8px;}
+.dm-todos{display:flex; flex-direction:column; gap:8px; margin-bottom:10px;}
+.dm-todo{display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:var(--r-sm); padding:9px 11px; cursor:pointer;}
+.dm-todo.done .dm-todo-text{text-decoration:line-through; color:var(--muted);}
+.dm-todo-check{flex:0 0 18px; width:18px; height:18px; border:2px solid var(--muted); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:calc(12px * var(--fs)); color:#fff; line-height:1;}
+.dm-todo.done .dm-todo-check{background:var(--muted); border-color:var(--muted);}
+.dm-todo-text{flex:1; font-size:calc(14px * var(--fs)); color:var(--text);}
+.dm-todo-del{flex:0 0 auto; width:24px; height:24px; border:none; background:transparent; color:var(--muted); font-size:calc(18px * var(--fs)); line-height:1; border-radius:50%;}
+.dm-todo-del:active{background:var(--bg); color:var(--text);}
+.dm-todo-add{display:flex; gap:6px; margin-bottom:10px;}
+.dm-todo-add input{flex:1; padding:8px 10px; border:none; border-radius:var(--r-sm); background:#fff; color:var(--text); font-size:calc(14px * var(--fs));}
+.dm-todo-add button{flex:0 0 auto; padding:8px 14px; border:none; border-radius:var(--r-sm); background:#fff; color:var(--ink); font-size:calc(13px * var(--fs)); font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);}
+.dm-jump{width:100%; border:none; background:transparent; color:var(--primary); font-size:calc(13px * var(--fs)); padding:6px; cursor:pointer; text-align:center;}
+.dm-jump:active{opacity:.7;}
 
 /* ---- 运动记录录入弹窗 ---- */
 .sport-form-modal{background:#fff; max-width:460px; max-height:85vh; display:flex; flex-direction:column; border-radius:var(--r);}
@@ -566,6 +582,13 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   background:#fff; color:var(--ink); font-size:calc(13px * var(--fs)); font-weight:700; cursor:pointer; box-shadow:2px 3px 0 rgba(0,0,0,.08);
 }
 .np-add button:active{background:var(--bg); transform:translate(1px,2px); box-shadow:none;}
+/* 每日计划：日期前后翻看 */
+.np-date-nav{display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:4px;}
+.np-nav-btn{width:34px; height:34px; border:none; background:var(--bg); color:var(--ink); border-radius:50%; font-size:calc(20px * var(--fs)); line-height:1; cursor:pointer;}
+.np-nav-btn:active{background:#fff; transform:translateY(1px);}
+.np-nav-date{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); min-width:140px; text-align:center; letter-spacing:.5px;}
+.np-nav-today{border:none; background:var(--primary); color:#fff; border-radius:var(--r-sm); padding:6px 12px; font-size:calc(12px * var(--fs)); cursor:pointer;}
+.np-nav-today:active{opacity:.8;}
 .np-tags{
   font-size:calc(13px * var(--fs)); color:var(--muted);
   border-top:none;
