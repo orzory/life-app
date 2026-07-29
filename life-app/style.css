@@ -340,8 +340,8 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 /* 今日份哗啦啦：一段汇总的流水，不分小框；标签与内容同行，内容可自动换行 */
 .diary-view-flow{
-  background:#fff; border:var(--bd); border-radius:var(--r);
-  padding:16px 18px; display:flex; flex-direction:column; gap:10px;
+  background:var(--bg); border:none; border-radius:var(--r);
+  padding:10px 12px; display:flex; flex-direction:column; gap:8px;
 }
 .dv-row{ line-height:1.9; }
 .dv-label{
