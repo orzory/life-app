@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v126';
+const APP_VERSION = 'v127';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -98,7 +98,7 @@ function collectBackup() {
     const k = localStorage.key(i);
     if (k && k.startsWith('lifeapp_')) data[k] = localStorage.getItem(k);
   }
-  return { app: 'oh-my-day', version: APP_VERSION, exportedAt: new Date().toISOString(), data };
+  return { app: 'my-daily-routine', version: APP_VERSION, exportedAt: new Date().toISOString(), data };
 }
 function exportBackup() {
   const payload = collectBackup();
@@ -109,7 +109,7 @@ function exportBackup() {
   const a = document.createElement('a');
   const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
   a.href = url;
-  a.download = `oh-my-day-backup-${ts}.json`;
+  a.download = `my-daily-routine-backup-${ts}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -124,7 +124,7 @@ function importBackup(file) {
       const data = payload && payload.data ? payload.data : payload;
       if (!data || typeof data !== 'object') throw new Error('文件格式不对');
       const keys = Object.keys(data).filter(k => k.startsWith('lifeapp_'));
-      if (!keys.length) throw new Error('备份里没有 Oh My Day 数据');
+      if (!keys.length) throw new Error('备份里没有 My Daily Routine 数据');
       const go = () => {
         keys.forEach(k => { try { localStorage.setItem(k, data[k]); } catch (e) {} });
         toast('备份已恢复，正在刷新…');
