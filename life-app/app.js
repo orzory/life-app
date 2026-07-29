@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v140';
+const APP_VERSION = 'v141';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -368,7 +368,7 @@ const MODULES = {
     ]
   },
   word: {
-    title:'对话&单词', icon:'vocab', daily:true, storageKey:'lifeapp_word', checkin:true,
+    title:'对话单词', icon:'vocab', daily:true, storageKey:'lifeapp_word', checkin:true,
   }
 };
 
@@ -1795,7 +1795,7 @@ window.addEventListener('load', () => {
     closeDrawer();       // 手机端收起抽屉
   });
 
-  // 首页「打卡项目」列表里的 checkin 模块（如对话&单词）：点一下直接打卡/取消，不跳页
+  // 首页「打卡项目」列表里的 checkin 模块（如对话单词）：点一下直接打卡/取消，不跳页
   document.addEventListener('click', e => {
     const a = e.target.closest('.check-row[data-checkin="1"]');
     if (!a) return;
