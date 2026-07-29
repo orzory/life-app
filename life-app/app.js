@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v143';
+const APP_VERSION = 'v144';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -288,7 +288,7 @@ function parseWorkoutText(text) {
    ========================================================================= */
 const MODULES = {
   reading: {
-    title:'每日阅读', icon:'book', daily:true, storageKey:'lifeapp_reading',
+    title:'读点书吧', icon:'book', daily:true, storageKey:'lifeapp_reading',
     // 一键跳转到「微信读书」：手机装了 App 会直接唤起（weread://），没装则打开网页版
     launch:{ label:'打开微信读书', url:'https://weread.qq.com/', scheme:'weread://' },
     // 今日阅读概览：把今天各条记录的时长字段求和
