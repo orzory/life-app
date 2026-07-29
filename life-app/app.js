@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v142';
+const APP_VERSION = 'v143';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1332,7 +1332,11 @@ function openDayModal(dateStr) {
   $('#dayModal').classList.add('show');
 
   // 点模块记录 → 跳进该模块（链接触发 hashchange → render 后会自动关弹窗）
-  $$('#dayModalBody .day-mod').forEach(a => a.addEventListener('click', closeDayModal));
+  // 若点的是「每日计划」链接，先把目标日期带上，否则进入 daily 会被 reset 到今天
+  $$('#dayModalBody .day-mod').forEach(a => a.addEventListener('click', () => {
+    if (a.getAttribute('href') === '#/daily') _dpPendingDate = dateStr;
+    closeDayModal();
+  }));
   // 待办：勾选/删除
   const todoList = $('#dmTodoList');
   if (todoList) todoList.addEventListener('click', e => {
