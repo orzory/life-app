@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v123';
+const APP_VERSION = 'v124';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -598,15 +598,6 @@ function renderWeatherInner(d) {
   const avgH = (d.dailyAvgHum === undefined || d.dailyAvgHum === null) ? '—' : Math.round(d.dailyAvgHum);
   const runMeta = `${d.dayLabel || '今日'} ${dMin}°C–${dMax}°C / 平均湿度 ${avgH}%`;
 
-  // 最佳窗口内的具体温湿（单小时时不显示「24–24」这样的重复范围）
-  const wMin = (d.bestTempMin === undefined || d.bestTempMin === null) ? null : Math.round(d.bestTempMin);
-  const wMax = (d.bestTempMax === undefined || d.bestTempMax === null) ? null : Math.round(d.bestTempMax);
-  const wHum = (d.bestHum === undefined || d.bestHum === null) ? null : Math.round(d.bestHum);
-  let winNote = '';
-  if (d.bestWindow && d.bestWindow !== '—' && wMin !== null && wMax !== null && wHum !== null) {
-    const range = wMin === wMax ? `约 ${wMin}°C` : `${wMin}°C–${wMax}°C`;
-    winNote = `${ic('drop')} ${range} / 湿度 ${wHum}%`;
-  }
   return `
     <div class="wx-topline">
       <span class="wx-ic">${ic(wxIcon(d.code))}</span>
@@ -621,7 +612,6 @@ function renderWeatherInner(d) {
         <span class="wx-run-title">${ic('run')} 最佳户外跑步时段</span>
         <span class="wx-run-time">${d.bestWindow}</span>
       </div>
-      ${winNote ? `<div class="wx-run-note">${winNote}</div>` : ''}
     </div>`;
 }
 
