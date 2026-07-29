@@ -428,14 +428,6 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .ocr-actions .btn-primary{flex:1; margin-top:0; padding:12px 8px; font-size:calc(15px * var(--fs));}
 .ocr-status{font-size:calc(13px * var(--fs)); color:var(--text); margin-top:10px; line-height:1.5;}
 
-/* ---- 月度运动总结（嘿哈运动模块） ---- */
-.month-box{background:var(--card); border:var(--bd); border-radius:var(--r); padding:16px; margin:20px 0; box-shadow:3px 4px 0 rgba(0,0,0,.06);}
-.month-head{font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink); margin-bottom:12px;}
-.month-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:0;}
-.month-cell{background:var(--bg); border:none; border-radius:var(--r-sm); padding:10px; text-align:center;}
-.month-cell b{display:block; font-size:calc(18px * var(--fs)); color:var(--ink); margin-bottom:2px;}
-.month-cell span{font-size:calc(12px * var(--fs)); color:var(--muted);}
-
 /* ---- 记录列表 ---- */
 .list{display:flex; flex-direction:column; gap:10px;}
 .item{background:var(--card); border:none; border-radius:var(--r-sm); padding:0; overflow:hidden;}
