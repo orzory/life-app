@@ -10,8 +10,12 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png?v83" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
-  <!-- 中文字体已 base64 内联进 style.css，无需单独 preload -->
-  <link rel="stylesheet" href="style.css?v152" />
+  <!-- 主样式：小文件，阻塞首屏但极快解析 -->
+  <link rel="stylesheet" href="style.css?v153" />
+  <!-- 中文字体（含 3.7MB 内联字体）拆到独立 font.css，用 preload 延迟加载，
+       不阻塞首屏渲染；font-display:swap 保证先用系统手写体兜底，字体解码完再无缝替换 -->
+  <link rel="preload" href="font.css?v153" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="font.css?v153" /></noscript>
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -102,6 +106,6 @@
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v152" onerror="onAppError()"></script>
+  <script src="app.js?v153" onerror="onAppError()"></script>
 </body>
 </html>
