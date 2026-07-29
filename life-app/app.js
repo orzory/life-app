@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v136';
+const APP_VERSION = 'v137';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1827,6 +1827,24 @@ window.addEventListener('load', () => {
   $('#noteCancel').addEventListener('click', closeIdeaModal);
   $('#noteSave').addEventListener('click', saveIdeaNote);
   $('#noteImg').addEventListener('change', onNoteImgChange);
+  // 模块页面右滑返回主页面（今日概览）。#view 容器常驻，只绑一次。
+  (function bindSwipeBack(){
+    const view = document.getElementById('view');
+    if (!view) return;
+    let sx = 0, sy = 0, tracking = false;
+    view.addEventListener('touchstart', e => {
+      if (currentHash() === 'home') return;          // 主页面不处理
+      if (e.touches.length !== 1) { tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    view.addEventListener('touchend', e => {
+      if (!tracking) return; tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      // 右滑：水平位移足够大且明显大于垂直位移，避免误触竖向滚动
+      if (dx > 60 && dx > Math.abs(dy) * 1.5) location.hash = '#/home';
+    }, { passive: true });
+  })();
   // 月历「当日记录」弹窗（静态常驻，不被 #view 重渲染影响）
   const dm = document.getElementById('dayModal');
   if (dm) {
