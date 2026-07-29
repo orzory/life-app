@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v139';
+const APP_VERSION = 'v140';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -287,21 +287,6 @@ function parseWorkoutText(text) {
    字段 type: text / number / date / textarea / checkbox
    ========================================================================= */
 const MODULES = {
-  english: {
-    title:'英语学习', icon:'speech', daily:true, storageKey:'lifeapp_english',
-    // 一键跳转到「不背单词」：装了 App 会直接唤起（bubei://），没装则打开官网
-    launch:{ label:'打开不背单词背词', url:'https://www.bbdc.cn/', scheme:'bubei://' },
-    // 今日学习概览：把今天各条记录的这些数字字段求和展示
-    dailySummary:[ { key:'words', label:'已背单词', unit:'个' }, { key:'minutes', label:'学习时长', unit:'分' } ],
-    fields:[
-      { key:'words',    label:'今日单词数',  type:'number',  ph:'如 30' },
-      { key:'minutes',  label:'学习时长(分)', type:'number',  ph:'如 20' },
-      { key:'word',     label:'生词/句子',    type:'text',     ph:'今天记住的一个词' },
-      { key:'meaning',  label:'释义',        type:'text',     ph:'中文意思' },
-      { key:'sentence', label:'例句',        type:'textarea' },
-      { key:'mastered', label:'已掌握',      type:'checkbox' }
-    ]
-  },
   reading: {
     title:'每日阅读', icon:'book', daily:true, storageKey:'lifeapp_reading',
     // 一键跳转到「微信读书」：手机装了 App 会直接唤起（weread://），没装则打开网页版
@@ -701,7 +686,7 @@ async function refreshDailyQuote() {
 // ---------- 概览（桌面/首页）：时间 + 天气 + 今日打卡 ----------
 function renderHome() {
   // 今日打卡只统计部分每日模块（灵感不计入打卡；每日计划单独做成首页卡片）
-  const EXCLUDE_FROM_CHECKIN = ['idea', 'daily', 'english'];
+  const EXCLUDE_FROM_CHECKIN = ['idea', 'daily'];
   const dailyMods = Object.entries(MODULES)
     .filter(([, m]) => m.daily)
     .filter(([key]) => !EXCLUDE_FROM_CHECKIN.includes(key));
