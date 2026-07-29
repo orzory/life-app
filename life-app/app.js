@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v122';
+const APP_VERSION = 'v123';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -719,8 +719,8 @@ async function refreshDailyQuote() {
 
 // ---------- 概览（桌面/首页）：时间 + 天气 + 今日打卡 ----------
 function renderHome() {
-  // 今日打卡只统计部分每日模块（灵感不计入打卡）
-  const EXCLUDE_FROM_CHECKIN = ['idea'];
+  // 今日打卡只统计部分每日模块（灵感不计入打卡；每日计划单独做成首页卡片）
+  const EXCLUDE_FROM_CHECKIN = ['idea', 'daily'];
   const dailyMods = Object.entries(MODULES)
     .filter(([, m]) => m.daily)
     .filter(([key]) => !EXCLUDE_FROM_CHECKIN.includes(key));
@@ -763,6 +763,8 @@ function renderHome() {
       <div class="checkin-list">${rows}</div>
     </div>
 
+    ${renderDailyPlanCard()}
+
     <div id="homeCalendarWrap" class="home-cal-wrap">${renderCalendar(buildDateModuleMap())}</div>
 
     ${renderIdeaCard()}`;
@@ -780,6 +782,31 @@ function renderIdeaCard() {
       <div class="idea-head"><span>${ic('spark')} 絮絮叨叨</span><span class="idea-count">${filled}/7</span></div>
       <div class="idea-body"><div class="idea-empty">${ic('cat')} ${hint}</div></div>
       <span class="idea-write">${ic('pencil')} 写日记</span>
+    </a>`;
+}
+
+// 首页「每日计划」小卡片：从打卡环里抽出来单独展示，点开去模块编辑
+function renderDailyPlanCard() {
+  const list = load('lifeapp_daily').filter(r => r.date === today());
+  const total = list.length;
+  const done = list.filter(r => r.done).length;
+  let body;
+  if (!total) {
+    body = `<div class="dp-empty">${ic('cat')} 今天还没定计划</div>`;
+  } else {
+    const items = list
+      .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1))
+      .map(it => `<div class="dp-item ${it.done ? 'done' : ''}">
+        <span class="dp-check">${it.done ? '✓' : ''}</span>
+        <span class="dp-text">${it.fromWeekPlan ? '<span class="np-wp-tag">周</span>' : ''}${escapeHtml(it.text || '')}</span>
+      </div>`).join('');
+    body = `<div class="dp-list">${items}</div>`;
+  }
+  return `
+    <a class="dp-card" id="dpCard" href="#/daily" role="button">
+      <div class="dp-head"><span>${ic('rainbow')} 每日计划</span><span class="dp-count">${done}/${total}</span></div>
+      ${body}
+      <span class="dp-write">${ic('pencil')} 去安排</span>
     </a>`;
 }
 
