@@ -571,10 +571,10 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .np-del:active{background:var(--bg); color:var(--text);}
 .np-add{
-  display:flex; gap:6px; margin-bottom:8px; width:100%;
+  display:flex; gap:6px; margin-bottom:8px; width:100%; max-width:100%;
 }
 .np-add input{
-  flex:1; padding:10px 12px; border:none; border-radius:var(--r-sm);
+  flex:1; min-width:0; padding:10px 12px; border:none; border-radius:var(--r-sm);
   background:var(--bg); color:var(--text); font-size:calc(14px * var(--fs));
 }
 .np-add button{
