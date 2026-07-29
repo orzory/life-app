@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v127';
+const APP_VERSION = 'v128';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -343,7 +343,7 @@ const MODULES = {
     },
     fields:[
       { key:'date',           label:'日期',         type:'date', defaultToday:true },
-      { key:'type',           label:'类型',         type:'text',    ph:'跑步 / 力量 / 瑜伽 / 户外跑' },
+      { key:'type',           label:'类型',         type:'select',  options:['跑步','力量','HIIT','有氧','其他'] },
       { key:'distance',       label:'距离(km)',     type:'number',  ph:'如 5' },
       { key:'duration',       label:'时长(分)',     type:'number',  ph:'如 40' },
       { key:'activeCalories', label:'活动热量(kcal)', type:'number',  ph:'如 362' },
@@ -1152,13 +1152,35 @@ function fieldHTML(f, val = '') {
   if (f.type === 'number')
     return `<label>${f.label}<input name="${f.key}" type="number" step="any" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
   if (f.type === 'select') {
-    const emptyOpt = `<option value=""${String(val) === '' ? ' selected' : ''}></option>`;
-    const opts = (f.options || []).map(o =>
-      `<option value="${escapeHtml(o)}"${String(val) === String(o) ? ' selected' : ''}>${escapeHtml(o)}</option>`
+    const optsList = f.options || [];
+    const hasOther = optsList.includes('其他');
+    const isPreset = val !== '' && optsList.includes(val);
+    const showOther = hasOther && !isPreset && val !== '';   // 已有值是自定义内容（非预设）
+    const selVal = isPreset ? val : (showOther ? '其他' : '');
+    const emptyOpt = `<option value=""${selVal === '' ? ' selected' : ''}></option>`;
+    const opts = optsList.map(o =>
+      `<option value="${escapeHtml(o)}"${String(selVal) === String(o) ? ' selected' : ''}>${escapeHtml(o)}</option>`
     ).join('');
-    return `<label>${f.label}<select name="${f.key}">${emptyOpt}${opts}</select></label>`;
+    const otherInput = hasOther
+      ? `<input class="field-other" name="${f.key}_other" placeholder="请填写具体运动内容"${showOther ? '' : ' style="display:none"'} value="${escapeHtml(showOther ? val : '')}">`
+      : '';
+    return `<label>${f.label}<select name="${f.key}">${emptyOpt}${opts}</select>${otherInput}</label>`;
   }
   return `<label>${f.label}<input name="${f.key}" type="${f.type}" placeholder="${f.ph||''}" value="${escapeHtml(String(val))}"></label>`;
+}
+
+// 含「其他」选项的 select：若选了「其他」且填了自定义内容，则把自定义内容写回主字段
+function mergeOtherSelects(m, data, formEl) {
+  if (!formEl) return;
+  for (const f of m.fields) {
+    if (f.type === 'select' && (f.options || []).includes('其他')) {
+      if (data[f.key] === '其他') {
+        const otherEl = formEl[f.key + '_other'];
+        const otherVal = otherEl && otherEl.value ? otherEl.value.trim() : '';
+        if (otherVal) data[f.key] = otherVal;
+      }
+    }
+  }
 }
 
 // 运动截图 OCR 用的 Tesseract.js 改为按需动态加载，避免外部脚本阻塞首屏
@@ -1437,7 +1459,7 @@ function bindModule(key) {
         if (f.key === 'date') userDate = data[f.key];
       }
     }
-    data.id = uid();
+    mergeOtherSelects(m, data, e.target);
     if (m.daily) data.date = userDate || today();   // 填了日期用填的（补记），否则今天
 
     // 好好吃饭：同一天多次上传的餐次合并进同一天记录（而不是每条单独占一行）
@@ -1487,6 +1509,7 @@ function bindModule(key) {
           if (f.key === 'date') userDate = data[f.key];
         }
       }
+      mergeOtherSelects(m, data, e.target);
       data.id = uid();
       data.date = userDate || today();
       const arr = load(m.storageKey);
@@ -1654,6 +1677,23 @@ document.addEventListener('click', e => {
   }, 1800);
   // 尝试唤起 App（iOS 会弹「是否打开？」确认框；安卓直接唤起）
   window.location.href = scheme;
+});
+
+// 含「其他」选项的 select：选中「其他」时显示自定义输入框，选别的则隐藏并清空
+document.addEventListener('change', e => {
+  const sel = e.target;
+  if (!sel || sel.tagName !== 'SELECT') return;
+  const wrap = sel.closest('label');
+  if (!wrap) return;
+  const other = wrap.querySelector('.field-other');
+  if (!other) return;
+  if (sel.value === '其他') {
+    other.style.display = '';
+    if (other.value === '') setTimeout(() => other.focus(), 30);
+  } else {
+    other.style.display = 'none';
+    other.value = '';
+  }
 });
 
 window.addEventListener('hashchange', render);
