@@ -120,15 +120,15 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 
 /* ---- 天气卡片（置于时钟下方） ---- */
 .weather-card{
-  display:flex; flex-direction:column; gap:10px;
+  display:flex; flex-direction:column; gap:6px;
   background:#fff;
   border:var(--bd); border-radius:var(--r);
-  padding:16px 20px; margin:18px 0 0; color:var(--text);
+  padding:14px 20px; margin:18px 0 0; color:var(--text);
   box-shadow:3px 4px 0 rgba(0,0,0,.06);
 }
 .wx-city,.wx-cond,.wx-hum,.wx-run-title,.wx-run-note,.wx-run-meta,.wx-loading,.wx-error{color:var(--muted);}
 .wx-temp{font-size:calc(28px * var(--fs)); font-weight:700; line-height:1.1; color:var(--ink);}
-.wx-run{border-top:none; padding-top:10px; display:flex; flex-direction:column; gap:6px;}
+.wx-run{border-top:none; padding-top:0; display:flex; flex-direction:column; gap:6px;}
 .wx-run-time{font-size:calc(20px * var(--fs)); font-weight:700; color:var(--ink); flex:0 0 auto;}
 .wx-run-meta{font-size:calc(15px * var(--fs)); color:var(--muted);}
 .wx-run-note{font-size:calc(13px * var(--fs)); color:var(--muted); display:flex; align-items:center; gap:4px;}
