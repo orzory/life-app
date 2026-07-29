@@ -333,7 +333,7 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .diary-view-item-empty{
   font-size:calc(14px * var(--fs)); color:var(--muted); line-height:1.7;
 }
-/* 今日份流水账：一段汇总的流水，不分小框；标签与内容同行，内容可自动换行 */
+/* 今日份哗啦啦：一段汇总的流水，不分小框；标签与内容同行，内容可自动换行 */
 .diary-view-flow{
   background:#fff; border:var(--bd); border-radius:var(--r);
   padding:16px 18px; display:flex; flex-direction:column; gap:10px;

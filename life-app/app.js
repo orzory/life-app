@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v148';
+const APP_VERSION = 'v149';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -920,7 +920,7 @@ function renderDiaryTemplate(m){
       <div class="diary-top">
         <div class="diary-clip">${ic('cat')}</div>
         <div class="diary-date">${dateLabel}</div>
-        <h2 class="diary-title">今日份流水账</h2>
+        <h2 class="diary-title">今日份哗啦啦</h2>
       </div>
       <div class="diary-weather-row">
         <label>
@@ -953,7 +953,7 @@ function saveDiaryTemplate(m){
   save(m.storageKey, arr);
 }
 
-// 从月历点「絮絮叨叨」时：只读弹出该日日记内容（今日份流水账：一段汇总的流水，不分小框）
+// 从月历点「絮絮叨叨」时：只读弹出该日日记内容（今日份哗啦啦：一段汇总的流水，不分小框）
 function renderDiaryViewModal(dateStr){
   const m = MODULES.idea;
   const rec = diaryRecordByDate(m.storageKey, dateStr);
@@ -979,7 +979,7 @@ function renderDiaryViewModal(dateStr){
       <div class="diary-view-top">
         <div class="diary-view-clip">${ic('cat')}</div>
         <div class="diary-view-date">${dateLabel}</div>
-        <h2 class="diary-view-title">今日份流水账</h2>
+        <h2 class="diary-view-title">今日份哗啦啦</h2>
       </div>
       <div class="diary-view-flow">
         ${body}
