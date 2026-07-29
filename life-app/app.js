@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v137';
+const APP_VERSION = 'v138';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -383,7 +383,7 @@ const MODULES = {
     ]
   },
   word: {
-    title:'背背单词', icon:'vocab', daily:true, storageKey:'lifeapp_word', checkin:true,
+    title:'对话&单词', icon:'vocab', daily:true, storageKey:'lifeapp_word', checkin:true,
   }
 };
 
@@ -701,7 +701,7 @@ async function refreshDailyQuote() {
 // ---------- 概览（桌面/首页）：时间 + 天气 + 今日打卡 ----------
 function renderHome() {
   // 今日打卡只统计部分每日模块（灵感不计入打卡；每日计划单独做成首页卡片）
-  const EXCLUDE_FROM_CHECKIN = ['idea', 'daily'];
+  const EXCLUDE_FROM_CHECKIN = ['idea', 'daily', 'english'];
   const dailyMods = Object.entries(MODULES)
     .filter(([, m]) => m.daily)
     .filter(([key]) => !EXCLUDE_FROM_CHECKIN.includes(key));
