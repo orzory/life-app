@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v131';
+const APP_VERSION = 'v132';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -401,6 +401,9 @@ function currentHash() {
 function render() {
   clearInterval(clockTimer);          // 切换页面先停掉旧时钟
   const hash = currentHash();
+  // 进入每日计划模块时把查看日期重置为今天（从月历跳转走 _dpPendingDate 分支，不会走到这里）
+  if (hash === 'daily' && _dpLastHash !== 'daily') dailyPlanViewDate = today();
+  _dpLastHash = hash;
   const main = $('#view');
   if (hash === 'home') {
     main.innerHTML = renderHome();
@@ -872,7 +875,7 @@ function bindHomeCalendar() {
     const cell = e.target.closest('.cal-cell');
     if (!cell) return;
     if (cell.dataset.delta) { navigateMonth(parseInt(cell.dataset.delta, 10)); return; }
-    if (cell.classList.contains('has-data')) openDayModal(cell.dataset.date);
+    openDayModal(cell.dataset.date);
   });
 }
 function todayLabel() {
@@ -992,9 +995,9 @@ function renderModule(key) {
     : list;
   const itemsHtml = showList.map(item => m.groupMeals ? mealItemHTML(item) : itemHTML(m, item)).join('')
                    || `<p class="empty">${m.daily ? '今天还没有记录，添加第一条吧～' : '还没有记录，添加第一条吧～'}</p>`;
-  // 每日模块提供「清空今日」按钮，实现每日重置
+  // 每日模块提供「清空本日」按钮（每日计划按查看日清空，其他每日模块按今天清空）
   const resetBtn = m.daily
-    ? `<button id="reset-today" class="btn-reset">${ic('broom')} 清空今日</button>` : '';
+    ? `<button id="reset-today" class="btn-reset">${ic('broom')} 清空本日</button>` : '';
   // 模块附加上方：跳转到外部 App 的按钮 + 今日汇总
   let extra = '';
   if (m.launch) {
@@ -1046,12 +1049,14 @@ function renderModule(key) {
       </div>`;
   }
   // 便签纸视图（每日计划 / 年度计划共用：
-  //   daily=true  → 日期显示今天，且只列出今天的计划；
+  //   daily=true  → 日期显示「当前查看日」（默认今天，可前后翻），只列出该天的计划；
   //   daily=false → 日期显示当前年份，列出全部年度目标）
   if (m.notepad) {
+    if (_dpPendingDate) { dailyPlanViewDate = _dpPendingDate; _dpPendingDate = null; }
     const isDaily = !!m.daily;
-    const dateLabel = isDaily ? today() : (new Date().getFullYear() + ' 年');
-    const items = (isDaily ? list.filter(r => r.date === today()) : list.slice())
+    const viewDate = isDaily ? dailyPlanViewDate : null;
+    const dateLabel = isDaily ? formatZhDate(viewDate) : (new Date().getFullYear() + ' 年');
+    const items = (isDaily ? list.filter(r => r.date === viewDate) : list.slice())
       .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     const npItems = items.map(it => `
       <div class="np-item ${it.done ? 'done' : ''} ${it.fromWeekPlan ? 'np-wp' : ''}" data-id="${it.id}">
@@ -1059,19 +1064,26 @@ function renderModule(key) {
         <span class="np-text">${it.fromWeekPlan ? '<span class="np-wp-tag">周</span>' : ''}${escapeHtml(it.text || '')}</span>
         <button class="np-del" data-id="${it.id}">×</button>
       </div>
-    `).join('') || `<div class="np-empty">还没有${isDaily ? '今天' : '今年'}的计划，添加一条吧～</div>`;
+    `).join('') || `<div class="np-empty">还没有${isDaily ? formatZhDate(viewDate) : '今年'}的计划，添加一条吧～</div>`;
+    const dateNav = isDaily ? `
+      <div class="np-date-nav">
+        <button type="button" class="np-nav-btn" data-dp-delta="-1" aria-label="前一天">‹</button>
+        <span class="np-nav-date">${dateLabel}</span>
+        <button type="button" class="np-nav-btn" data-dp-delta="1" aria-label="后一天">›</button>
+        ${viewDate !== today() ? '<button type="button" class="np-nav-today" data-dp-today>今天</button>' : ''}
+      </div>` : `<div class="np-date">${dateLabel}</div>`;
     return `
       <h2 class="sec-title">${ic(m.icon)} ${m.title}</h2>
       ${extra}
       <div class="notepad">
-        <div class="np-date">${dateLabel}</div>
+        ${dateNav}
         <div class="np-meta">
           <div class="np-line"><span>FROM:</span><em>ME</em></div>
           <div class="np-line"><span>TO:</span><em>MYSELF</em></div>
         </div>
         <div class="np-list" id="np-list">${npItems}</div>
         <form id="np-add" class="np-add">
-          <input type="text" name="text" placeholder="+ 添加${isDaily ? '今日' : '年度'}计划" autocomplete="off">
+          <input type="text" name="text" placeholder="+ 添加${isDaily && viewDate !== today() ? formatZhDate(viewDate) : (isDaily ? '今日' : '年度')}计划" autocomplete="off">
           <button type="submit">添加</button>
         </form>
         <div class="np-tags">${isDaily ? '#我的一天 #工作日' : '#我的' + new Date().getFullYear() + ' #flag'}</div>
@@ -1219,6 +1231,10 @@ function itemHTML(m, item) {
    运动月历：带星标的日期 = 当天上传过运动数据，点日期弹出当天详情
    ========================================================================= */
 let calView = null;   // 全局月历当前查看的年月 {y, m}（1-based）
+// 每日计划当前查看的日期（默认今天，可前后翻天；从月历跳转时由 _dpPendingDate 携带目标日期）
+let dailyPlanViewDate = today();
+let _dpPendingDate = null;
+let _dpLastHash = null;
 
 function currentMonthView() {
   const n = new Date();
@@ -1304,11 +1320,11 @@ function navigateMonth(delta) {
   if (wrap) wrap.innerHTML = renderCalendar(buildDateModuleMap());
 }
 
-// 点带记录的日期 → 弹窗列出当天有记录的模块，点模块即可跳进去
+// 月历日期 → 当日弹窗：上部分列出有记录的模块；下部分「待办事项」可在该日期增删/勾选待办
 function openDayModal(dateStr) {
   const map = buildDateModuleMap();
   const mods = map[dateStr] || [];
-  const body = mods.length ? mods.map(mo => {
+  const recsHtml = mods.length ? mods.map(mo => {
     const m = MODULES[mo.key];
     const recs = load(m.storageKey).filter(r => r.date === dateStr);
     const count = m.groupMeals
@@ -1320,13 +1336,98 @@ function openDayModal(dateStr) {
         <span class="day-mod-count">${count} 条 ›</span>
       </a>`;
   }).join('') : '<p class="empty">这一天还没有记录</p>';
+
   $('#dayModalDate').textContent = dateStr;
-  $('#dayModalBody').innerHTML = body;
+  $('#dayModalBody').innerHTML = `
+    <div class="dm-section">
+      <div class="dm-section-title">${ic('cal')} 当日记录</div>
+      ${recsHtml}
+    </div>
+    ${renderDayModalTodos(dateStr)}`;
   $('#dayModal').classList.add('show');
-  // 点了某个模块后关掉弹窗（链接本身会触发 hashchange → render）
+
+  // 点模块记录 → 跳进该模块（链接触发 hashchange → render 后会自动关弹窗）
   $$('#dayModalBody .day-mod').forEach(a => a.addEventListener('click', closeDayModal));
+  // 待办：勾选/删除
+  const todoList = $('#dmTodoList');
+  if (todoList) todoList.addEventListener('click', e => {
+    const del = e.target.closest('.dm-todo-del');
+    if (del) { delDailyTodo(del.dataset.id); refreshAfterTodoChange(dateStr); return; }
+    const item = e.target.closest('.dm-todo');
+    if (item) { toggleDailyTodo(item.dataset.id); refreshAfterTodoChange(dateStr); }
+  });
+  // 待办：新增
+  const addForm = $('#dmTodoAdd');
+  if (addForm) addForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const input = addForm.querySelector('input[name="todo"]');
+    const text = (input ? input.value : '').trim();
+    if (!text) return;
+    addDailyTodo(dateStr, text);
+    refreshAfterTodoChange(dateStr);
+  });
+  // 跳到每日计划查看该日期
+  const jump = $('#dmJumpDaily');
+  if (jump) jump.addEventListener('click', () => {
+    _dpPendingDate = dateStr;
+    closeDayModal();
+    location.hash = '#/daily';
+  });
 }
 function closeDayModal() { $('#dayModal').classList.remove('show'); }
+
+// 渲染当日弹窗里的「待办事项」区块（数据来自 lifeapp_daily，按日期过滤）
+function renderDayModalTodos(dateStr) {
+  const arr = load('lifeapp_daily').filter(r => r.date === dateStr);
+  const items = arr.map(it => `
+    <div class="dm-todo ${it.done ? 'done' : ''}" data-id="${it.id}">
+      <span class="dm-todo-check">${it.done ? '✓' : ''}</span>
+      <span class="dm-todo-text">${escapeHtml(it.text || '')}</span>
+      <button class="dm-todo-del" data-id="${it.id}" type="button">×</button>
+    </div>`).join('') || '<p class="empty">这一天还没有待办</p>';
+  return `
+    <div class="dm-section">
+      <div class="dm-section-title">${ic('rainbow')} 待办事项</div>
+      <div class="dm-todos" id="dmTodoList">${items}</div>
+      <form class="dm-todo-add" id="dmTodoAdd">
+        <input type="text" name="todo" placeholder="给这一天加个待办…" autocomplete="off">
+        <button type="submit">添加</button>
+      </form>
+      <button type="button" class="dm-jump" id="dmJumpDaily">在每日计划中查看 ›</button>
+    </div>`;
+}
+function addDailyTodo(dateStr, text) {
+  const arr = load('lifeapp_daily');
+  arr.unshift({ id: uid(), text, done: false, date: dateStr });
+  save('lifeapp_daily', arr);
+}
+function toggleDailyTodo(id) {
+  const arr = load('lifeapp_daily').map(x => x.id === id ? { ...x, done: !x.done } : x);
+  save('lifeapp_daily', arr);
+}
+function delDailyTodo(id) {
+  save('lifeapp_daily', load('lifeapp_daily').filter(x => x.id !== id));
+}
+// 改完待办后：弹窗重渲染 + 月历重新计标 + 若正在看每日计划则刷新
+function refreshAfterTodoChange(dateStr) {
+  if (document.getElementById('dayModal').classList.contains('show')) openDayModal(dateStr);
+  const wrap = document.getElementById('homeCalendarWrap');
+  if (wrap) wrap.innerHTML = renderCalendar(buildDateModuleMap());
+  if (currentHash() === 'daily') render();
+}
+// 日期 ±n 天（输入/输出 YYYY-MM-DD）
+function shiftDate(ds, n) {
+  const [y, mo, d] = ds.split('-').map(Number);
+  const dt = new Date(y, mo - 1, d);
+  dt.setDate(dt.getDate() + n);
+  return calDateStr(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+}
+// 把 YYYY-MM-DD 格式化成「M月D日 周X」
+function formatZhDate(ds) {
+  const [y, mo, d] = ds.split('-').map(Number);
+  const wd = ['周日','周一','周二','周三','周四','周五','周六'][new Date(y, mo - 1, d).getDay()];
+  return `${mo}月${d}日 ${wd}`;
+}
 
 // 轻提示：操作后不弹窗，只在底部短暂显示一行文字
 function toast(msg) {
@@ -1505,14 +1606,24 @@ function bindModule(key) {
 
   const rb = $('#reset-today');
   if (rb) rb.addEventListener('click', () => {
-    if (!confirm(`确定清空今天在「${m.title}」的所有记录吗？`)) return;
-    const arr = load(m.storageKey).filter(x => x.date !== today());
+    // 每日计划按查看日期清空；其他每日模块仍按今天清空
+    const target = (m.daily && m.notepad) ? dailyPlanViewDate : today();
+    const whenTxt = (m.daily && m.notepad) ? formatZhDate(target) : '今天';
+    if (!confirm(`确定清空${whenTxt}在「${m.title}」的所有记录吗？`)) return;
+    const arr = load(m.storageKey).filter(x => x.date !== target);
     save(m.storageKey, arr);
     render();
   });
 
   // 每日计划便签纸：点击行/复选框切换完成，点击 × 删除
   if (m.notepad) {
+    // 日期前后翻（仅每日计划）
+    const dpNav = $('.np-date-nav');
+    if (dpNav) dpNav.addEventListener('click', e => {
+      const delta = e.target.closest('[data-dp-delta]');
+      if (delta) { dailyPlanViewDate = shiftDate(dailyPlanViewDate, parseInt(delta.dataset.dpDelta, 10)); render(); return; }
+      if (e.target.closest('[data-dp-today]')) { dailyPlanViewDate = today(); render(); }
+    });
     const npList = $('#np-list');
     if (npList) npList.addEventListener('click', e => {
       const delBtn = e.target.closest('.np-del');
@@ -1538,8 +1649,11 @@ function bindModule(key) {
       const text = (input ? input.value : '').trim();
       if (!text) return;
       const arr = load(m.storageKey);
-      arr.unshift({ id: uid(), text, done: false, date: today() });
+      arr.unshift({ id: uid(), text, done: false, date: m.daily ? dailyPlanViewDate : today() });
       save(m.storageKey, arr);
+      // 在每日计划里翻看非今日日期时添加，月历也要同步出标记
+      const wrap = document.getElementById('homeCalendarWrap');
+      if (wrap) wrap.innerHTML = renderCalendar(buildDateModuleMap());
       render();
     });
   }
