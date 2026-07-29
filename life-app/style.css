@@ -571,17 +571,12 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 }
 .np-del:active{background:var(--bg); color:var(--text);}
 .np-add{
-  display:flex; gap:6px; margin-bottom:8px; width:100%; max-width:100%;
+  display:block; margin-bottom:8px; width:100%; max-width:100%;
 }
 .np-add input{
-  flex:1 1 0; min-width:0; padding:10px 12px; border:none; border-radius:var(--r-sm);
+  width:100%; box-sizing:border-box; padding:10px 12px; border:none; border-radius:var(--r-sm);
   background:var(--bg); color:var(--text); font-size:calc(14px * var(--fs));
 }
-.np-add button{
-  flex:0 0 auto; padding:10px 14px; border:none; border-radius:var(--r-sm);
-  background:#fff; color:var(--ink); font-size:calc(14px * var(--fs)); font-weight:700; cursor:pointer;
-}
-.np-add button:active{background:var(--bg);}
 /* 每日计划：日期前后翻看 */
 .np-date-nav{display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:4px;}
 .np-nav-btn{width:34px; height:34px; border:none; background:var(--bg); color:var(--ink); border-radius:50%; font-size:calc(20px * var(--fs)); line-height:1; cursor:pointer;}
