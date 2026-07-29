@@ -1809,7 +1809,7 @@ window.addEventListener('load', () => {
     closeDrawer();       // 手机端收起抽屉
   });
 
-  // 首页「打卡项目」列表里的 checkin 模块（如背背单词）：点一下直接打卡/取消，不跳页
+  // 首页「打卡项目」列表里的 checkin 模块（如对话&单词）：点一下直接打卡/取消，不跳页
   document.addEventListener('click', e => {
     const a = e.target.closest('.check-row[data-checkin="1"]');
     if (!a) return;
