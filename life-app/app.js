@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v124';
+const APP_VERSION = 'v125';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -724,7 +724,7 @@ function renderHome() {
 
   const rows = dailyMods.map(([key, m]) => {
     const ok = isCheckedToday(m);
-    return `<a href="#/${key}" class="check-row ${ok ? 'done' : ''}">
+    return `<a href="#/${key}" class="check-row ${ok ? 'done' : ''}" data-key="${key}"${m.checkin ? ' data-checkin="1"' : ''}>
       <span class="box ${ok ? 'checked' : ''}">${ok ? '✓' : ''}</span>
       <span class="row-title">${m.title}</span>
     </a>`;
@@ -1777,6 +1777,19 @@ window.addEventListener('load', () => {
     toast(done ? `今日「${m.title}」已打卡 ✓` : `已取消「${m.title}」今日打卡`);
     render();            // 刷新首页打卡圆环、月历和导航高亮
     closeDrawer();       // 手机端收起抽屉
+  });
+
+  // 首页「打卡项目」列表里的 checkin 模块（如背背单词）：点一下直接打卡/取消，不跳页
+  document.addEventListener('click', e => {
+    const a = e.target.closest('.check-row[data-checkin="1"]');
+    if (!a) return;
+    e.preventDefault();
+    const key = a.dataset.key;
+    const m = MODULES[key];
+    if (!m || !m.checkin) return;
+    const done = toggleCheckinToday(key);
+    toast(done ? `今日「${m.title}」已打卡 ✓` : `已取消「${m.title}」今日打卡`);
+    render();            // 刷新打卡圆环、列表勾选与月历足迹
   });
 
   // 灵感便签弹窗事件（弹窗是静态的，只绑一次）
