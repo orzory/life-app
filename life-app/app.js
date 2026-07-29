@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v125';
+const APP_VERSION = 'v126';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -320,8 +320,6 @@ const MODULES = {
     launch:{ label:'打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
     dailySummary:[ { key:'duration', label:'运动时长', unit:'分' }, { key:'distance', label:'距离', unit:'km' } ],
-    // 上传运动截图做 OCR，自动识别华为健康等 App 的详情页数据
-    ocr:{ hint:'上传华为健康/Keep 等运动详情页截图，自动读取距离、时长、配速、心率等' },
     // 月底看当月运动数据总结
     monthlySummary:true,
     // 周计划：7 天可编辑，覆盖式保存（不计入每日打卡）
@@ -354,7 +352,6 @@ const MODULES = {
       { key:'avgHr',          label:'平均心率',     type:'number',  ph:'如 147' },
       { key:'cadence',        label:'步频(步/分)',  type:'number',  ph:'如 175' },
       { key:'steps',          label:'步数',         type:'number',  ph:'如 14582' },
-      { key:'screenshot', label:'运动截图',   type:'image', hidden:true },   // 由上方 OCR 区上传并回填
       { key:'note',       label:'备注',       type:'textarea' }
     ]
   },
@@ -1025,22 +1022,10 @@ function renderModule(key) {
     }).join(' · ');
     extra += `<div class="mod-summary">${ic('chart')} 今日：${parts || '还没有记录'}</div>`;
   }
-  // 运动截图 OCR（仅配置了 ocr 的模块，如嘿哈运动）
-  let ocrHtml = '';
-  if (m.ocr) {
-    ocrHtml = `
-      <div class="ocr-box">
-        <div class="ocr-head">${ic('camera')} 上传运动截图自动识别</div>
-        <div class="ocr-bar">
-          <input type="file" id="workoutImg" class="ocr-input" accept="image/*">
-        </div>
-        <div class="ocr-actions">
-          <button id="ocrBtn" class="btn-primary" type="button">${ic('search')} 识别截图</button>
-          <button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>
-        </div>
-        <div id="ocrStatus" class="ocr-status"></div>
-      </div>`;
-  }
+  // 运动模块顶部「+ 添加运动记录」入口（弹窗式录入；OCR 截图识别已移除）
+  const addEntry = m.modalForm
+    ? `<button type="button" id="openSportForm" class="btn-primary btn-add-record">+ 添加运动记录</button>`
+    : '';
   // 周计划（仅配置了 weeklyPlan 的模块，如嘿哈运动）
   let planHtml = '';
   if (m.weeklyPlan) {
@@ -1133,10 +1118,10 @@ function renderModule(key) {
       </div>`;
   }
 
-  // 弹窗表单：截图识别或点按钮后弹出，提交后隐藏（目前仅运动模块）
+  // 运动模块（modalForm）：顶部只放「+ 添加运动记录」按钮，点击弹出录入弹窗
   const formSection = m.modalForm
-    ? `${ocrHtml}`
-    : `${ocrHtml}
+    ? `${addEntry}`
+    : `${addEntry}
       <form id="add-form" class="add-form">
         ${formHtml}
         <button type="submit" class="btn-primary">+ 添加</button>
@@ -1532,74 +1517,6 @@ function bindModule(key) {
       const next = arr.filter(r => r.id !== rid || (rec.meals && rec.meals.length));
       save(m.storageKey, next);
       render();
-    });
-  }
-
-  // 运动截图 OCR（仅配置了 ocr 的模块）
-  if (m.ocr) {
-    const ocrBtn = $('#ocrBtn');
-    const ocrInput = $('#workoutImg');
-    const ocrStatus = $('#ocrStatus');
-    if (ocrBtn) ocrBtn.addEventListener('click', async () => {
-      const file = ocrInput && ocrInput.files && ocrInput.files[0];
-      if (!file) { if (ocrStatus) ocrStatus.textContent = '请先选择一张截图'; return; }
-      // Tesseract 改为按需动态加载（首屏不再阻塞）
-      if (typeof Tesseract === 'undefined') {
-        if (ocrStatus) ocrStatus.textContent = '正在加载 OCR 组件…';
-        const ok = await loadTesseract();
-        if (!ok) { if (ocrStatus) ocrStatus.textContent = 'OCR 组件加载失败，请检查网络后重试'; return; }
-      }
-      try {
-        if (ocrStatus) ocrStatus.textContent = '正在压缩图片…';
-        const dataURL = await fileToDataURL(file);   // 压缩后的 base64
-
-        if (ocrStatus) ocrStatus.textContent = '正在初始化 OCR，首次需下载中文包（约 10MB）…';
-        const worker = await Tesseract.createWorker('chi_sim', 1, {
-          logger: m => {
-            console.log('[tesseract]', m);
-            if (!ocrStatus) return;
-            const pct = m.progress ? `${(m.progress * 100).toFixed(0)}%` : '';
-            if (m.status === 'loading language traineddata') ocrStatus.textContent = `${ic('hourglass')} 下载中文语言包 ${pct}`;
-            else if (m.status === 'initializing api') ocrStatus.textContent = `${ic('hourglass')} 初始化识别引擎 ${pct}`;
-            else if (m.status === 'recognizing text') ocrStatus.textContent = `${ic('hourglass')} 识别文字中 ${pct}`;
-          }
-        });
-
-        if (ocrStatus) ocrStatus.textContent = '正在识别文字…';
-        const ret = await worker.recognize(dataURL);
-        await worker.terminate();
-        const parsed = parseWorkoutText(ret.data.text);
-        // 把截图本身也存到隐藏字段，和运动记录一起保存
-        parsed.screenshot = dataURL;
-        // 打开弹窗表单并回填识别结果
-        openSportFormModal(parsed);
-        const filled = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join('； ');
-        if (ocrStatus) {
-          const rawOneLine = ret.data.text.replace(/\n/g, ' | ');
-          const rawPreview = rawOneLine.slice(0, 800);
-          ocrStatus.innerHTML = '识别完成：' + (filled || '未解析到关键数据，请手动填写') +
-            '<br><small style="opacity:.7;display:block;word-break:break-all;">原始：' + rawPreview + (rawOneLine.length > 800 ? '…' : '') + '</small>' +
-            '<br><small><a href="javascript:void(0)" id="copyRawOcr" style="color:inherit;text-decoration:underline">复制完整原始文本</a></small>';
-          const copyBtn = document.getElementById('copyRawOcr');
-          if (copyBtn && navigator.clipboard) {
-            copyBtn.addEventListener('click', () => {
-              navigator.clipboard.writeText(ret.data.text).then(() => { copyBtn.textContent = '已复制'; });
-            });
-          }
-        }
-      } catch (err) {
-        console.error('OCR error:', err);
-        let detail = '未知错误';
-        try {
-          if (err === undefined) detail = 'undefined';
-          else if (err === null) detail = 'null';
-          else if (typeof err === 'string') detail = err;
-          else detail = err.message || err.stack || (err.toString && err.toString()) || JSON.stringify(err) || '未知错误';
-        } catch (e) {}
-        const msg = '识别失败：' + detail;
-        if (ocrStatus) ocrStatus.textContent = msg;
-        alert(msg);
-      }
     });
   }
 
