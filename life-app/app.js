@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v135';
+const APP_VERSION = 'v136';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1084,7 +1084,6 @@ function renderModule(key) {
         <div class="np-list" id="np-list">${npItems}</div>
         <form id="np-add" class="np-add">
           <input type="text" name="text" placeholder="+ 添加${isDaily && viewDate !== today() ? formatZhDate(viewDate) : (isDaily ? '今日' : '年度')}计划" autocomplete="off">
-          <button type="submit">添加</button>
         </form>
         <div class="np-tags">${isDaily ? '#我的一天 #工作日' : '#我的' + new Date().getFullYear() + ' #flag'}</div>
         ${resetBtn}
