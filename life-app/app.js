@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v128';
+const APP_VERSION = 'v129';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -320,8 +320,6 @@ const MODULES = {
     launch:{ label:'打开华为运动健康', url:'https://consumer.huawei.com/cn/mobileservices/health/', scheme:'huaweischeme://healthapp' },
     // 今日运动概览：把今天各条记录的运动时长/距离求和
     dailySummary:[ { key:'duration', label:'运动时长', unit:'分' }, { key:'distance', label:'距离', unit:'km' } ],
-    // 月底看当月运动数据总结
-    monthlySummary:true,
     // 周计划：7 天可编辑，覆盖式保存（不计入每日打卡）
     // 默认空白，想用时从「套用模板」下拉选模板一即可
     weeklyPlan:{
@@ -1054,36 +1052,6 @@ function renderModule(key) {
         </div>
       </div>`;
   }
-  // 月度运动总结（仅配置了 monthlySummary 的模块，如嘿哈运动）
-  let monthHtml = '';
-  if (m.monthlySummary) {
-    const y = new Date().getFullYear();
-    const mo = String(new Date().getMonth() + 1).padStart(2, '0');
-    const prefix = `${y}-${mo}`;
-    const monthList = list.filter(r => (r.date || '').startsWith(prefix));
-    const count = monthList.length;
-    const totalDist = monthList.reduce((a, r) => a + (Number(r.distance) || 0), 0);
-    const totalMin = monthList.reduce((a, r) => a + parseDurationToMin(r.duration), 0);
-    const totalCal = monthList.reduce((a, r) => a + (Number(r.totalCalories) || Number(r.calories) || 0), 0);
-    const activeCal = monthList.reduce((a, r) => a + (Number(r.activeCalories) || 0), 0);
-    const paces = monthList.map(r => parsePaceToSec(r.pace)).filter(s => s > 0);
-    const avgPaceSec = paces.length ? Math.round(paces.reduce((a, b) => a + b, 0) / paces.length) : 0;
-    const avgPace = avgPaceSec ? formatPace(avgPaceSec) : '—';
-    const h = Math.floor(totalMin / 60), mn = totalMin % 60;
-    monthHtml = `
-      <div class="month-box">
-        <div class="month-head">${ic('cal')} ${y}年${mo}月 运动总结</div>
-        <div class="month-grid">
-          <div class="month-cell"><b>${count}</b><span>运动次数</span></div>
-          <div class="month-cell"><b>${totalDist.toFixed(1)}</b><span>总距离(km)</span></div>
-          <div class="month-cell"><b>${h}h${mn}m</b><span>总时长</span></div>
-          <div class="month-cell"><b>${Math.round(activeCal)}</b><span>活动热量(kcal)</span></div>
-          <div class="month-cell"><b>${Math.round(totalCal)}</b><span>总消耗(kcal)</span></div>
-          <div class="month-cell"><b>${avgPace}</b><span>平均配速</span></div>
-        </div>
-      </div>`;
-  }
-
   // 便签纸视图（每日计划 / 年度计划共用：
   //   daily=true  → 日期显示今天，且只列出今天的计划；
   //   daily=false → 日期显示当前年份，列出全部年度目标）
@@ -1133,8 +1101,7 @@ function renderModule(key) {
     ${extra}
     ${formSection}
     <div class="list" id="list">${itemsHtml}</div>
-    ${planHtml}
-    ${monthHtml}`;
+    ${planHtml}`;
 }
 
 function fieldHTML(f, val = '') {
