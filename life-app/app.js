@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v150';
+const APP_VERSION = 'v151';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -968,11 +968,8 @@ function renderDiaryViewModal(dateStr){
     ['sleep', '【睡眠评分】'],
   ];
   // 只汇集「填了内容」的字段，按原顺序流成一段，不再分小框
-  const rows = fields.filter(([k]) => val(k)).map(([k, label]) => `
-      <div class="dv-row">
-        <div class="dv-label">${label}</div>
-        <div class="dv-text">${escapeHtml(val(k))}</div>
-      </div>`).join('');
+  const rows = fields.filter(([k]) => val(k)).map(([k, label]) =>
+      `<div class="dv-row"><span class="dv-label">${label}</span><span class="dv-text">${escapeHtml(val(k))}</span></div>`).join('');
   const body = rows || `<div class="dv-empty">这一天还没写流水账～</div>`;
   return `
     <div class="diary-view">

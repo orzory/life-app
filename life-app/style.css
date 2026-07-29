@@ -346,7 +346,6 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
 .dv-row{ line-height:1.9; }
 .dv-label{
   display:inline; font-size:calc(15px * var(--fs)); font-weight:700; color:var(--ink);
-  margin-right:6px;
 }
 .dv-text{
   display:inline; font-size:calc(15px * var(--fs)); color:var(--text);
