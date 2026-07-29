@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v144';
+const APP_VERSION = 'v145';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -894,6 +894,9 @@ function tickClock() {
 function diaryTodayRecord(key){
   return load(key).find(r => r.date === today()) || {};
 }
+function diaryRecordByDate(key, dateStr){
+  return load(key).find(r => r.date === dateStr) || {};
+}
 function diaryFilledCount(data){
   const fields = ['weather','event','book','life','idea','learn','sleep'];
   return fields.filter(k => String(data[k] || '').trim()).length;
@@ -949,6 +952,47 @@ function saveDiaryTemplate(m){
   arr.unshift(data);
   save(m.storageKey, arr);
 }
+
+// 从月历点「絮絮叨叨」时：只读弹出该日日记内容
+function renderDiaryViewModal(dateStr){
+  const m = MODULES.idea;
+  const rec = diaryRecordByDate(m.storageKey, dateStr);
+  const dateLabel = formatZhDate(dateStr);
+  const val = k => (rec[k] || '').trim();
+  const row = (k, label, ph) => {
+    const v = val(k);
+    return `<div class="diary-view-item">
+      <div class="diary-view-item-label">${label}</div>
+      ${v ? `<div class="diary-view-item-text">${escapeHtml(v)}</div>` : `<div class="diary-view-item-empty">${escapeHtml(ph)}</div>`}
+    </div>`;
+  };
+  return `
+    <div class="diary-view">
+      <div class="diary-view-top">
+        <div class="diary-view-clip">${ic('cat')}</div>
+        <div class="diary-view-date">${dateLabel}</div>
+        <h2 class="diary-view-title">马伯庸日记模版</h2>
+      </div>
+      <div class="diary-view-weather">
+        <div class="diary-view-weather-label">日期 / 天气</div>
+        <div class="diary-view-weather-text">${val('weather') ? escapeHtml(val('weather')) : escapeHtml(currentWeatherText())}</div>
+      </div>
+      <div class="diary-view-list">
+        ${row('event', '【今日要事】', '去了哪、见了谁、做了什么')}
+        ${row('book',  '【今日书账】', '阅读页码、知识点、金句摘抄')}
+        ${row('life',  '【生活记录】', '饮食、见闻、影音')}
+        ${row('idea',  '【絮絮叨叨】', '突然闪现的脑洞、段子或观察')}
+        ${row('learn', '【今日新知】', '今天学到了什么')}
+        ${row('sleep', '【睡眠评分】', '记录睡眠时间与质量、做的梦')}
+      </div>
+    </div>`;
+}
+function openDiaryViewModal(dateStr){
+  $('#diaryViewDate').textContent = dateStr;
+  $('#diaryViewBody').innerHTML = renderDiaryViewModal(dateStr);
+  $('#diaryViewModal').classList.add('show');
+}
+function closeDiaryViewModal(){ $('#diaryViewModal').classList.remove('show'); }
 
 // ---------- 模块页：表单 + 列表 ----------
 function renderModule(key) {
@@ -1332,9 +1376,16 @@ function openDayModal(dateStr) {
   $('#dayModal').classList.add('show');
 
   // 点模块记录 → 跳进该模块（链接触发 hashchange → render 后会自动关弹窗）
-  // 若点的是「每日计划」链接，先把目标日期带上，否则进入 daily 会被 reset 到今天
-  $$('#dayModalBody .day-mod').forEach(a => a.addEventListener('click', () => {
-    if (a.getAttribute('href') === '#/daily') _dpPendingDate = dateStr;
+  // 若点的是「每日计划」链接，先把目标日期带上；若点的是「絮絮叨叨」，只读弹出日记弹窗
+  $$('#dayModalBody .day-mod').forEach(a => a.addEventListener('click', e => {
+    const href = a.getAttribute('href');
+    if (href === '#/daily') {
+      _dpPendingDate = dateStr;
+    } else if (href === '#/idea') {
+      e.preventDefault();
+      openDiaryViewModal(dateStr);
+      return;
+    }
     closeDayModal();
   }));
   // 待办：勾选/删除
@@ -1848,6 +1899,13 @@ window.addEventListener('load', () => {
     sfm.addEventListener('click', e => { if (e.target.id === 'sportFormModal') closeSportFormModal(); });
     const sfc = document.getElementById('sportFormCancel');
     if (sfc) sfc.addEventListener('click', closeSportFormModal);
+  }
+  // 日记查看弹窗（静态常驻）
+  const dvm = document.getElementById('diaryViewModal');
+  if (dvm) {
+    dvm.addEventListener('click', e => { if (e.target.id === 'diaryViewModal') closeDiaryViewModal(); });
+    const dvc = document.getElementById('diaryViewCancel');
+    if (dvc) dvc.addEventListener('click', closeDiaryViewModal);
   }
   // 0 点自动刷新：跨日时把当前视图重渲染为空白的新一天（历史仍保留在月历）
   function scheduleMidnightRefresh() {

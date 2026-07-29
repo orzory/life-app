@@ -11,7 +11,7 @@
   <link rel="icon" href="icon-192.png?v83" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v83" />
   <!-- 中文字体已 base64 内联进 style.css，无需单独 preload -->
-  <link rel="stylesheet" href="style.css?v144" />
+  <link rel="stylesheet" href="style.css?v145" />
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -82,6 +82,17 @@
     </div>
   </div>
 
+  <!-- 日记查看弹窗：从月历点「絮絮叨叨」时只读弹出 -->
+  <div class="modal-mask" id="diaryViewModal">
+    <div class="modal diary-view-modal">
+      <div class="day-head"><span class="ic" data-ic="spark"></span> 絮絮叨叨 <span id="diaryViewDate" class="day-date"></span></div>
+      <div class="diary-view-body" id="diaryViewBody"></div>
+      <div class="day-actions">
+        <button id="diaryViewCancel" class="btn-cancel" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tesseract.js 改为“点击 OCR 时才动态加载”，避免外部脚本阻塞首屏 -->
   <script>
     // 主脚本加载失败时给出明确提示，避免纯白屏
@@ -91,6 +102,6 @@
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v144" onerror="onAppError()"></script>
+  <script src="app.js?v145" onerror="onAppError()"></script>
 </body>
 </html>
