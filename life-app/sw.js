@@ -2,12 +2,12 @@
    策略（v104）：stale-while-revalidate
    - 有缓存时「先秒开返回缓存」，同时后台静默拉最新更新缓存（下次打开即新版本）；
    - 无缓存时才等网络；离线时回退缓存。
-   - 中文字体已 base64 内联进 style.css（v109），不再有独立字体请求，从根上避开 iOS 字体缓存坑。
+   - 中文字体为独立 font.woff2 文件（iOS WKWebView 不支持 data: 字体），预缓存 + 运行时缓存双保险。
    健壮性：
    - install 逐个缓存，单个失败不影响整体；
    - 只缓存「同源 + 200」响应，绝不把错误页 / HTML 当 JS/CSS 存。 */
-const CACHE = 'lifeapp-v162';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'lifeapp-v163';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './font.woff2', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
