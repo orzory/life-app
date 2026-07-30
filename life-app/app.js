@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v159';
+const APP_VERSION = 'v156';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -335,9 +335,9 @@ const MODULES = {
     title:'好好吃饭', icon:'meal', daily:true, storageKey:'lifeapp_meal', groupMeals:true,
     fields:[
       { key:'date',     label:'日期',   type:'date', defaultToday:true },
-      { key:'meal',     label:'餐次',   type:'text',  ph:'如 早餐/午餐/加餐/夜宵' },
+      { key:'meal',     label:'餐次',   type:'select',  options:['早餐','午餐','下午茶','晚餐'] },
       { key:'food',     label:'吃了什么', type:'textarea', ph:'菜品…' },
-      { key:'image',    label:'配图(可多选)', type:'image', multiple:true }
+      { key:'image',    label:'配图',     type:'image' }
     ]
   },
   daily: {
@@ -1141,7 +1141,7 @@ function fieldHTML(f, val = '') {
   if (f.type === 'checkbox')
     return `<label class="cb"><input type="checkbox" name="${f.key}" ${val ? 'checked' : ''}> ${f.label}</label>`;
   if (f.type === 'image')
-    return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*"${f.multiple ? ' multiple' : ''}></label>`;
+    return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*"></label>`;
   if (f.type === 'date') {
     const v = val || (f.defaultToday ? today() : '');
     return `<label>${f.label}<input name="${f.key}" type="date" value="${escapeHtml(String(v))}"></label>`;
@@ -1203,7 +1203,7 @@ function normalizeMealList(list) {
     return {                                             // 旧结构：单条记录直接带 meal/food/image
       id: r.id || uid(),
       date: r.date || today(),
-      meals: [ { id: uid(), meal: r.meal || '', food: r.food || '', image: r.image ? [r.image] : [] } ]
+      meals: [ { id: uid(), meal: r.meal || '', food: r.food || '', image: r.image || '' } ]
     };
   });
 }
@@ -1213,10 +1213,8 @@ function mealItemHTML(item) {
   const meals = item.meals || [];
   const blocks = meals.map(me => {
     const food = (me.food || '').trim();
-    const imgs = Array.isArray(me.image) ? me.image : (me.image ? [me.image] : []);
-    const imgHtml = imgs.filter(src => src && src.startsWith('data:image'))
-      .map(src => `<img class="item-img" src="${src}" alt="">`).join('');
-    const img = imgHtml ? `<div><b>配图:</b><br><div class="item-imgs">${imgHtml}</div></div>` : '';
+    const img = (me.image && me.image.startsWith('data:image'))
+      ? `<div><b>配图:</b><br><img class="item-img" src="${me.image}" alt=""></div>` : '';
     return `<div class="meal-block" style="border-top:1px dashed rgba(0,0,0,.12); padding-top:8px; margin-top:8px;">
       <div style="font-weight:600; margin-bottom:4px;">🍽️ ${escapeHtml(me.meal || '餐次')}</div>
       ${food ? `<div style="white-space:pre-wrap; word-break:break-word;">${escapeHtml(food)}</div>` : ''}
@@ -1241,11 +1239,8 @@ function itemHTML(m, item) {
     if (f.key === 'date') return '';   // 日期已在 summary 显示，避免重复
     if (f.type === 'checkbox')
       return `<span class="tag ${v?'on':''}">${f.label}${v?' ✓':''}</span>`;
-    if (f.type === 'image') {
-      const arr = Array.isArray(v) ? v : (v ? [v] : []);
-      const html = arr.filter(s => s && s.startsWith('data:image')).map(s => `<img class="item-img" src="${s}" alt="">`).join('');
-      return html ? `<div><b>${f.label}:</b><br>${html}</div>` : '';
-    }
+    if (f.type === 'image')
+      return (v && v.startsWith('data:image')) ? `<div><b>${f.label}:</b><br><img class="item-img" src="${v}" alt=""></div>` : '';
     return (v !== undefined && v !== '') ? `<div><b>${f.label}:</b> ${escapeHtml(v)}</div>` : '';
   }).join('');
   // 折叠显示：默认收起，只显示日期；点开看详情，避免长列表撑太长
@@ -1551,17 +1546,8 @@ function bindModule(key) {
         if (f.hidden) {
           data[f.key] = el.value || '';       // 隐藏图片（如 OCR 回填的截图）直接取值，避免被清空
         } else {
-          const files = el.files ? Array.from(el.files) : [];
-          if (f.multiple) {
-            const arr = [];
-            for (const file of files) {
-              try { arr.push(await fileToDataURL(file)); } catch (_) {}
-            }
-            data[f.key] = arr;
-          } else {
-            const file = files[0];
-            data[f.key] = file ? await fileToDataURL(file) : '';
-          }
+          const file = el.files && el.files[0];
+          data[f.key] = file ? await fileToDataURL(file) : '';
         }
       } else if (f.type === 'checkbox') {
         data[f.key] = el.checked;
@@ -1576,8 +1562,7 @@ function bindModule(key) {
     // 好好吃饭：同一天多次上传的餐次合并进同一天记录（而不是每条单独占一行）
     if (m.groupMeals) {
       const date = data.date;
-      const entryImgs = Array.isArray(data.image) ? data.image : (data.image ? [data.image] : []);
-      const entry = { id: uid(), meal: data.meal || '', food: data.food || '', image: entryImgs };
+      const entry = { id: uid(), meal: data.meal || '', food: data.food || '', image: data.image || '' };
       const arr = load(m.storageKey);
       const rec = arr.find(r => r.date === date);
       if (rec) {
