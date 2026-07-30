@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>My Daily Routine</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png?v160" type="image/png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v160" />
+  <link rel="icon" href="icon-192.png?v161" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v161" />
   <!-- 关键首屏样式内联：先铺好米色底 + 手写体兜底，杜绝白屏；主样式随后无缝接管 -->
   <style>
 /* critical inline styles: mirrors style.css rules without the @font-face data URI */
@@ -682,9 +682,11 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   color:var(--text); border-radius:var(--r-sm); padding:9px; font-size:calc(13px * var(--fs));
 }
 </style>
-  <!-- 主样式（含 3.7MB 内联字体）：阻塞加载，确保 iOS PWA 一定应用到样式；
-       上方已内联同规则 critical CSS 保底，避免等待期间破图 -->
-  <link rel="stylesheet" href="style.css?v160" />
+  <!-- 主样式（含 3.7MB 内联字体 @font-face）：preload 异步加载再转 stylesheet，
+       这是 iOS PWA 能可靠加载甜甜圈体的方式；阻塞 link 会让 iOS 丢弃超大 @font-face。
+       上方已内联同规则 CSS，等待期间布局/图标完整，不破图 -->
+  <link rel="preload" href="style.css?v161" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="style.css?v161"></noscript>
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -775,6 +777,6 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v160" onerror="onAppError()"></script>
+  <script src="app.js?v161" onerror="onAppError()"></script>
 </body>
 </html>
