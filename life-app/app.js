@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v161';
+const APP_VERSION = 'v162';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1920,7 +1920,7 @@ window.addEventListener('load', () => {
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
+    navigator.serviceWorker.register('sw.js?v162').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
