@@ -6,8 +6,11 @@
    健壮性：
    - install 逐个缓存，单个失败不影响整体；
    - 只缓存「同源 + 200」响应，绝不把错误页 / HTML 当 JS/CSS 存。 */
-const CACHE = 'lifeapp-v163';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './font.woff2', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'lifeapp-v164';
+// 注意：font.woff2 不进 SW 预缓存，运行时也绕过 SW 直接走网络（见 fetch handler）。
+// 原因：iOS PWA (WKWebView) 对「经 SW Cache API 返回的字体文件」会静默丢弃、回退系统字体；
+//       直连网络加载字体（iOS HTTP 缓存兜底）才能正常应用甜甜圈体。
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
@@ -34,6 +37,10 @@ function stripSearch(url) {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const req = e.request;
+  const url = new URL(req.url);
+  // iOS PWA (WKWebView) 对「经 SW Cache API 返回的字体文件」会静默丢弃、回退系统字体。
+  // 让字体请求绕过 SW，直接走网络（iOS 自身 HTTP 缓存兜底），才能正常应用甜甜圈体。
+  if (url.pathname.endsWith('font.woff2')) return;
 
   e.respondWith((async () => {
     const sameOrigin = new URL(req.url).origin === self.location.origin;
