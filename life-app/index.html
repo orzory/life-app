@@ -11,10 +11,10 @@
   <link rel="icon" href="icon-192.png?v166" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v166" />
   <!-- 预热字体：crossorigin 必须与 @font-face 的 cors 请求一致，否则预加载不匹配 -->
-  <link rel="preload" href="https://gcore.jsdelivr.net/gh/orzory/life-app@main/life-app/font.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="https://gcore.jsdelivr.net/gh/orzory/life-app@main/life-app/font.woff2?v2" as="font" type="font/woff2" crossorigin />
   <!-- 关键首屏样式内联：先铺好米色底 + 手写体兜底，杜绝白屏；主样式随后无缝接管 -->
   <style>
-@font-face{font-family:'Donut';src:url('https://gcore.jsdelivr.net/gh/orzory/life-app@main/life-app/font.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:'Donut';src:url('https://gcore.jsdelivr.net/gh/orzory/life-app@main/life-app/font.woff2?v2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 /* 关键首屏样式内联（含 @font-face 指向独立 font.woff2 文件，WKWebView 支持外部 URL 字体） */
 /* =========================================================================
    我的小日子 —— grug 手绘风（v50：灰色虚线边框 + 规则圆角）
