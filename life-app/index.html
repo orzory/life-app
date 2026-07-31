@@ -8,13 +8,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>My Daily Routine</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png?v164" type="image/png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v164" />
+  <link rel="icon" href="icon-192.png?v165" type="image/png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v165" />
   <!-- 预热字体：crossorigin 必须与 @font-face 的 cors 请求一致，否则预加载不匹配 -->
-  <link rel="preload" href="font.woff2?v164" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="font.woff2?v165" as="font" type="font/woff2" crossorigin />
   <!-- 关键首屏样式内联：先铺好米色底 + 手写体兜底，杜绝白屏；主样式随后无缝接管 -->
   <style>
-@font-face{font-family:'Donut';src:url('font.woff2?v164') format('woff2');font-weight:400;font-style:normal;}
+@font-face{font-family:'Donut';src:url('font.woff2?v165') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
 /* 关键首屏样式内联（含 @font-face 指向独立 font.woff2 文件，WKWebView 支持外部 URL 字体） */
 /* =========================================================================
    我的小日子 —— grug 手绘风（v50：灰色虚线边框 + 规则圆角）
@@ -688,8 +688,8 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
   <!-- 主样式（含 3.7MB 内联字体 @font-face）：preload 异步加载再转 stylesheet，
        这是 iOS PWA 能可靠加载甜甜圈体的方式；阻塞 link 会让 iOS 丢弃超大 @font-face。
        上方已内联同规则 CSS，等待期间布局/图标完整，不破图 -->
-  <link rel="preload" href="style.css?v164" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="style.css?v164"></noscript>
+  <link rel="preload" href="style.css?v165" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="style.css?v165"></noscript>
 </head>
 <body>
   <!-- iOS 状态栏背景填充：让 PWA 顶部颜色和侧边栏统一 -->
@@ -780,6 +780,6 @@ input[type=file], input[type=file]::-webkit-file-upload-button, input[type=file]
     }
     window.addEventListener('error', function(e) { onAppError(); });
   </script>
-  <script src="app.js?v164" onerror="onAppError()"></script>
+  <script src="app.js?v165" onerror="onAppError()"></script>
 </body>
 </html>
