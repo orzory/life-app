@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v170';
+const APP_VERSION = 'v171';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -407,6 +407,7 @@ function render() {
   renderNav();
   closeDrawer();                      // 手机端选中后收起抽屉
   window.scrollTo(0, 0);
+  hydrateImages();                   // 把 IndexedDB 里的配图填进刚渲染的 <img data-imgid>
 }
 
 // 左侧导航高亮当前项；checkin 模块点击直接切换打卡，不跳页
@@ -827,6 +828,132 @@ function compressDataURL(dataUrl, maxW = 600, quality = 0.5) {
   });
 }
 
+// ---------- 图片存 IndexedDB（不占 localStorage，彻底规避 ~5MB 配额上限） ----------
+const IMG_DB = 'lifeapp_img_db';
+const IMG_STORE = 'images';
+function openImgDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) { reject(new Error('no indexedDB')); return; }
+    const req = indexedDB.open(IMG_DB, 1);
+    req.onupgradeneeded = () => { try { req.result.createObjectStore(IMG_STORE); } catch (e) {} };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function putImg(id, blob) {
+  return openImgDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).put(blob, id);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  }));
+}
+function getImg(id) {
+  return openImgDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(IMG_STORE, 'readonly');
+    const r = tx.objectStore(IMG_STORE).get(id);
+    r.onsuccess = () => res(r.result || null);
+    r.onerror = () => rej(r.error);
+  }));
+}
+function delImg(id) {
+  if (!id) return Promise.resolve();
+  return openImgDB().then(db => new Promise(res => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).delete(id);
+    tx.oncomplete = () => res();
+    tx.onerror = () => res();
+  }));
+}
+// 把文件用 canvas 压成 jpeg Blob（默认 600px / 0.5，省空间）
+function fileToBlob(file, maxW = 600, quality = 0.5) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type || !file.type.startsWith('image/')) { reject(new Error('not image')); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('blob fail')), 'image/jpeg', quality);
+      };
+      img.onerror = () => reject(new Error('decode fail'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('read fail'));
+    reader.readAsDataURL(file);
+  });
+}
+function dataURLtoBlob(dataUrl) {
+  try {
+    const [meta, b64] = dataUrl.split(',');
+    const mime = (meta.match(/:(.*?);/) || [, 'image/jpeg'])[1];
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  } catch (e) { return null; }
+}
+// 把已存 Blob 重新压小（压缩旧图用）
+function blobToSmallerBlob(blob, maxW = 600, quality = 0.5) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(b => { try { URL.revokeObjectURL(url); } catch (e) {} resolve(b || blob); }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { try { URL.revokeObjectURL(url); } catch (e) {} resolve(blob); };
+    img.src = url;
+  });
+}
+// 启动迁移：把 localStorage 里残留的 base64 大图搬到 IndexedDB，立即释放配额（根治“传不了图”）
+async function migrateMealImagesToIDB() {
+  if (!('indexedDB' in window)) return;
+  const arr = load('lifeapp_meal');
+  let changed = false;
+  for (const rec of arr) {
+    for (const me of (rec.meals || [])) {
+      if (me && me.image && me.image.startsWith('data:image') && !me.imgId) {
+        const blob = dataURLtoBlob(me.image);
+        if (blob) {
+          const id = 'img_' + uid();
+          await putImg(id, blob);
+          me.imgId = id;
+          me.image = '';            // 移出 localStorage
+          changed = true;
+        }
+      }
+    }
+  }
+  if (changed) save('lifeapp_meal', arr);
+}
+// 渲染后把 <img data-imgid> 的 src 从 IndexedDB 取出填充（base64 旧数据仍按原 src 显示）
+let _imgUrls = [];
+function hydrateImages() {
+  _imgUrls.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+  _imgUrls = [];
+  document.querySelectorAll('img[data-imgid]').forEach(async node => {
+    const id = node.getAttribute('data-imgid');
+    if (!id) return;
+    try {
+      const blob = await getImg(id);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        _imgUrls.push(url);
+        node.src = url;
+      } else { node.style.display = 'none'; }
+    } catch (e) { node.style.display = 'none'; }
+  });
+}
+
 // ---------- 灵感便签弹窗 ----------
 function openIdeaModal() {
   $('#noteText').value = '';
@@ -1184,7 +1311,8 @@ function fieldHTML(f, val = '') {
   if (f.type === 'checkbox')
     return `<label class="cb"><input type="checkbox" name="${f.key}" ${val ? 'checked' : ''}> ${f.label}</label>`;
   if (f.type === 'image')
-    return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*"></label>`;
+    return `<label>${f.label}<input type="file" name="${f.key}" accept="image/*" class="img-input"></label>
+      <span class="img-prev" data-for="${f.key}"></span>`;
   if (f.type === 'date') {
     const v = val || (f.defaultToday ? today() : '');
     return `<label>${f.label}<input name="${f.key}" type="date" value="${escapeHtml(String(v))}"></label>`;
@@ -1271,8 +1399,10 @@ function mealItemHTML(item) {
   const meals = item.meals || [];
   const blocks = meals.map(me => {
     const food = (me.food || '').trim();
-    const img = (me.image && me.image.startsWith('data:image'))
-      ? `<div><b>配图:</b><br><img class="item-img" src="${me.image}" alt=""></div>` : '';
+    const img = me.imgId
+      ? `<div><b>配图:</b><br><img class="item-img" data-imgid="${me.imgId}" alt=""></div>`
+      : (me.image && me.image.startsWith('data:image'))
+        ? `<div><b>配图:</b><br><img class="item-img" src="${me.image}" alt=""></div>` : '';
     return `<div class="meal-block" style="border-top:1px dashed rgba(0,0,0,.12); padding-top:8px; margin-top:8px;">
       <div style="font-weight:600; margin-bottom:4px;">🍽️ ${escapeHtml(me.meal || '餐次')}</div>
       ${food ? `<div style="white-space:pre-wrap; word-break:break-word;">${escapeHtml(food)}</div>` : ''}
@@ -1593,7 +1723,24 @@ function bindModule(key) {
   }
 
   const addForm = $('#add-form');
-  if (addForm) addForm.addEventListener('submit', async e => {
+  if (addForm) {
+    // 选图后立即显示预览，确认图片确实已经附上（解决"不知道传没传上"的疑虑）
+    const imgInput = addForm.querySelector('input[type=file]');
+    const imgPrev = addForm.querySelector('.img-prev');
+    if (imgInput && imgPrev) {
+      let _prevUrl = '';
+      imgInput.addEventListener('change', () => {
+        if (_prevUrl) { try { URL.revokeObjectURL(_prevUrl); } catch (e) {} _prevUrl = ''; }
+        const file = imgInput.files && imgInput.files[0];
+        if (file) {
+          _prevUrl = URL.createObjectURL(file);
+          imgPrev.innerHTML = `<img src="${_prevUrl}" style="max-width:140px;max-height:140px;border-radius:8px;margin-top:6px;display:block;">`;
+        } else {
+          imgPrev.innerHTML = '';
+        }
+      });
+    }
+    addForm.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {};
     let userDate = null;                    // 用户手动选的日期（用于补记过去）
@@ -1606,12 +1753,16 @@ function bindModule(key) {
         } else {
           const file = el.files && el.files[0];
           if (file) {
-            // 图片处理（读取/压缩/编码）在个别浏览器会失败；失败时仅丢弃配图、仍保留文字记录，
-            // 避免“配图一坏、整条都加不进去”导致第二餐起怎么都加不上
-            try { data[f.key] = await fileToDataURL(file); }
-            catch (err) { console.warn('图片处理失败，已忽略配图', err); data[f.key] = ''; }
+            // 图片压成 Blob 存 IndexedDB（不占 localStorage），localStorage 只留一个 id 引用，永不撑爆配额
+            try {
+              const blob = await fileToBlob(file);
+              const imgId = 'img_' + uid();
+              await putImg(imgId, blob);
+              data.imgId = imgId;
+              data.image = '';
+            } catch (err) { console.warn('图片处理失败，已忽略配图', err); data.imgId = ''; data.image = ''; }
           } else {
-            data[f.key] = '';
+            data.imgId = ''; data.image = '';
           }
         }
       } else if (f.type === 'checkbox') {
@@ -1627,7 +1778,7 @@ function bindModule(key) {
     // 好好吃饭：同一天多次上传的餐次合并进同一天记录（而不是每条单独占一行）
     if (m.groupMeals) {
       const date = data.date;
-      const entry = { id: uid(), meal: data.meal || '', food: data.food || '', image: data.image || '' };
+      const entry = { id: uid(), meal: data.meal || '', food: data.food || '', image: data.image || '', imgId: data.imgId || '' };
       const arr = load(m.storageKey);
       const rec = arr.find(r => r.date === date);
       if (rec) {
@@ -1648,6 +1799,7 @@ function bindModule(key) {
     save(m.storageKey, arr);
     render();
   });
+  }
 
   // 运动模块：弹窗表单提交
   if (m.modalForm) {
@@ -1699,6 +1851,8 @@ function bindModule(key) {
       const arr = load(m.storageKey);
       const rec = arr.find(r => r.id === rid);
       if (!rec) return;
+      const removed = (rec.meals || []).filter(x => x.id === mid);
+      removed.forEach(x => { if (x.imgId) delImg(x.imgId); });   // 一并删掉 IndexedDB 里的图片
       rec.meals = (rec.meals || []).filter(x => x.id !== mid);
       // 当天所有餐次都删光了，就连当天记录一起清掉，保持列表整洁
       const next = arr.filter(r => r.id !== rid || (rec.meals && rec.meals.length));
@@ -1726,20 +1880,24 @@ function bindModule(key) {
     if (btn7) btn7.addEventListener('click', () => cleanMealBefore(7));
     if (btn30) btn30.addEventListener('click', () => cleanMealBefore(30));
 
-    // 压缩旧图：把已存的大图重新压小，不删记录即可腾出空间（解决"单条记录就占满"的困境）
+    // 压缩旧图：把已存的图（无论 base64 还是 IndexedDB）重新压小，不删记录即可腾出空间
     const btnC = $('#meal-compress');
     if (btnC) btnC.addEventListener('click', async () => {
       const arr = load(m.storageKey);
       let count = 0, before = 0, after = 0;
       for (const rec of arr) {
         for (const me of (rec.meals || [])) {
-          if (me.image && me.image.startsWith('data:image')) {
-            before += me.image.length;
-            const compressed = await compressDataURL(me.image);
-            after += compressed.length;
-            me.image = compressed;
-            count++;
-          }
+          let blob = null;
+          if (me.imgId) blob = await getImg(me.imgId);
+          else if (me.image && me.image.startsWith('data:image')) blob = dataURLtoBlob(me.image);
+          if (!blob) continue;
+          before += blob.size;
+          const compressed = await blobToSmallerBlob(blob);
+          after += compressed.size;
+          const id = me.imgId || ('img_' + uid());
+          await putImg(id, compressed);
+          me.imgId = id; me.image = '';
+          count++;
         }
       }
       if (!count) { toast('没有需要压缩的旧图'); return; }
@@ -2056,11 +2214,14 @@ window.addEventListener('load', () => {
 
   fillStaticIcons();
   syncTodayWeekPlanToDaily();
-  render();
+  // 先把旧版存在 localStorage 里的大图搬到 IndexedDB（立即释放配额，根治"传不了图"），再渲染
+  migrateMealImagesToIDB().catch(err => console.warn('旧图迁移失败', err)).finally(() => {
+    render();
+  });
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v170').then(reg => {
+    navigator.serviceWorker.register('sw.js?v171').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
