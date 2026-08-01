@@ -6,7 +6,7 @@
    健壮性：
    - install 逐个缓存，单个失败不影响整体；
    - 只缓存「同源 + 200」响应，绝不把错误页 / HTML 当 JS/CSS 存。 */
-const CACHE = 'lifeapp-v169';
+const CACHE = 'lifeapp-v170';
 // 注意：font.woff2 不进 SW 预缓存，运行时也绕过 SW 直接走网络（见 fetch handler）。
 // 原因：iOS PWA (WKWebView) 对「经 SW Cache API 返回的字体文件」会静默丢弃、回退系统字体；
 //       直连网络加载字体（iOS HTTP 缓存兜底）才能正常应用甜甜圈体。
