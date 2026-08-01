@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v169';
+const APP_VERSION = 'v170';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1986,22 +1986,40 @@ window.addEventListener('load', () => {
   $('#noteCancel').addEventListener('click', closeIdeaModal);
   $('#noteSave').addEventListener('click', saveIdeaNote);
   $('#noteImg').addEventListener('change', onNoteImgChange);
-  // 模块页面右滑返回主页面（今日概览）。#view 容器常驻，只绑一次。
+  // 模块页面从左边缘右滑返回上一级（iOS 风格边缘手势）。#view 容器常驻，只绑一次。
   (function bindSwipeBack(){
     const view = document.getElementById('view');
     if (!view) return;
+    const EDGE = 30;                 // 仅从屏幕左边缘 30px 内开始才算边缘返回
     let sx = 0, sy = 0, tracking = false;
+    function closeAnyOverlay() {
+      const sb = document.querySelector('.sidebar');
+      if (sb && sb.classList.contains('open')) { closeDrawer(); return true; }
+      for (const id of ['sportFormModal', 'dayModal', 'diaryViewModal', 'ideaModal']) {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('show')) { el.classList.remove('show'); return true; }
+      }
+      return false;
+    }
     view.addEventListener('touchstart', e => {
       if (currentHash() === 'home') return;          // 主页面不处理
       if (e.touches.length !== 1) { tracking = false; return; }
-      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+      const x = e.touches[0].clientX;
+      if (x > EDGE) { tracking = false; return; }    // 仅左边缘触发，避免误触竖向滚动
+      sx = x; sy = e.touches[0].clientY; tracking = true;
     }, { passive: true });
     view.addEventListener('touchend', e => {
       if (!tracking) return; tracking = false;
       const t = e.changedTouches[0];
       const dx = t.clientX - sx, dy = t.clientY - sy;
       // 右滑：水平位移足够大且明显大于垂直位移，避免误触竖向滚动
-      if (dx > 60 && dx > Math.abs(dy) * 1.5) location.hash = '#/home';
+      if (dx > 60 && dx > Math.abs(dy) * 1.5) {
+        if (closeAnyOverlay()) return;               // 优先关抽屉 / 弹窗
+        if (currentHash() !== 'home') {              // 否则返回上一级
+          if (window.history.length > 1) history.back();
+          else location.hash = '#/home';
+        }
+      }
     }, { passive: true });
   })();
   // 月历「当日记录」弹窗（静态常驻，不被 #view 重渲染影响）
@@ -2042,7 +2060,7 @@ window.addEventListener('load', () => {
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v169').then(reg => {
+    navigator.serviceWorker.register('sw.js?v170').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
