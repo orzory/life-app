@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v167';
+const APP_VERSION = 'v168';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -1123,10 +1123,25 @@ function renderModule(key) {
       </div>`;
   }
 
+  // 好好吃饭：提供批量清理旧记录入口，释放被配图占满的 localStorage
+  let mealTools = '';
+  if (m.groupMeals) {
+    const raw = JSON.stringify(load(m.storageKey) || []);
+    const size = new Blob([raw]).size;
+    mealTools = `
+      <div class="meal-tools" style="margin:10px 0 14px;padding:12px;background:rgba(0,0,0,.04);border-radius:12px;">
+        <div style="font-size:13px;color:#666;margin-bottom:8px;">${ic('chart')} 当前「好好吃饭」占用约 <b>${formatBytes(size)}</b></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" id="meal-clean-7" class="btn-reset" style="font-size:13px;padding:6px 10px;">清理 7 天前</button>
+          <button type="button" id="meal-clean-30" class="btn-reset" style="font-size:13px;padding:6px 10px;">清理 30 天前</button>
+        </div>
+      </div>`;
+  }
+
   // 运动模块（modalForm）：顶部只放「+ 添加运动记录」按钮，点击弹出录入弹窗
   const formSection = m.modalForm
     ? `${addEntry}`
-    : `${addEntry}
+    : `${addEntry}${mealTools}
       <form id="add-form" class="add-form">
         ${formHtml}
         <button type="submit" class="btn-primary">+ 添加</button>
@@ -1213,6 +1228,21 @@ function normalizeMealList(list) {
       meals: [ { id: uid(), meal: r.meal || '', food: r.food || '', image: r.image || '' } ]
     };
   });
+}
+
+// 判断 dateStr（YYYY-MM-DD）是否在 days 天或更早之前
+function isBeforeDays(dateStr, days) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days);
+  return d <= cutoff;
+}
+function formatBytes(b) {
+  if (!b) return '0 B';
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(2) + ' MB';
 }
 
 // 渲染「好好吃饭」某天的记录：一天一个折叠项，里面按餐次列出
@@ -1654,6 +1684,26 @@ function bindModule(key) {
       save(m.storageKey, next);
       render();
     });
+
+    // 批量清理旧记录：释放被旧配图占满的 localStorage
+    function cleanMealBefore(days) {
+      const arr = load(m.storageKey);
+      const before = arr.filter(r => isBeforeDays(r.date, days));
+      if (!before.length) {
+        toast(`最近 ${days} 天内没有旧记录可清理`);
+        return;
+      }
+      const savedBytes = new Blob([JSON.stringify(before)]).size;
+      const mealCount = before.reduce((s, r) => s + (r.meals ? r.meals.length : 0), 0);
+      if (!confirm(`确定删除 ${days} 天前的 ${before.length} 天、共 ${mealCount} 餐记录吗？\n可释放约 ${formatBytes(savedBytes)}。\n（配图会一起删除，文字记录也会删除）`)) return;
+      const next = arr.filter(r => !isBeforeDays(r.date, days));
+      save(m.storageKey, next);
+      toast(`已清理 ${days} 天前记录，释放约 ${formatBytes(savedBytes)}`);
+      render();
+    }
+    const btn7 = $('#meal-clean-7'), btn30 = $('#meal-clean-30');
+    if (btn7) btn7.addEventListener('click', () => cleanMealBefore(7));
+    if (btn30) btn30.addEventListener('click', () => cleanMealBefore(30));
   }
 
   const rb = $('#reset-today');
@@ -1948,7 +1998,7 @@ window.addEventListener('load', () => {
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v167').then(reg => {
+    navigator.serviceWorker.register('sw.js?v168').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
