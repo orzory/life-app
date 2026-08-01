@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v166';
+const APP_VERSION = 'v167';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -87,7 +87,14 @@ function load(key) {
   catch { return []; }
 }
 function save(key, arr) {
-  localStorage.setItem(key, JSON.stringify(arr));
+  try {
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch (e) {
+    console.error('保存失败（本地存储可能已满）', e);
+    // 配额超限通常因配图过多；明确提示用户，避免“点了添加却没记录”的假象
+    alert('保存失败：本地存储空间可能已满（多为配图过多）。请删除部分旧记录后再试。');
+    throw e;
+  }
 }
 // 数据备份 / 恢复：把所有 lifeapp_* 数据导出成 JSON 文件，也可从文件还原。
 // 用途：① iOS 长期不开会清理 PWA 缓存导致数据丢失时的兜底；
@@ -777,7 +784,7 @@ function renderDailyPlanCard() {
 }
 
 // 文件 → 压缩后的 base64（限制尺寸，避免撑爆 localStorage）
-function fileToDataURL(file, maxW = 1000, quality = 0.72) {
+function fileToDataURL(file, maxW = 900, quality = 0.62) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type || !file.type.startsWith('image/')) { reject(new Error('not image')); return; }
     const reader = new FileReader();
@@ -1547,7 +1554,14 @@ function bindModule(key) {
           data[f.key] = el.value || '';       // 隐藏图片（如 OCR 回填的截图）直接取值，避免被清空
         } else {
           const file = el.files && el.files[0];
-          data[f.key] = file ? await fileToDataURL(file) : '';
+          if (file) {
+            // 图片处理（读取/压缩/编码）在个别浏览器会失败；失败时仅丢弃配图、仍保留文字记录，
+            // 避免“配图一坏、整条都加不进去”导致第二餐起怎么都加不上
+            try { data[f.key] = await fileToDataURL(file); }
+            catch (err) { console.warn('图片处理失败，已忽略配图', err); data[f.key] = ''; }
+          } else {
+            data[f.key] = '';
+          }
         }
       } else if (f.type === 'checkbox') {
         data[f.key] = el.checked;
@@ -1571,8 +1585,10 @@ function bindModule(key) {
       } else {
         arr.unshift({ id: uid(), date, meals: [entry] });
       }
+      const count = rec ? rec.meals.length : 1;   // 当天已是第几餐（含刚加的）
       save(m.storageKey, arr);
       render();
+      toast(`已记录第 ${count} 餐 ✓`);              // 明确反馈，避免“以为没加上”
       return;
     }
 
@@ -1932,7 +1948,7 @@ window.addEventListener('load', () => {
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v166').then(reg => {
+    navigator.serviceWorker.register('sw.js?v167').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
