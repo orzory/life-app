@@ -1,7 +1,7 @@
 'use strict';
 
 // 当前前端版本（显示在侧边栏底部，用于确认手机是否加载到最新版）
-const APP_VERSION = 'v168';
+const APP_VERSION = 'v169';
 
 // ---------- 手绘风 SVG 图标（替代原 emoji，单色线条、继承文字色） ----------
 const ICON_PATHS = {
@@ -784,7 +784,7 @@ function renderDailyPlanCard() {
 }
 
 // 文件 → 压缩后的 base64（限制尺寸，避免撑爆 localStorage）
-function fileToDataURL(file, maxW = 900, quality = 0.62) {
+function fileToDataURL(file, maxW = 600, quality = 0.5) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type || !file.type.startsWith('image/')) { reject(new Error('not image')); return; }
     const reader = new FileReader();
@@ -797,14 +797,33 @@ function fileToDataURL(file, maxW = 900, quality = 0.62) {
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        const keepPng = file.type === 'image/png';
-        resolve(canvas.toDataURL(keepPng ? 'image/png' : 'image/jpeg', quality));
+        // 餐图无需透明通道，统一转 jpeg 以最大化压缩（含截图 PNG 也压得动）
+        resolve(canvas.toDataURL('image/jpeg', quality));
       };
       img.onerror = () => reject(new Error('decode fail'));
       img.src = reader.result;
     };
     reader.onerror = () => reject(new Error('read fail'));
     reader.readAsDataURL(file);
+  });
+}
+
+// 把已存进 localStorage 的 base64 大图重新压小（不丢记录），用于释放被旧图占满的空间
+function compressDataURL(dataUrl, maxW = 600, quality = 0.5) {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) { resolve(dataUrl); return; }
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      try { resolve(canvas.toDataURL('image/jpeg', quality)); }
+      catch (e) { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
   });
 }
 
@@ -1134,7 +1153,9 @@ function renderModule(key) {
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button type="button" id="meal-clean-7" class="btn-reset" style="font-size:13px;padding:6px 10px;">清理 7 天前</button>
           <button type="button" id="meal-clean-30" class="btn-reset" style="font-size:13px;padding:6px 10px;">清理 30 天前</button>
+          <button type="button" id="meal-compress" class="btn-reset" style="font-size:13px;padding:6px 10px;">压缩旧图</button>
         </div>
+        <div style="font-size:11px;color:#999;margin-top:6px;">压缩旧图：把已存的大图重新压小，不删记录即可腾出空间</div>
       </div>`;
   }
 
@@ -1704,6 +1725,29 @@ function bindModule(key) {
     const btn7 = $('#meal-clean-7'), btn30 = $('#meal-clean-30');
     if (btn7) btn7.addEventListener('click', () => cleanMealBefore(7));
     if (btn30) btn30.addEventListener('click', () => cleanMealBefore(30));
+
+    // 压缩旧图：把已存的大图重新压小，不删记录即可腾出空间（解决"单条记录就占满"的困境）
+    const btnC = $('#meal-compress');
+    if (btnC) btnC.addEventListener('click', async () => {
+      const arr = load(m.storageKey);
+      let count = 0, before = 0, after = 0;
+      for (const rec of arr) {
+        for (const me of (rec.meals || [])) {
+          if (me.image && me.image.startsWith('data:image')) {
+            before += me.image.length;
+            const compressed = await compressDataURL(me.image);
+            after += compressed.length;
+            me.image = compressed;
+            count++;
+          }
+        }
+      }
+      if (!count) { toast('没有需要压缩的旧图'); return; }
+      save(m.storageKey, arr);
+      const freed = before - after;
+      toast(`已压缩 ${count} 张图，释放约 ${formatBytes(freed > 0 ? freed : 0)}`);
+      render();
+    });
   }
 
   const rb = $('#reset-today');
@@ -1998,7 +2042,7 @@ window.addEventListener('load', () => {
   scheduleMidnightRefresh();
   // 注册 Service Worker：断网也能用（需 https 或 localhost）
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v168').then(reg => {
+    navigator.serviceWorker.register('sw.js?v169').then(reg => {
       // iOS PWA 从主屏幕打开时不会主动检查更新，这里手动触发
       const doUpdate = () => { try { reg.update(); } catch (e) {} };
       // 页面可见时（从后台切回/重新打开）检查更新
